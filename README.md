@@ -11,5 +11,5 @@ The unlimiter also has options to change car render information, which works on 
 + HasSunroof: Swaps KIT00_ROOF with KIT00_FULLROOF when a roof scoop is installed.
 
 # Download
-You can [download Unlimiter](https://github.com/ExOptsTeam/NFSU2Unlimiter/releases) from Releases page, or from [NFSMods.xyz](https://www.nfsmods.xyz).
+You can [download Unlimiter](https://github.com/nlgzrgn/NFSU2Unlimiter/releases) from Releases page, or from [NFSMods.xyz](https://www.nfsmods.xyz).
 If you want to compile it yourself, you can download the source code from the green Clone or Download button up there.
