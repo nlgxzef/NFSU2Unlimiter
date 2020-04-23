@@ -9,9 +9,9 @@ using namespace std;
 int CarCount, CarArraySize, TrafficCarCount, TheCounter;
 bool NewCarsInitiallyUnlocked, NewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, EnableUnlimiterData;
 
-BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256];
-int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256];
-int RandomCarCount, RandomSUVCount, CarTypeID_Temp, LinkLicensePlateToTrunk_Temp, InitiallyUnlockedCarCount = 8;
+BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256];
+int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
+int RandomCarCount, RandomSUVCount, CarTypeID_Temp, CarTypeHash_Temp, CarOriginResultTemp, LinkLicensePlateToTrunk_Temp, InitiallyUnlockedCarCount = 8;
 
 char CarININame[260] = "";
 
@@ -34,6 +34,27 @@ bool IsTraffic(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
 	return *(BYTE*)((*(DWORD*)0x8A1CCC) + CarTypeID * 0x890 + 0x844) == 2;
+}
+
+void __declspec(naked) CarLotFixCodeCaveWrite()
+{
+	_asm
+	{
+		mov byte ptr ds : [CarLotUnlockData + ecx], 0
+		push 0x513CDA
+		retn
+	}
+}
+
+void __declspec(naked) CarLotFixCodeCaveRead()
+{
+	_asm
+	{
+		mov al, [CarLotUnlockData + esi]
+		test al,al
+		push 0x513CF6
+		retn
+	}
 }
 
 void __declspec(naked) DoUnlimiterStuffCodeCave()
@@ -63,8 +84,8 @@ void __declspec(naked) DoUnlimiterStuffCodeCave()
 	injector::WriteMemory<BYTE>(0x610150, CarCount, true); // GetCarTypeInfoFromHash
 	injector::WriteMemory<BYTE>(0x61C671, CarCount, true); // CarLoader::LoadAllPartsAnims
 	injector::WriteMemory<BYTE>(0x6372B4, CarCount, true); // RideInfo::FillWithPreset
-	injector::WriteMemory<BYTE>(0x4EAE48, CarCount, true); // sub_4EA900
-	injector::WriteMemory<BYTE>(0x513D1D, CarCount, true); // sub_513C50
+	injector::WriteMemory<BYTE>(0x4EAE48, CarCount, true); // GarageMainScreen::GarageMainScreen
+	injector::WriteMemory<BYTE>(0x513D1D, CarCount, true); // sub_513C50 -> UICareerCarLot::BuildCarList
 
 	// Make them available as opponents
 	if (NewCarsCanBeDrivenByAI)
@@ -202,12 +223,34 @@ int ShowTrunkUnderInFE(int CarTypeID)
 
 int(*RemoveCentreBrakeWithCustomSpoiler_Game)(int CarTypeID) = (int(*)(int))0x60C8A0;
 
+DWORD DoRemoveCentreBrakeWithCustomSpoiler = 0x615823;
+DWORD DontRemoveCentreBrakeWithCustomSpoiler = 0x61582B;
+
 int RemoveCentreBrakeWithCustomSpoiler(int CarTypeID)
 {
 	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(CarTypeID));
 
 	CIniReader UnlimiterCarData(CarININame);
 	return UnlimiterCarData.ReadInteger("CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", RemoveCentreBrakeWithCustomSpoiler_Game(CarTypeID));
+}
+
+void __declspec(naked) RemoveCentreBrakeWithCustomSpoilerCodeCave()
+{
+	_asm mov CarTypeID_Temp, eax;
+	_asm pushad;
+
+	if (RemoveCentreBrakeWithCustomSpoiler(CarTypeID_Temp))
+	{
+		_asm popad;
+		_asm add esp,4
+		_asm jmp DoRemoveCentreBrakeWithCustomSpoiler;
+	}
+	else
+	{
+		_asm popad;
+		_asm add esp, 4
+		_asm jmp DontRemoveCentreBrakeWithCustomSpoiler;
+	}
 }
 
 // int(*HasSunroof_Game)(int CarTypeID) = (int(*)(int))0x60C850;
@@ -273,6 +316,23 @@ void __declspec(naked) BuildRandomRideCodeCave()
 	}
 }
 
+void __declspec(naked) PerformanceConfigFixCodeCave()
+{
+	_asm
+	{
+		lea ecx,[esp+0x24]
+		push ecx
+
+		cmp eax,0x2E
+		jl exitcave
+		mov eax,1
+
+		exitcave:
+			push 0x5262A9
+			retn
+	}
+}
+
 int Init()
 {
 	CIniReader Settings("NFSU2UnlimiterSettings.ini");
@@ -290,8 +350,31 @@ int Init()
 	// Count Cars Automatically
 	injector::MakeJMP(0x00636BF7, DoUnlimiterStuffCodeCave, true);
 
+	// Fix car lot unlock crash
+	for (TheCounter = 0; TheCounter < 256; TheCounter++) CarLotUnlockData[TheCounter] = 1; // fill with 1s
+	injector::MakeRangedNOP(0x513C5A, 0x513C6C, true); // disable game's own array
+	injector::MakeJMP(0x513CD5, CarLotFixCodeCaveWrite, true);
+	injector::MakeJMP(0x513CF0, CarLotFixCodeCaveRead, true);
+
+	// Fix Performance Config
+	injector::WriteMemory(0x59945D, PerfConfigTables + 1, true); // LoaderPerformanceConfigChunk
+	injector::WriteMemory(0x59A457, PerfConfigTables + 1, true); // GetMinMaxPerformanceMeasure
+	injector::WriteMemory(0x59A460, PerfConfigTables + 1, true); // GetMinMaxPerformanceMeasure
+	injector::WriteMemory(0x5B69CF, PerfConfigTables + 1, true); // RidePhysicsInfo::GetPerformanceMeasure
+	injector::WriteMemory(0x5B6B41, PerfConfigTables + 1, true); // RidePhysicsInfo::MatchPerformance
+	injector::WriteMemory(0x5B6BA8, PerfConfigTables + 1, true); // RidePhysicsInfo::MatchPerformance
+	injector::WriteMemory(0x59A46E, PerfConfigTables, true); // GetMinMaxPerformanceMeasure
+	injector::WriteMemory(0x5B6B33, PerfConfigTables, true); // RidePhysicsInfo::MatchPerformance
+	injector::WriteMemory(0x5B6B99, PerfConfigTables, true); // RidePhysicsInfo::MatchPerformance
+	injector::WriteMemory(0x59946E, PerfConfigTables + 511, true); // LoaderPerformanceConfigChunk
+	injector::MakeJMP(0x5262A4, PerformanceConfigFixCodeCave, true);
+
 	// Fix Invisible Wheels
 	if (DisappearingWheelsFix) injector::WriteMemory<BYTE>(0x60c5a9, 0x01, true);
+
+	// Disable Tire Mask Rendering
+	injector::MakeRangedNOP(0x62DEB9, 0x62DEBF, true);
+	injector::MakeJMP(0x62DEB9, 0x62DF66, true);
 
 	// Check CarRenderInfo::Render data
 	if (EnableUnlimiterData)
@@ -299,7 +382,8 @@ int Init()
 		injector::MakeJMP(0x6253ED, LinkLicensePlateToTrunkCodeCave, true); // LinkLicensePlateToTrunk
 		injector::MakeCALL(0x62331B, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
 		injector::MakeCALL(0x623479, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
-		injector::MakeCALL(0x615817, RemoveCentreBrakeWithCustomSpoiler, true); // RemoveCentreBrakeWithCustomSpoiler
+		//injector::MakeCALL(0x615817, RemoveCentreBrakeWithCustomSpoiler, true); // RemoveCentreBrakeWithCustomSpoiler
+		injector::MakeJMP(0x615817, RemoveCentreBrakeWithCustomSpoilerCodeCave, true); // RemoveCentreBrakeWithCustomSpoiler
 		//injector::MakeCALL(0x623155, HasSunroof, true);
 		injector::MakeJMP(0x60C854, HasSunroofCodeCave, true); // HasSunroof
 	}
