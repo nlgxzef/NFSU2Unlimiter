@@ -7,7 +7,7 @@
 using namespace std;
 
 int CarCount, CarArraySize, TrafficCarCount, TheCounter;
-bool NewCarsInitiallyUnlocked, NewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, EnableUnlimiterData;
+bool NewCarsInitiallyUnlocked, NewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, EnableUnlimiterData, WorldCrashFixes;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256];
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -344,6 +344,7 @@ int Init()
 	// Fixes
 	DisappearingWheelsFix = Settings.ReadInteger("Fixes", "DisappearingWheelsFix", 1) == 1;
 	AddOnOpponentsPartsFix = Settings.ReadInteger("Fixes", "AddOnOpponentsPartsFix", 1) == 1;
+	WorldCrashFixes = Settings.ReadInteger("Fixes", "WorldCrashFixes", 1) == 1;
 	// Misc
 	ExpandMemoryPools = Settings.ReadInteger("Misc", "ExpandMemoryPools", 0) == 1;
 	
@@ -370,12 +371,28 @@ int Init()
 	injector::MakeJMP(0x5262A4, PerformanceConfigFixCodeCave, true);
 
 	// Fix Invisible Wheels
-	if (DisappearingWheelsFix) injector::WriteMemory<BYTE>(0x60c5a9, 0x01, true);
+	if (DisappearingWheelsFix) injector::WriteMemory<BYTE>(0x60c5a9, 0x01, true); // CarPartCuller::CullParts
 
 	// Disable Tire Mask Rendering
-	injector::MakeRangedNOP(0x62DEB9, 0x62DEBF, true);
+	injector::MakeRangedNOP(0x62DEB9, 0x62DEBF, true); // CarRenderInfo::Render
 	injector::MakeJMP(0x62DEB9, 0x62DF66, true);
 
+	// Fix WorldChallenges Crash
+	if (WorldCrashFixes)
+	{
+		injector::WriteMemory<BYTE>(0x500E2F, 0x7F, true); // AddUnlockedZone (ShopDataDesc)
+		injector::WriteMemory<BYTE>(0x500E6F, 0x7F, true); // AddUnlockedZone (CareerEventData)
+		injector::WriteMemory<BYTE>(0x500EB0, 0x7F, true); // AddUnlockedZone
+		injector::WriteMemory<BYTE>(0x500F0B, 0x7F, true); // GetNextUnlockedTriggerZone
+		injector::WriteMemory<BYTE>(0x500F1F, 0x7F, true); // GetNextUnlockedTriggerZone
+		injector::WriteMemory<int>(0x500F38, 0x7F, true); // Reset
+		injector::WriteMemory<BYTE>(0x53345B, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
+		injector::WriteMemory<BYTE>(0x5334BB, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
+		injector::WriteMemory<BYTE>(0x53352A, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
+		injector::WriteMemory<BYTE>(0x53355B, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
+		injector::WriteMemory<BYTE>(0x53362B, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
+	}
+	
 	// Check CarRenderInfo::Render data
 	if (EnableUnlimiterData)
 	{
