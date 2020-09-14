@@ -1,7 +1,8 @@
 # NFSU2 Unlimiter
-NFSU2 Unlimiter is a script mod which fixes some issues for added cars:
+NFSU2 Unlimiter is a script mod which fixes some issues for added cars and events:
 + Added cars cannot be seen in game. (Increased CarTypeID limit and block size variables to solve the problem.)
 + Selecting added cars make the game crash. (Increased CarTypeID limit.)
++ Having more than 64 active markers make the game crash. (Increased map marker limit.)
 + And more...
 
 The unlimiter also has options to change car render information, which works on all cars: (Just add CARNAME.ini into UnlimiterData folder.)

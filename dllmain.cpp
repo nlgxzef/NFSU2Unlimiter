@@ -7,16 +7,18 @@
 using namespace std;
 
 int CarCount, CarArraySize, TrafficCarCount, TheCounter;
-bool NewCarsInitiallyUnlocked, NewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, EnableUnlimiterData, WorldCrashFixes;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes;
 
-BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256];
+BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
 int RandomCarCount, RandomSUVCount, CarTypeID_Temp, CarTypeHash_Temp, CarOriginResultTemp, LinkLicensePlateToTrunk_Temp, InitiallyUnlockedCarCount = 8;
 
-char CarININame[260] = "";
+char CarININame[MAX_PATH] = "";
 
 DWORD DoUnlimiterStuffCodeCaveExit = 0x636BFC;
 DWORD RideInfo_SetStockParts = 0x637040;
+
+char* (*GetCarTypeName)(int CarTypeID) = (char* (*)(int))0x610110;
 
 bool DoesFileExist(char const* _path) {
 
@@ -30,10 +32,32 @@ bool IsSUV(BYTE CarTypeID)
 	return *(bool*)((*(DWORD*)0x8A1CCC) + CarTypeID * 0x890 + 0x88A);
 }
 
+bool IsRacer(BYTE CarTypeID)
+{
+	if (CarTypeID >= CarCount) return 0;
+	return *(BYTE*)((*(DWORD*)0x8A1CCC) + CarTypeID * 0x890 + 0x844) == 0;
+}
+
 bool IsTraffic(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
 	return *(BYTE*)((*(DWORD*)0x8A1CCC) + CarTypeID * 0x890 + 0x844) == 2;
+}
+
+bool IsInitiallyUnlocked(BYTE CarTypeID)
+{
+	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(TheCounter));
+
+	CIniReader UnlimiterCarData(CarININame);
+	return (UnlimiterCarData.ReadInteger("Main", "InitiallyUnlocked", 0) == 1) || AllNewCarsInitiallyUnlocked;
+}
+
+bool CanCarBeDrivenByAI(BYTE CarTypeID)
+{
+	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(TheCounter));
+
+	CIniReader UnlimiterCarData(CarININame);
+	return (UnlimiterCarData.ReadInteger("Main", "CanBeDrivenByAI", 1) == 1) || AllNewCarsCanBeDrivenByAI;
 }
 
 void __declspec(naked) CarLotFixCodeCaveWrite()
@@ -88,79 +112,75 @@ void __declspec(naked) DoUnlimiterStuffCodeCave()
 	injector::WriteMemory<BYTE>(0x513D1D, CarCount, true); // sub_513C50 -> UICareerCarLot::BuildCarList
 
 	// Make them available as opponents
-	if (NewCarsCanBeDrivenByAI)
+	
+	RandomCarCount = injector::ReadMemory<int>(0x4FEB9D, true);
+	RandomSUVCount = injector::ReadMemory<int>(0x4FEBDB, true);
+
+	for (TheCounter = 0; TheCounter < RandomCarCount; TheCounter++) // Read current arrays
 	{
-		RandomCarCount = injector::ReadMemory<int>(0x4FEB9D, true);
-		RandomSUVCount = injector::ReadMemory<int>(0x4FEBDB, true);
-
-		for (TheCounter = 0; TheCounter < RandomCarCount; TheCounter++) // Read current arrays
-		{
-			RandomlyChooseableCarConfigsNorthAmerica[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DA4 + TheCounter, true);
-			RandomlyChooseableCarConfigsRestOfWorld[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DC0 + TheCounter, true);
-		}
-
-		for (TheCounter = 0; TheCounter < RandomSUVCount; TheCounter++) RandomlyChooseableSUVs[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DDC + TheCounter, true);
-
-		// Add new cars there
-		for (TheCounter = 0x2E; TheCounter < CarCount; TheCounter++)
-		{
-			if (!IsTraffic(TheCounter))
-			{
-				if (IsSUV(TheCounter)) RandomlyChooseableSUVs[RandomSUVCount++] = TheCounter;
-				else
-				{
-					RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = TheCounter;
-					RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = TheCounter;
-				}
-			}
-
-		}
-
-		// Introduce new arrays to the game
-		injector::WriteMemory(0x4FEBA2, RandomlyChooseableCarConfigsNorthAmerica, true);
-		injector::WriteMemory(0x4FEBA9, RandomlyChooseableCarConfigsRestOfWorld, true);
-		injector::WriteMemory(0x4FEBE0, RandomlyChooseableSUVs, true);
-
-		injector::WriteMemory<int>(0x4FEB9D, RandomCarCount, true);
-		injector::WriteMemory<int>(0x4FEBDB, RandomSUVCount, true);
-
-		// Crash Fix
-		injector::WriteMemory<BYTE>(0x5B6B3C, 0xEB, true);
+		RandomlyChooseableCarConfigsNorthAmerica[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DA4 + TheCounter, true);
+		RandomlyChooseableCarConfigsRestOfWorld[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DC0 + TheCounter, true);
 	}
+
+	for (TheCounter = 0; TheCounter < RandomSUVCount; TheCounter++) RandomlyChooseableSUVs[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DDC + TheCounter, true);
+
+	// Add new cars there
+	for (TheCounter = 0x2E; TheCounter < CarCount; TheCounter++)
+	{
+		if (CanCarBeDrivenByAI(TheCounter) && (IsRacer(TheCounter)))
+		{
+			if (IsSUV(TheCounter)) RandomlyChooseableSUVs[RandomSUVCount++] = TheCounter;
+			else
+			{
+				RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = TheCounter;
+				RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = TheCounter;
+			}
+		}
+	}
+
+	// Introduce new arrays to the game
+	injector::WriteMemory(0x4FEBA2, RandomlyChooseableCarConfigsNorthAmerica, true);
+	injector::WriteMemory(0x4FEBA9, RandomlyChooseableCarConfigsRestOfWorld, true);
+	injector::WriteMemory(0x4FEBE0, RandomlyChooseableSUVs, true);
+
+	injector::WriteMemory<int>(0x4FEB9D, RandomCarCount, true);
+	injector::WriteMemory<int>(0x4FEBDB, RandomSUVCount, true);
+
+	// Crash Fix
+	injector::WriteMemory<BYTE>(0x5B6B3C, 0xEB, true);
+	
 	
 	// Unlock new cars right at the beginning
-	if (NewCarsInitiallyUnlocked)
+	for (TheCounter = 0; TheCounter < InitiallyUnlockedCarCount; TheCounter++) // Read current arrays
 	{
-		for (TheCounter = 0; TheCounter < InitiallyUnlockedCarCount; TheCounter++) // Read current arrays
-		{
-			UnlockedAtBootQuickRaceNorthAmerica[TheCounter] = injector::ReadMemory<int>(0x7F7C08 + 4 * TheCounter, true);
-			UnlockedAtBootQuickRaceRestOfWorld[TheCounter] = injector::ReadMemory<int>(0x7F7C28 + 4 * TheCounter, true);
-		}
-
-		// Add new cars there
-		for (TheCounter = 0x2E; TheCounter < CarCount; TheCounter++)
-		{
-			if (!IsTraffic(TheCounter))
-			{
-				UnlockedAtBootQuickRaceNorthAmerica[InitiallyUnlockedCarCount] = TheCounter;
-				UnlockedAtBootQuickRaceRestOfWorld[InitiallyUnlockedCarCount++] = TheCounter;
-			}
-		}
-
-		// Introduce new arrays to the game
-		injector::WriteMemory(0x529D22, UnlockedAtBootQuickRaceNorthAmerica, true); // Start
-		injector::WriteMemory(0x529D2E, UnlockedAtBootQuickRaceNorthAmerica + 4 * InitiallyUnlockedCarCount, true); // End
-		injector::WriteMemory(0x529D3B, UnlockedAtBootQuickRaceRestOfWorld, true); // Start
-		injector::WriteMemory(0x529D48, UnlockedAtBootQuickRaceRestOfWorld + 4 * InitiallyUnlockedCarCount, true); // End
-
+		UnlockedAtBootQuickRaceNorthAmerica[TheCounter] = injector::ReadMemory<int>(0x7F7C08 + 4 * TheCounter, true);
+		UnlockedAtBootQuickRaceRestOfWorld[TheCounter] = injector::ReadMemory<int>(0x7F7C28 + 4 * TheCounter, true);
 	}
+
+	// Add new cars there
+	for (TheCounter = 0x2E; TheCounter < CarCount; TheCounter++)
+	{
+		if (IsInitiallyUnlocked(TheCounter) && (IsRacer(TheCounter)))
+		{
+			UnlockedAtBootQuickRaceNorthAmerica[InitiallyUnlockedCarCount] = TheCounter;
+			UnlockedAtBootQuickRaceRestOfWorld[InitiallyUnlockedCarCount++] = TheCounter;
+			CarLotUnlockData[TheCounter] = 1;
+		}
+	}
+
+	// Introduce new arrays to the game
+	injector::WriteMemory(0x529D22, UnlockedAtBootQuickRaceNorthAmerica, true); // Start
+	injector::WriteMemory(0x529D2E, UnlockedAtBootQuickRaceNorthAmerica + 4 * InitiallyUnlockedCarCount, true); // End
+	injector::WriteMemory(0x529D3B, UnlockedAtBootQuickRaceRestOfWorld, true); // Start
+	injector::WriteMemory(0x529D48, UnlockedAtBootQuickRaceRestOfWorld + 4 * InitiallyUnlockedCarCount, true); // End
+
+	
 
 	// Continue
 	_asm popad;
 	_asm jmp DoUnlimiterStuffCodeCaveExit;
 }
 
-char* (*GetCarTypeName)(int CarTypeID) = (char* (*)(int))0x610110;
 DWORD DoLinkLPToTrunk = 0x625401;
 DWORD DontLinkLPToTrunk = 0x6259FE;
 
@@ -220,6 +240,49 @@ int ShowTrunkUnderInFE(int CarTypeID)
 	CIniReader UnlimiterCarData(CarININame);
 	return UnlimiterCarData.ReadInteger("CarRenderInfo", "ShowTrunkUnderInFE", ShowTrunkUnderInFE_Game(CarTypeID));
 }
+
+/*void __declspec(naked) ShowTrunkUnderInFECodeCave()
+{
+	_asm mov CarTypeID_Temp, edx;
+	_asm pushad;
+
+	if (ShowTrunkUnderInFE(CarTypeID_Temp))
+	{
+		_asm popad;
+		_asm add esp, 4
+		_asm push 0x62332B;
+		_asm retn;
+	}
+	else
+	{
+		_asm popad;
+		_asm add esp, 4
+		_asm push 0x623327;
+		_asm retn;
+	}
+}
+
+void __declspec(naked) ShowTrunkUnderInFECodeCave2()
+{
+	_asm mov CarTypeID_Temp, ecx;
+	_asm pushad;
+
+	if (ShowTrunkUnderInFE(CarTypeID_Temp))
+	{
+		_asm popad;
+		_asm add esp, 4
+		_asm push 0x623485;
+		_asm retn;
+	}
+	else
+	{
+		_asm popad;
+		_asm add esp, 4
+		_asm push 0x6234AE;
+		_asm retn;
+	}
+}
+*/
 
 int(*RemoveCentreBrakeWithCustomSpoiler_Game)(int CarTypeID) = (int(*)(int))0x60C8A0;
 
@@ -338,15 +401,14 @@ int Init()
 	CIniReader Settings("NFSU2UnlimiterSettings.ini");
 
 	// Main
-	NewCarsInitiallyUnlocked = Settings.ReadInteger("Main", "NewCarsInitiallyUnlocked", 1) == 1;
-	NewCarsCanBeDrivenByAI = Settings.ReadInteger("Main", "NewCarsCanBeDrivenByAI", 0) == 1;
-	EnableUnlimiterData = Settings.ReadInteger("Main", "EnableUnlimiterData", 1) == 1;
+	AllNewCarsInitiallyUnlocked = Settings.ReadInteger("Main", "AllNewCarsInitiallyUnlocked", 0) == 1;
+	AllNewCarsCanBeDrivenByAI = Settings.ReadInteger("Main", "AllNewCarsCanBeDrivenByAI", 0) == 1;
 	// Fixes
 	DisappearingWheelsFix = Settings.ReadInteger("Fixes", "DisappearingWheelsFix", 1) == 1;
 	AddOnOpponentsPartsFix = Settings.ReadInteger("Fixes", "AddOnOpponentsPartsFix", 1) == 1;
 	WorldCrashFixes = Settings.ReadInteger("Fixes", "WorldCrashFixes", 1) == 1;
 	// Misc
-	ExpandMemoryPools = Settings.ReadInteger("Misc", "ExpandMemoryPools", 0) == 1;
+	ExpandMemoryPools = Settings.ReadInteger("Misc", "ExpandMemoryPools", 1) == 1;
 	
 	// Count Cars Automatically
 	injector::MakeJMP(0x00636BF7, DoUnlimiterStuffCodeCave, true);
@@ -356,6 +418,11 @@ int Init()
 	injector::MakeRangedNOP(0x513C5A, 0x513C6C, true); // disable game's own array
 	injector::MakeJMP(0x513CD5, CarLotFixCodeCaveWrite, true);
 	injector::MakeJMP(0x513CF0, CarLotFixCodeCaveRead, true);
+
+	if (AllNewCarsInitiallyUnlocked)
+	{
+		injector::MakeNOP(0x513CD5, 5, true);
+	}
 
 	// Fix Performance Config
 	injector::WriteMemory(0x59945D, PerfConfigTables + 1, true); // LoaderPerformanceConfigChunk
@@ -394,16 +461,13 @@ int Init()
 	}
 	
 	// Check CarRenderInfo::Render data
-	if (EnableUnlimiterData)
-	{
-		injector::MakeJMP(0x6253ED, LinkLicensePlateToTrunkCodeCave, true); // LinkLicensePlateToTrunk
-		injector::MakeCALL(0x62331B, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
-		injector::MakeCALL(0x623479, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
-		//injector::MakeCALL(0x615817, RemoveCentreBrakeWithCustomSpoiler, true); // RemoveCentreBrakeWithCustomSpoiler
-		injector::MakeJMP(0x615817, RemoveCentreBrakeWithCustomSpoilerCodeCave, true); // RemoveCentreBrakeWithCustomSpoiler
-		//injector::MakeCALL(0x623155, HasSunroof, true);
-		injector::MakeJMP(0x60C854, HasSunroofCodeCave, true); // HasSunroof
-	}
+	injector::MakeJMP(0x6253ED, LinkLicensePlateToTrunkCodeCave, true); // LinkLicensePlateToTrunk
+	injector::MakeCALL(0x62331B, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
+	injector::MakeCALL(0x623479, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
+	//injector::MakeCALL(0x615817, RemoveCentreBrakeWithCustomSpoiler, true); // RemoveCentreBrakeWithCustomSpoiler
+	injector::MakeJMP(0x615817, RemoveCentreBrakeWithCustomSpoilerCodeCave, true); // RemoveCentreBrakeWithCustomSpoiler
+	//injector::MakeCALL(0x623155, HasSunroof, true);
+	injector::MakeJMP(0x60C854, HasSunroofCodeCave, true); // HasSunroof
 	
 	// Expand Memory Pools (ty Berkay and Aero_)
 	if (ExpandMemoryPools)
