@@ -66,6 +66,10 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(TargetDir)*.asi" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"  /y
+copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"  /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -85,11 +89,31 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(TargetDir)*.asi" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"  /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CameraInfo.h" />
+    <ClInclude Include="CarCustomizeManager.h" />
+    <ClInclude Include="CareerEventData.h" />
+    <ClInclude Include="CarRenderInfo.h" />
+    <ClInclude Include="ChooseDecalCategory.h" />
+    <ClInclude Include="ChoosePaintScreen.h" />
+    <ClInclude Include="ChooseRimBrand.h" />
+    <ClInclude Include="CustomizeNeonMenu.h" />
+    <ClInclude Include="FEPackage.h" />
+    <ClInclude Include="IceSelectionScreen.h" />
+    <ClInclude Include="InGameFunctions.h" />
+    <ClInclude Include="PartSelectionScreen.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RideInfo.h" />
+    <ClInclude Include="RidePhysicsInfo.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="UnlimiterStuff.h" />
+    <ClInclude Include="UnlockablesMap.h" />
+    <ClInclude Include="UserCalls.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
