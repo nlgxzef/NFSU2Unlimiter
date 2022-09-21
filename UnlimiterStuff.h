@@ -8,7 +8,7 @@
 using namespace std;
 
 int CarCount, CarArraySize, TrafficCarCount, TheCounter;
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, ExtraCustomization, FNGFix, CabinNeonFix, RaceEngageDialogFix;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, ExtraCustomization, FNGFix, CabinNeonFix, RaceEngageDialogFix, RandomNameHook;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -32,48 +32,11 @@ char CarININame[MAX_PATH] = "";
 #include "CustomizeNeonMenu.h"
 #include "ChooseDecalCategory.h"
 #include "ChoosePaintScreen.h"
+#include "RimsBrowser.h"
 #include "FEPackage.h"
 #include "CareerEventData.h"
-
-bool DoesFileExist(char const* _path) {
-
-	std::ifstream ifile(_path);
-	return (bool)ifile;
-}
-
-bool IsSUV(BYTE CarTypeID)
-{
-	if (CarTypeID >= CarCount) return 0;
-	return *(bool*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x88A);
-}
-
-bool IsRacer(BYTE CarTypeID)
-{
-	if (CarTypeID >= CarCount) return 0;
-	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 0;
-}
-
-bool IsTraffic(BYTE CarTypeID)
-{
-	if (CarTypeID >= CarCount) return 0;
-	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 2;
-}
-
-bool IsInitiallyUnlocked(BYTE CarTypeID)
-{
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(TheCounter));
-
-	CIniReader UnlimiterCarData(CarININame);
-	return (UnlimiterCarData.ReadInteger("Main", "InitiallyUnlocked", 0) == 1) || AllNewCarsInitiallyUnlocked;
-}
-
-bool CanCarBeDrivenByAI(BYTE CarTypeID)
-{
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(TheCounter));
-
-	CIniReader UnlimiterCarData(CarININame);
-	return (UnlimiterCarData.ReadInteger("Main", "CanBeDrivenByAI", 1) == 1) || AllNewCarsCanBeDrivenByAI;
-}
+#include "RandomCharacterNames.h"
+#include "Helpers.h"
 
 void __declspec(naked) CarLotFixCodeCaveWrite()
 {
@@ -162,9 +125,8 @@ void __declspec(naked) DoUnlimiterStuffCodeCave()
 	injector::WriteMemory<int>(0x4FEB9D, RandomCarCount, true);
 	injector::WriteMemory<int>(0x4FEBDB, RandomSUVCount, true);
 
-	// Crash Fix
-	injector::WriteMemory<BYTE>(0x5B6B3C, 0xEB, true);
-
+	// Crash Fix (Worked around by cloning the values instead)
+	//injector::WriteMemory<BYTE>(0x5B6B3C, 0xEB, true); // RidePhysicsInfo::MatchPerformance
 
 	// Unlock new cars right at the beginning
 	for (TheCounter = 0; TheCounter < InitiallyUnlockedCarCount; TheCounter++) // Read current arrays
@@ -200,19 +162,14 @@ void __declspec(naked) DoUnlimiterStuffCodeCave()
 
 void __declspec(naked) PerformanceConfigFixCodeCave()
 {
-	_asm
-	{
-		lea ecx, [esp + 0x24]
-		push ecx
+	_asm mov eax, 1;
+	_asm pushad;
 
-		cmp eax, 0x2E
-		jl exitcave
-		mov eax, 1
+	FillUpPerformanceConfig();
 
-		exitcave:
-			push 0x5262A9
-			retn
-	}
+	_asm popad;
+	_asm push 0x5994C0;
+	_asm retn;
 }
 
 int Init()
@@ -223,15 +180,16 @@ int Init()
 	AllNewCarsInitiallyUnlocked = Settings.ReadInteger("Main", "AllNewCarsInitiallyUnlocked", 0) != 0;
 	AllNewCarsCanBeDrivenByAI = Settings.ReadInteger("Main", "AllNewCarsCanBeDrivenByAI", 0) != 0;
 	ExtraCustomization = Settings.ReadInteger("Main", "EnableExtraCustomization", 1) != 0;
+	RandomNameHook = Settings.ReadInteger("Main", "EnableRandomNameHook", 1) != 0;
 	// Fixes
 	DisappearingWheelsFix = Settings.ReadInteger("Fixes", "DisappearingWheelsFix", 1) != 0;
-	AddOnOpponentsPartsFix = Settings.ReadInteger("Fixes", "AddOnOpponentsPartsFix", 1) != 0;
 	WorldCrashFixes = Settings.ReadInteger("Fixes", "WorldCrashFixes", 1) != 0;
 	CabinNeonFix = Settings.ReadInteger("Fixes", "CabinNeonFix", 1) != 0;
 	RaceEngageDialogFix = Settings.ReadInteger("Fixes", "RaceEngageDialogFix", 1) != 0;
 	FNGFix = Settings.ReadInteger("Fixes", "FNGFix", 1) != 0;
 	// Misc
 	ExpandMemoryPools = Settings.ReadInteger("Misc", "ExpandMemoryPools", 1) != 0;
+	AddOnOpponentsPartsFix = Settings.ReadInteger("Misc", "ForceStockPartsOnAddOnOpponents", 0) != 0;
 
 	// Count Cars Automatically
 	injector::MakeJMP(0x00636BF7, DoUnlimiterStuffCodeCave, true);
@@ -258,7 +216,7 @@ int Init()
 	injector::WriteMemory(0x5B6B33, PerfConfigTables, true); // RidePhysicsInfo::MatchPerformance
 	injector::WriteMemory(0x5B6B99, PerfConfigTables, true); // RidePhysicsInfo::MatchPerformance
 	injector::WriteMemory(0x59946E, PerfConfigTables + 511, true); // LoaderPerformanceConfigChunk
-	injector::MakeJMP(0x5262A4, PerformanceConfigFixCodeCave, true);
+	injector::MakeJMP(0x5994BB, PerformanceConfigFixCodeCave, true); // LoaderPerformanceConfigChunk, Fill up empty space by copying the values over to work around the crash
 
 	// Fix Invisible Wheels
 	if (DisappearingWheelsFix) injector::WriteMemory<BYTE>(0x60c5a9, 0x01, true); // CarPartCuller::CullParts
@@ -288,6 +246,9 @@ int Init()
 
 			// Remove rim size restrictions
 			injector::MakeJMP(0x539B70, IsRimAvailable, true); // 4 references
+
+			// Allow brands to hide their names on rim selection screen
+			injector::WriteMemory(0x79D884, RimsBrowser_RefreshHeader, true); // RimsBrowser::vtable
 		}
 		
 		// Neon menu
@@ -442,6 +403,15 @@ int Init()
 	if (RaceEngageDialogFix)
 	{
 		injector::MakeCALL(0x4B551B, CareerEventData_GetEngageDialogBody, true); // RaceEngageDialog::Setup
+	}
+
+	// Unhardcode Random Names
+	if (RandomNameHook)
+	{
+		injector::MakeCALL(0x499170, GetRandomCharacterNames, true); // EventEngageDialog::FillFromWithRandomName
+		injector::MakeCALL(0x53EED8, GetRandomCharacterNames, true); // RaceStarter::AddAIOpponentCars
+		injector::MakeCALL(0x53F043, GetRandomCharacterNames, true); // RaceStarter::AddRandomEncounterCars
+		injector::MakeCALL(0x56DA3B, GetRandomCharacterNames, true); // DriftManager::BuildLeaderBoard
 	}
 
 	return 0;

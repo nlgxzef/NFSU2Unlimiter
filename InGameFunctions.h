@@ -2,22 +2,7 @@
 
 #include "stdio.h"
 #include <windows.h>
-
-#define _FECarConfigRef 0x8389AC
-#define _CarPartDB 0x8A2B68
-#define _CarTypeInfoArray 0x8A1CCC
-#define _TheGameFlowManager 0x8654A4
-#define _CarSlotIDNames 0x802DE8
-#define _CarPartIDNames 0x803338
-#define _WheelStandardWidth 0x8026C4
-#define gCarCustomizeManager 0x8392C0
-#define gCarCustomizeManager_0 0x838980
-#define gIceSideBarOverlayName 0x7FA204
-#define TopOrFullScreenRide 0x8371B0
-#define ThePlayerCareer 0x85AD40
-#define _DrawTrunkAudio 0x8A1BEC
-#define _CareerStringTable 0x838428
-#define _PerformanceClassRange 0x7A1A84
+#include "GlobalVariables.h"
 
 DWORD(*bStringHash)(char const* StringToHash) = (DWORD(*)(char const*))0x43DB50;
 DWORD(*bStringHash2)(char const* StringToHash, int PartialHash) = (DWORD(*)(char const*, int))0x43DB80;
@@ -27,7 +12,8 @@ int(*GetCarPartFromSlot)(int CarSlotID) = (int(*)(int))0x60FEE0;
 int(*ShowTrunkUnderInFE_Game)(int CarTypeID) = (int(*)(int))0x60C8F0;
 int(*RemoveCentreBrakeWithCustomSpoiler_Game)(int CarTypeID) = (int(*)(int))0x60C8A0;
 char* (__cdecl* _strstr)(char const*, char const*) = (char* (__cdecl*)(char const*, char const*))0x75F140;
-void*(__cdecl* j__malloc)(size_t a1) = (void*(__cdecl*)(size_t))0x575620;
+void*(__cdecl* j__malloc)(size_t _Size) = (void*(__cdecl*)(size_t))0x575620;
+void(__cdecl* j__free)(void* _Block) = (void(__cdecl*)(void*))0x575630;
 int(__thiscall* AddElementToMenuWithStateID)(int _this, int a2, int a3, int a4, int a5) = (int(__thiscall*)(int, int, int, int, int))0x520CB0;
 void* (__thiscall* AddCustomElementToMenu)(void* _this, int a2, int a3, int a4) = (void* (__thiscall*)(void*, int, int, int))0x545920;
 int(__cdecl* FEHashUpper)(unsigned __int8* a1) = (int(__cdecl*)(unsigned __int8*))0x505450;
@@ -117,5 +103,14 @@ void(__cdecl* FEngSetScript_Obj)(DWORD* FEObject, char const* ScriptName, bool U
 void(__cdecl* FEngSetScript_Pkg)(char const* PackageName, DWORD ObjectHash, char const* ScriptName, bool Unk) = (void(__cdecl*)(char const*, DWORD, char const*, bool))0x537C00;
 void(__thiscall* ChoosePaintScreen_BuildPaintList)(DWORD* ChoosePaintScreen) = (void(__thiscall*)(DWORD*))0x548630;
 int(__thiscall* PlayerCareerState_GetCarPartCost)(DWORD* PlayerCareerState, int CarSlotID, DWORD* TheCarPart) = (int(__thiscall*)(DWORD*, int, DWORD*))0x514280;
+int(__thiscall* ThumbnailScroller_GetCurrenNodeIndex)(DWORD* ThumbnailScroller) = (int(__thiscall*)(DWORD*))0x51F7E0;
+int(__thiscall* FEScrollBar_Update)(DWORD* FEScrollBar, int a1, int a2, int a3) = (int(__thiscall*)(DWORD*, int, int, int))0x538080;
+char const* (__thiscall* CarPart_GetName)(DWORD* CarPart) = (char const* (__thiscall*)(DWORD*))0x610000;
+char const* (__thiscall* CarCustomizeManager_GetBrandNameFromHash)(DWORD* CarCustomizeManager, int BrandNameHash) = (char const* (__thiscall*)(DWORD*, int))0x50E960;
+int(*FEngPrintf)(DWORD* obj, char const* fmt, ...) = (int(*)(DWORD*, char const*, ...))0x537BE0;
+char const* (*GetLocalizedString)(unsigned int StringHash) = (char const* (*)(unsigned int))0x4FFA80;
+void(*GetRandomCharacterNames_Game)(char const** Names, int NumberOfOpponents) = (void(*)(char const**, int))0x4FE970;
+void(__thiscall* FEPackage_ConnectObjectResources)(DWORD*) = (void(__thiscall*)(DWORD*))0x518140;
 
+// Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -103,12 +103,16 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="ChooseRimBrand.h" />
     <ClInclude Include="CustomizeNeonMenu.h" />
     <ClInclude Include="FEPackage.h" />
+    <ClInclude Include="GlobalVariables.h" />
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="IceSelectionScreen.h" />
     <ClInclude Include="InGameFunctions.h" />
     <ClInclude Include="PartSelectionScreen.h" />
+    <ClInclude Include="RandomCharacterNames.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RideInfo.h" />
     <ClInclude Include="RidePhysicsInfo.h" />
+    <ClInclude Include="RimsBrowser.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UnlimiterStuff.h" />

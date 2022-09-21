@@ -16,17 +16,23 @@ Features:
 + Adds new customization items to the menu. (Fully configurable via car-specific or general ini files.) (Parts should get added by modders.)
 + Restores cut customization options from the game: Trunk Audio Paint, Cabin Neon, Hood Decals, etc.
 + Lets modders add custom rim brands. (Fully configurable via ini file.)
+	- [RimBrands] RemoveRimSizeRestrictions: Removes the outer radius restriction to make any rim available for all cars.
+	- [BrandX] NoRimSize: Disables rim size checks for a specific brand.
+	- [BrandX] HideBrandName: Hides brand name on rim selection screen for a specific brand.
 + Adds custom attributes to allow even more customization options: (Extra Customization needs to be enabled to make custom attributes work.)
-    - SHOWENGINE (Boolean) : Allows the player to see engine and neon through the hood.
-    - SHOWTRUNK (Boolean) : Allows the player to see trunk audio components and neon through the trunk.
-    - TRUNKUNDER (Key) : Sets the under part of the trunk. Works like the HOODUNDER attribute, which is available for hoods.
+	- SHOWENGINE (Boolean) : Allows the player to see engine and neon through the hood.
+	- SHOWTRUNK (Boolean) : Allows the player to see trunk audio components and neon through the trunk.
+	- TRUNKUNDER (Key) : Sets the under part of the trunk. Works like the HOODUNDER attribute, which is available for hoods.
 	- NUMSLOTS (Integer) : Declares the number of component slots a Trunk Audio Layout has. If not present, the "default" hardcoded values from the game will be used.
 	- FRONT_TIRE_OFFSET (Floating) : Adds offset (spacers) to the front wheels. This attribute can be added to Fender and Wide Body parts.
 	- REAR_TIRE_OFFSET (Floating) : Adds offset (spacers) to the rear wheels. This attribute can be added to Quarter Panel and Wide Body parts.
++ Implements use of strings for AI Opponent names like later games and adds 150+ names from credits.
 
 Also check out:
 - [2003 Nissan Fairlady Z (Z33) "Extra Customization Showcase"](https://nfsmods.xyz/mod/2804)
 - [NFS Better License Plates](https://nfsmods.xyz/mod/2010)
+- [NFS Mods with Unlimiter (v3+) & Extended Customization Support](https://docs.google.com/spreadsheets/d/1BYqui01raMMtRGrJ63-2B-Agh9ag6RdPB-bd07pDIKI/edit#gid=0)
+
 
 # Technical Information
 If you want everything to work properly:
@@ -70,10 +76,11 @@ F9BB4F25 - VISUAL_PART_ATTACHMENT4
 F9BB4F26 - VISUAL_PART_ATTACHMENT5
 2D4C819A - RIMS_BRAND_CUSTOM
 2FBD9289 - RIMS_BRAND_ADVAN
+XXXXXXXX - RACERNAME_001-XXX (To make random AI Opponent names in Quick Race mode work)
 ```
 
 Note: Binary scripts which will do these automatically for you are available in the release pack.
 
 # Download
-You can [download Unlimiter](https://github.com/nlgzrgn/NFSU2Unlimiter/releases) from Releases page, or from [NFSMods.xyz](https://www.nfsmods.xyz).
+You can [download Unlimiter](https://github.com/nlgxzef/NFSU2Unlimiter/releases) from Releases page, or from [NFSMods.xyz](https://www.nfsmods.xyz).
 If you want to compile it yourself, you can download the source code from the green Clone or Download button up there.

@@ -87,6 +87,27 @@ bool IsNoRimSize(DWORD BrandNameHash)
     return 0;
 }
 
+bool IsNoBrandName(DWORD BrandNameHash)
+{
+    CIniReader RimBrandsINI("UnlimiterData\\_RimBrands.ini");
+
+    int RimBrandsCount = RimBrandsINI.ReadInteger("RimBrands", "NumberOfRimBrands", -1);
+    if (RimBrandsCount == -1) return 0;
+
+    for (int i = 0; i <= RimBrandsCount; i++)
+    {
+        sprintf(RimBrandID, "Brand%d", i);
+        sprintf(RimBrandName, RimBrandsINI.ReadString(RimBrandID, "BrandName", ""));
+        int hsh = bStringHash(RimBrandName);
+        if (BrandNameHash == bStringHash(RimBrandName))
+        {
+            return RimBrandsINI.ReadInteger(RimBrandID, "HideBrandName", 0) != 0;
+        }
+    }
+
+    return 0;
+}
+
 bool IsRimAvailable(int CarTypeID, DWORD* CarPart, DWORD BrandNameHash)
 {
     bool IsAvailable = 1; // al MAPDST
@@ -103,10 +124,13 @@ bool IsRimAvailable(int CarTypeID, DWORD* CarPart, DWORD BrandNameHash)
     if ((*((BYTE*)CarPart + 5) & 0xE0) != 0 || (BrandNameHash != bStringHash("STOCK")))
         IsStock = 0;
 
+    CIniReader RimBrandsINI("UnlimiterData\\_RimBrands.ini");
+    bool RemoveRimSizeRestrictions = RimBrandsINI.ReadInteger("RimBrands", "RemoveRimSizeRestrictions", 0) != 0;
+
     if (CarPart_GetAppliedAttributeUParam(CarPart, bStringHash("BRAND_NAME"), 0) == BrandNameHash)
     {
         RimOuterRadius = *(BYTE*)((BYTE*)CarTypeInfo + 0xDC);
-        if ((CarPart_GetAppliedAttributeUParam(CarPart, 0xCE7D8DB5, 0) == RimOuterRadius) || (IsNoRimSize(BrandNameHash)))
+        if ((CarPart_GetAppliedAttributeUParam(CarPart, 0xCE7D8DB5, 0) == RimOuterRadius) || (IsNoRimSize(BrandNameHash)) || RemoveRimSizeRestrictions)
         {
             UnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
             if (UnlockSystem_IsCarPartUnlocked(UnlockFilter, 29, CarPart, *(int*)0x8389B0))
