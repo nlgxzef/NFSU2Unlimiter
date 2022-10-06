@@ -8,7 +8,7 @@
 using namespace std;
 
 int CarCount, CarArraySize, TrafficCarCount, TheCounter;
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, ExtraCustomization, FNGFix, CabinNeonFix, RaceEngageDialogFix, RandomNameHook;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, ExtraCustomization, FNGFix, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, RemoveRimSizeRestrictions;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -245,6 +245,8 @@ int Init()
 			injector::WriteMemory(0x79CA8C, &ChooseRimBrand_Setup, true); // ChooseRimBrand::vtable
 
 			// Remove rim size restrictions
+			RemoveRimSizeRestrictions = RimBrandsINI.ReadInteger("RimBrands", "RemoveRimSizeRestrictions", 0) != 0;
+
 			injector::MakeJMP(0x539B70, IsRimAvailable, true); // 4 references
 
 			// Allow brands to hide their names on rim selection screen

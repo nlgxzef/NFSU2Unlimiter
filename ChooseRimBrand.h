@@ -121,13 +121,10 @@ bool IsRimAvailable(int CarTypeID, DWORD* CarPart, DWORD BrandNameHash)
 
     CarTypeInfo = GetCarTypeInfo(CarTypeID);
 
-    if ((*((BYTE*)CarPart + 5) & 0xE0) != 0 || (BrandNameHash != bStringHash("STOCK")))
+    if ((*((BYTE*)CarPart + 5) & 0xE0) != 0 || (BrandNameHash != 0x3B83203)) // "STOCK"
         IsStock = 0;
 
-    CIniReader RimBrandsINI("UnlimiterData\\_RimBrands.ini");
-    bool RemoveRimSizeRestrictions = RimBrandsINI.ReadInteger("RimBrands", "RemoveRimSizeRestrictions", 0) != 0;
-
-    if (CarPart_GetAppliedAttributeUParam(CarPart, bStringHash("BRAND_NAME"), 0) == BrandNameHash)
+    if (CarPart_GetAppliedAttributeUParam(CarPart, 0xEBB03E66, 0) == BrandNameHash) // "BRAND_NAME"
     {
         RimOuterRadius = *(BYTE*)((BYTE*)CarTypeInfo + 0xDC);
         if ((CarPart_GetAppliedAttributeUParam(CarPart, 0xCE7D8DB5, 0) == RimOuterRadius) || (IsNoRimSize(BrandNameHash)) || RemoveRimSizeRestrictions)

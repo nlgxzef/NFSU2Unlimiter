@@ -29,8 +29,6 @@ Features:
 + Implements use of strings for AI Opponent names like later games and adds 150+ names from credits.
 
 Also check out:
-- [2003 Nissan Fairlady Z (Z33) "Extra Customization Showcase"](https://nfsmods.xyz/mod/2804)
-- [NFS Better License Plates](https://nfsmods.xyz/mod/2010)
 - [NFS Mods with Unlimiter (v3+) & Extended Customization Support](https://docs.google.com/spreadsheets/d/1BYqui01raMMtRGrJ63-2B-Agh9ag6RdPB-bd07pDIKI/edit#gid=0)
 
 
