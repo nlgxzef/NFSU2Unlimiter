@@ -1,9 +1,13 @@
 #pragma once
 
+#define SingleCarTypeInfoBlockSize 0x890
+#define SingleCarPartSize 0xE
+
 #define _FECarConfigRef 0x8389AC
 #define _FEDatabase 0x850078
 #define _CarPartDB 0x8A2B68
 #define _CarTypeInfoArray 0x8A1CCC
+#define _CarPartPartsTable 0x8A1CC0
 #define _TheGameFlowManager 0x8654A4
 #define _CarSlotIDNames 0x802DE8
 #define _CarPartIDNames 0x803338
