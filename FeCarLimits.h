@@ -16,6 +16,12 @@ struct FETunedCar : FEStockCar
 {
 	unsigned int Parts[170];
 	unsigned int Dyno[92];
+
+	void InitializeFromStockCar(unsigned int hash, FEStockCar* stockCar)
+	{
+		static auto _InitializeFromStockCar = (void(__thiscall*)(FETunedCar*, unsigned int, FEStockCar*))0x00516B90;
+		_InitializeFromStockCar(this, hash, stockCar);
+	}
 };
 
 struct FEOnlineCar : FETunedCar
@@ -25,7 +31,14 @@ struct FEOnlineCar : FETunedCar
 
 struct FECareerCar : FETunedCar
 {
-	int unk3[241];
+	int unk3[240];
+	BYTE unk4[4];
+
+	void ReserParams()
+	{
+		static auto _ReserParams = (void(__thiscall*)(void*))0x00503E70;
+		_ReserParams(this->unk3);
+	}
 };
 
 struct FEPlayerCarDB
@@ -326,7 +339,20 @@ bool __fastcall HasFreeTunedCar()
 	return false;
 }
 
-void* __fastcall GetTunedCarByHandle(FEPlayerCarDB*, int, unsigned int hash)
+FECareerCar* __fastcall GetCurrentCareerCar(FEPlayerCarDB*, int, unsigned int hash)
+{
+	for (int i = 0; i < FEPlayerCarDB_Player1->NumCareerCars; i++)
+	{
+		if (FEPlayerCarDB_Player1->CareerCars[i].Hash == hash)
+		{
+			return FEPlayerCarDB_Player1->pCareerCars[i];
+		}
+	}
+
+	return nullptr;
+}
+
+void* __fastcall GetTunedCarByHandle(FEPlayerCarDB* player, int, unsigned int hash)
 {
 	for (int i = 0; i < 20; i++)
 	{
@@ -341,15 +367,7 @@ void* __fastcall GetTunedCarByHandle(FEPlayerCarDB*, int, unsigned int hash)
 		}
 	}
 
-	for (int i = 0; i < FEPlayerCarDB_Player1->NumCareerCars; i++)
-	{
-		if (FEPlayerCarDB_Player1->CareerCars[i].Hash == hash)
-		{
-			return FEPlayerCarDB_Player1->pCareerCars[i];
-		}
-	}
-
-	return nullptr;
+	return GetCurrentCareerCar(player, 0, hash);
 }
 
 unsigned int __cdecl TunedCarHash(char* str, int)
@@ -379,6 +397,27 @@ unsigned int __cdecl TunedCarHash(char* str, int)
 	return FEngHashString(str, num);
 }
 
+void __fastcall CreateCareerCar(FEPlayerCarDB*, int, int index, unsigned int stockHash)
+{
+	auto careerCar = GetCurrentCareerCar(0, 0, FEngHashString("CAREER_SLOT_%d", index));
+	auto stockCar = GetStockCarByHash(0, 0, stockHash);
+
+	careerCar->InitializeFromStockCar(careerCar->Hash, stockCar);
+	careerCar->Filter = 4;
+	careerCar->unk4[1] = 1;
+}
+
+void __fastcall BuyCar(void* _this, int, unsigned int hash, unsigned int stockHash)
+{
+	auto careerCar = GetCurrentCareerCar(0, 0, hash);
+	careerCar->ReserParams();
+	auto stockCar = GetStockCarByHash(0, 0, stockHash);
+
+	careerCar->InitializeFromStockCar(careerCar->Hash, stockCar);
+	careerCar->Filter = 4;
+	careerCar->unk4[1] = 1;
+}
+
 void InitFeCarLimits()
 {
 	injector::MakeCALL(0x0052A8A8, DefaultStockCars);
@@ -394,4 +433,7 @@ void InitFeCarLimits()
 	injector::MakeJMP(0x005035C0, GetTunedCarByHandle);
 	injector::MakeCALL(0x0052A75D, TunedCarHash);
 	injector::MakeCALL(0x0052A7D2, TunedCarHash);
+	injector::MakeJMP(0x00503680, GetCurrentCareerCar);
+	injector::MakeJMP(0x005348E0, CreateCareerCar);
+	injector::MakeJMP(0x00496050, BuyCar);
 }
