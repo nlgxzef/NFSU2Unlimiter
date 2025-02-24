@@ -38,6 +38,7 @@ char CarININame[MAX_PATH] = "";
 #include "RandomCharacterNames.h"
 #include "Helpers.h"
 #include "CodeCaves.h"
+#include "FeCarLimits.h"
 
 int Init()
 {
@@ -286,6 +287,11 @@ int Init()
 		injector::MakeCALL(0x53EED8, GetRandomCharacterNames, true); // RaceStarter::AddAIOpponentCars
 		injector::MakeCALL(0x53F043, GetRandomCharacterNames, true); // RaceStarter::AddRandomEncounterCars
 		injector::MakeCALL(0x56DA3B, GetRandomCharacterNames, true); // DriftManager::BuildLeaderBoard
+	}
+
+	if (Settings.ReadInteger("Misc", "ExtendFeCarLimits", 0) != 0)
+	{
+		InitFeCarLimits();
 	}
 
 	return 0;
