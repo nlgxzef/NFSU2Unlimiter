@@ -1,6 +1,24 @@
 #pragma once
 #include "includes\injector\injector.hpp"
 
+#define SAVE_REGS_EDX __asm\
+{\
+	__asm push ebx\
+	__asm push ecx\
+	__asm push eax\
+	__asm push edi\
+	__asm push esi\
+}\
+
+#define RESTORE_REGS_EDX __asm\
+{\
+	__asm pop esi\
+	__asm pop edi\
+	__asm pop eax\
+	__asm pop ecx\
+	__asm pop ebx\
+}\
+
 struct FEStockCar
 {
 	int vTable;
@@ -81,6 +99,42 @@ struct CarTypeInfo
 
 CarTypeInfo*& CarTypeInfos = *(CarTypeInfo**)0x008A1CCC;
 
+struct CombinedPointers
+{
+	FEStockCar* pStockCars1[48];
+	FEStockCar* pStockCars2[48];
+	FETunedCar* pTunedCars1[20];
+	FETunedCar* pTunedCars2[20];
+	FECareerCar* pCareerCars1[5];
+	FECareerCar* pCareerCars2[5];
+	FEStockCar* pSponsorCars1[12];
+	FEStockCar* pSponsorCars2[12];
+	FEOnlineCar* pOnlineCars1[6];
+	FEOnlineCar* pOnlineCars2[6];
+};
+
+FEStockCar* CombinedCarPointers[182];
+
+void InitCombinePointers()
+{
+	CombinedPointers* combined = (CombinedPointers*)CombinedCarPointers;
+
+	memcpy(combined->pStockCars1, FEPlayerCarDB_Player1->pStockCars, 48 * 4);
+	memcpy(combined->pStockCars2, FEPlayerCarDB_Player2->pStockCars, 48 * 4);
+
+	memcpy(combined->pTunedCars1, FEPlayerCarDB_Player1->pTunedCars, 20 * 4);
+	memcpy(combined->pTunedCars2, FEPlayerCarDB_Player2->pTunedCars, 20 * 4);
+
+	memcpy(combined->pCareerCars1, FEPlayerCarDB_Player1->pCareerCars, 5 * 4);
+	memcpy(combined->pCareerCars2, FEPlayerCarDB_Player2->pCareerCars, 5 * 4);
+
+	memcpy(combined->pSponsorCars1, FEPlayerCarDB_Player1->pSponsorCars, 12 * 4);
+	memcpy(combined->pSponsorCars2, FEPlayerCarDB_Player2->pSponsorCars, 12 * 4);
+
+	memcpy(combined->pOnlineCars1, FEPlayerCarDB_Player1->pOnlineCars, 6 * 4);
+	memcpy(combined->pOnlineCars2, FEPlayerCarDB_Player2->pOnlineCars, 6 * 4);
+}
+
 void __fastcall DefaultStockCars(FEPlayerCarDB* player1, int, int)
 {
 	player1->DefaultStockCars();
@@ -123,59 +177,21 @@ void __fastcall DefaultStockCars(FEPlayerCarDB* player1, int, int)
 				}
 			}
 		}
-
-		if (FEPlayerCarDB_Player2->NumStockCars > 0)
-		{
-			FEPlayerCarDB_Player2->ResetPointers();
-		}
 	}
-}
 
-struct CombinedPointers
-{
-	FEStockCar* pStockCars1[48];
-	FEStockCar* pStockCars2[48];
-	FETunedCar* pTunedCars1[20];
-	FETunedCar* pTunedCars2[20];
-	FECareerCar* pCareerCars1[5];
-	FECareerCar* pCareerCars2[5];
-	FEStockCar* pSponsorCars1[12];
-	FEStockCar* pSponsorCars2[12];
-	FEOnlineCar* pOnlineCars1[6];
-	FEOnlineCar* pOnlineCars2[6];
-};
-
-void InitCombinePointers(FEStockCar** pointers)
-{
-	CombinedPointers* combined = (CombinedPointers*)pointers;
-
-	memcpy(combined->pStockCars1, FEPlayerCarDB_Player1->pStockCars, 48 * 4);
-	memcpy(combined->pStockCars2, FEPlayerCarDB_Player2->pStockCars, 48 * 4);
-
-	memcpy(combined->pTunedCars1, FEPlayerCarDB_Player1->pTunedCars, 20 * 4);
-	memcpy(combined->pTunedCars2, FEPlayerCarDB_Player2->pTunedCars, 20 * 4);
-
-	memcpy(combined->pCareerCars1, FEPlayerCarDB_Player1->pCareerCars, 5 * 4);
-	memcpy(combined->pCareerCars2, FEPlayerCarDB_Player2->pCareerCars, 5 * 4);
-
-	memcpy(combined->pSponsorCars1, FEPlayerCarDB_Player1->pSponsorCars, 12 * 4);
-	memcpy(combined->pSponsorCars2, FEPlayerCarDB_Player2->pSponsorCars, 12 * 4);
-
-	memcpy(combined->pOnlineCars1, FEPlayerCarDB_Player1->pOnlineCars, 6 * 4);
-	memcpy(combined->pOnlineCars2, FEPlayerCarDB_Player2->pOnlineCars, 6 * 4);
+	FEPlayerCarDB_Player1->ResetPointers();
+	FEPlayerCarDB_Player2->ResetPointers();
+	InitCombinePointers();
 }
 
 FEStockCar* __fastcall GetCarFiltered(FEPlayerCarDB*, int, unsigned int filter, FEStockCar* past)
 {
-	FEStockCar* pointers[182];
-	InitCombinePointers(pointers);
-
 	int prev = -1;
 	if (past)
 	{
 		for (int i = 0; i < 182; i++)
 		{
-			if (pointers[i] == past)
+			if (CombinedCarPointers[i] == past)
 			{
 				prev = i;
 			}
@@ -185,7 +201,7 @@ FEStockCar* __fastcall GetCarFiltered(FEPlayerCarDB*, int, unsigned int filter, 
 	FEStockCar* result = nullptr;
 	for (int i = prev + 1; i < 182; i++)
 	{
-		FEStockCar* record = pointers[i];
+		FEStockCar* record = CombinedCarPointers[i];
 		if (record && record->unk2 && ((record->Filter & filter) != 0))
 		{
 			result = record;
@@ -198,13 +214,10 @@ FEStockCar* __fastcall GetCarFiltered(FEPlayerCarDB*, int, unsigned int filter, 
 
 FEStockCar* __fastcall GetCarRecordByHandle(FEPlayerCarDB*, int, unsigned int hash)
 {
-	FEStockCar* pointers[182];
-	InitCombinePointers(pointers);
-
 	FEStockCar* result = nullptr;
 	for (int i = 0; i < 182; i++)
 	{
-		FEStockCar* record = pointers[i];
+		FEStockCar* record = CombinedCarPointers[i];
 		if (record && record->unk2 && record->Hash == hash)
 		{
 			return record;
@@ -418,6 +431,44 @@ void __fastcall BuyCar(void* _this, int, unsigned int hash, unsigned int stockHa
 	careerCar->unk4[1] = 1;
 }
 
+__declspec(naked) void StartQuickRaceHook1()
+{
+	static constexpr auto hExit = 0x00525FC1;
+
+	__asm
+	{
+		mov edx, offset CombinedCarPointers;
+
+		jmp hExit;
+	}
+}
+
+__declspec(naked) void StartQuickRaceHook2()
+{
+	static constexpr auto hExit = 0x00525FD3;
+
+	__asm
+	{
+		add edx, 04;
+		cmp eax, 0xB6;
+
+		jmp hExit;
+	}
+}
+
+__declspec(naked) void StartQuickRaceHook3()
+{
+	static constexpr auto hExit = 0x00525FE2;
+
+	__asm
+	{
+		mov edi, offset CombinedCarPointers;
+		mov edi, [edi + eax * 4];
+
+		jmp hExit;
+	}
+}
+
 void InitFeCarLimits()
 {
 	injector::MakeCALL(0x0052A8A8, DefaultStockCars);
@@ -436,4 +487,7 @@ void InitFeCarLimits()
 	injector::MakeJMP(0x00503680, GetCurrentCareerCar);
 	injector::MakeJMP(0x005348E0, CreateCareerCar);
 	injector::MakeJMP(0x00496050, BuyCar);
+	injector::MakeJMP(0x00525FBB, StartQuickRaceHook1);
+	injector::MakeJMP(0x00525FCD, StartQuickRaceHook2);
+	injector::MakeJMP(0x00525FDB, StartQuickRaceHook3);
 }
