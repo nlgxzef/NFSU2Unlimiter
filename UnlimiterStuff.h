@@ -39,10 +39,13 @@ char CarININame[MAX_PATH] = "";
 #include "Helpers.h"
 #include "CodeCaves.h"
 #include "FeCarLimits.h"
+#include "Config.h"
 
 int Init()
 {
 	CIniReader Settings("NFSU2UnlimiterSettings.ini");
+
+	InitConfig();
 
 	// Main
 	AllNewCarsInitiallyUnlocked = Settings.ReadInteger("Main", "AllNewCarsInitiallyUnlocked", 0) != 0;

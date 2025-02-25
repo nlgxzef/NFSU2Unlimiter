@@ -26,18 +26,24 @@ bool IsTraffic(BYTE CarTypeID)
 
 bool IsInitiallyUnlocked(BYTE CarTypeID)
 {
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(TheCounter));
+	auto config = GetCarConfigByType(CarTypeID);
+	if (config && config->InitiallyUnlocked != ConfigState_Default)
+	{
+		return config->InitiallyUnlocked == ConfigState_Enabled;
+	}
 
-	CIniReader UnlimiterCarData(CarININame);
-	return (UnlimiterCarData.ReadInteger("Main", "InitiallyUnlocked", 0) == 1) || AllNewCarsInitiallyUnlocked;
+	return AllNewCarsInitiallyUnlocked;
 }
 
 bool CanCarBeDrivenByAI(BYTE CarTypeID)
 {
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(TheCounter));
+	auto config = GetCarConfigByType(CarTypeID);
+	if (config && config->CanBeDrivenByAI != ConfigState_Default)
+	{
+		return config->CanBeDrivenByAI == ConfigState_Enabled;
+	}
 
-	CIniReader UnlimiterCarData(CarININame);
-	return (UnlimiterCarData.ReadInteger("Main", "CanBeDrivenByAI", 1) == 1) || AllNewCarsCanBeDrivenByAI;
+	return AllNewCarsCanBeDrivenByAI;
 }
 
 void FillUpPerformanceConfig()

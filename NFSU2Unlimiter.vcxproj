@@ -94,6 +94,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Config.h" />
     <ClInclude Include="FeCarLimits.h" />
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="CarCustomizeManager.h" />
