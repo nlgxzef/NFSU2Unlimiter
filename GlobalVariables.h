@@ -21,3 +21,5 @@
 #define _CareerStringTable 0x838428
 #define _PerformanceClassRange 0x7A1A84
 #define _FEGroup_vtbl 0x79B8E8
+int* ForceCarLOD = (int*)0x00802728;
+int* ForceTireLOD = (int*)0x0080272C;

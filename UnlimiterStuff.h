@@ -294,5 +294,12 @@ int Init()
 		InitFeCarLimits();
 	}
 
+	int forceLod = Settings.ReadInteger("Misc", "ForceLOD", -1);
+	if (forceLod > -1)
+	{
+		*ForceCarLOD = forceLod;
+		*ForceTireLOD = forceLod;
+	}
+
 	return 0;
 }
