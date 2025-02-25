@@ -149,6 +149,7 @@ void __declspec(naked) DoUnlimiterStuffCodeCave2()
 		injector::WriteMemory<int>(0x89D424, CarPartCount + 1, true);
 
 		injector::WriteMemory<int>(0x5F04A4, CarPartCount, true); // sub_5F0320
+		injector::WriteMemory<int>(0x5F0675, CarPartCount + 1, true); // sub_5F04D0
 	}
 
 	// Continue
