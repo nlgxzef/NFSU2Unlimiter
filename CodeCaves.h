@@ -21,6 +21,39 @@ void __declspec(naked) CarLotFixCodeCaveRead()
 	}
 }
 
+float* flt_7FC120;
+float* flt_7FC1D8;
+void FixComputeMiscStats()
+{
+	if (CarCount > 46)
+	{
+		flt_7FC120 = new float[CarCount];
+		flt_7FC1D8 = new float[CarCount];
+
+		// Copy original hardcoded values
+		for (int i = 0; i < 46; i++)
+		{
+			flt_7FC120[i] = *((float*)0x007FC120 + i);
+			flt_7FC1D8[i] = *((float*)0x007FC1D8 + i);
+		}
+
+		// TODO: No idea what these float vlaues are for so just use originals to fill the rest of the cars.
+		for (int i = 46, j = 0; i < CarCount; i++, j++)
+		{
+			if (j > 45)
+			{
+				j = 0;
+			}
+
+			flt_7FC120[i] = *((float*)0x007FC120 + j);
+			flt_7FC1D8[i] = *((float*)0x007FC1D8 + j);
+		}
+
+		injector::WriteMemory(0x005B089F, flt_7FC120, true);
+		injector::WriteMemory(0x005B08D6, flt_7FC1D8, true);
+	}
+}
+
 // 0x636BF7
 void __declspec(naked) DoUnlimiterStuffCodeCave()
 {
@@ -117,7 +150,7 @@ void __declspec(naked) DoUnlimiterStuffCodeCave()
 	injector::WriteMemory(0x529D3B, UnlockedAtBootQuickRaceRestOfWorld, true); // Start
 	injector::WriteMemory(0x529D48, UnlockedAtBootQuickRaceRestOfWorld + 4 * InitiallyUnlockedCarCount, true); // End
 
-
+	FixComputeMiscStats();
 
 	// Continue
 	_asm popad;
