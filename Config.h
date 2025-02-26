@@ -32,6 +32,8 @@ struct RimBrandConfig
 	DWORD String;
 	bool NoRimSize;
 	bool HideBrandName;
+	bool Suv;
+	bool Car;
 };
 
 struct GeneralConfig : ShadedConfig
@@ -115,6 +117,8 @@ void InitRimBrands()
 		rimBrand->String = bStringHash(RimBrandsINI.ReadString(RimBrandID, "String", ""));
 		rimBrand->NoRimSize = RimBrandsINI.ReadInteger(RimBrandID, "NoRimSize", 0) == 1;
 		rimBrand->HideBrandName = RimBrandsINI.ReadInteger(RimBrandID, "HideBrandName", 0) == 1;
+		rimBrand->Suv = RimBrandsINI.ReadInteger(RimBrandID, "Suv", 0) == 1;
+		rimBrand->Car = RimBrandsINI.ReadInteger(RimBrandID, "Car", 0) == 1;
 
 		g_Config.RimBrands.push_back(rimBrand);
 	}

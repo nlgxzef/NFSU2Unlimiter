@@ -3,7 +3,7 @@
 #include "InGameFunctions.h"
 #include "includes\IniReader.h"
 
-void __fastcall ChooseRimBrand_Setup(DWORD* ChooseRimBrand, void* EDX_Unused)
+void __stdcall ChooseRimBrand_Setup(DWORD* ChooseRimBrand, bool isSuv)
 {
 	char const* ChooseRimBrandPackage = (char const*)ChooseRimBrand[1];
 
@@ -14,46 +14,34 @@ void __fastcall ChooseRimBrand_Setup(DWORD* ChooseRimBrand, void* EDX_Unused)
 	int RimBrandsCount = g_Config.RimBrands.size();
 	for (int i = 0; i < RimBrandsCount; i++)
 	{
+		if (isSuv && !g_Config.RimBrands[i]->Suv)
+		{
+			continue;
+		}
+
+		if (!isSuv && !g_Config.RimBrands[i]->Car)
+		{
+			continue;
+		}
+
 		ChooseRimBrand_AddRimCategory(ChooseRimBrand, g_Config.RimBrands[i]->Name, g_Config.RimBrands[i]->Icon, g_Config.RimBrands[i]->String);
 	}
+}
 
-	// Check installed part
-	DWORD* CarPart = CarCustomizeManager_GetInstalledPart((DWORD*)gCarCustomizeManager, 29);
-	if (CarPart)
-	{
-		unsigned int BrandNameHash = CarPart_GetAppliedAttributeUParam(CarPart, bStringHash("BRAND_NAME"), 0);
-		if (BrandNameHash)
-		{
-			if (!FEngGetLastButton(ChooseRimBrandPackage))
-			{
-				FEngSetLastButton(ChooseRimBrandPackage, BrandNameHash);
-			}
-		}
-	}
+void __declspec(naked) ChooseRimBrandCave()
+{
+	static constexpr auto cExit = 0x0054677A;
 
-	if (FEngGetLastButton(ChooseRimBrandPackage))
+	__asm
 	{
-		DWORD* v13 = (DWORD*)ChooseRimBrand[20];
-		for (int i = 1; i<= (RimBrandsCount + 1); ++i) // +1 = Stock and custom
-		{
-			DWORD* v14 = v13 ? v13 - 4 : 0;
-			DWORD* v15 = ChooseRimBrand == (DWORD*)-80 ? 0 : (DWORD*)((char*)ChooseRimBrand + 76);
-			if ((DWORD*)v14 == v15)
-				break;
+		pushad;
+		push al;
+		push ebx;
+		call ChooseRimBrand_Setup;
+		popad;
 
-			if (*(DWORD*)(v14 + 72) == FEngGetLastButton(ChooseRimBrandPackage))
-			{
-				(*(void(__thiscall**)(DWORD*, int))(ChooseRimBrand[19] + 32))(ChooseRimBrand + 19, i);
-				break;
-			}
-			v13 = (DWORD*)*(DWORD*)(v14 + 4);
-		}
+		jmp cExit;
 	}
-	else
-	{
-		(*(void(__thiscall**)(DWORD*, int))(ChooseRimBrand[19] + 32))(ChooseRimBrand + 19, 0);
-	}
-	(*(void(__thiscall**)(DWORD*))(*(DWORD*)ChooseRimBrand + 16))(ChooseRimBrand);
 }
 
 bool IsNoRimSize(DWORD BrandNameHash)
