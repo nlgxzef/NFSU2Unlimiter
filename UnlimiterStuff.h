@@ -38,10 +38,14 @@ char CarININame[MAX_PATH] = "";
 #include "RandomCharacterNames.h"
 #include "Helpers.h"
 #include "CodeCaves.h"
+#include "FeCarLimits.h"
+#include "Config.h"
 
 int Init()
 {
 	CIniReader Settings("NFSU2UnlimiterSettings.ini");
+
+	InitConfig();
 
 	// Main
 	AllNewCarsInitiallyUnlocked = Settings.ReadInteger("Main", "AllNewCarsInitiallyUnlocked", 0) != 0;
@@ -113,8 +117,7 @@ int Init()
 		int RimBrandsCount = RimBrandsINI.ReadInteger("RimBrands", "NumberOfRimBrands", -1);
 		if (RimBrandsCount != -1)
 		{
-			injector::MakeCALL(0x5530A7, ChooseRimBrand_Setup, true); // ChooseRimBrand::ChooseRimBrand
-			injector::WriteMemory(0x79CA8C, &ChooseRimBrand_Setup, true); // ChooseRimBrand::vtable
+			injector::MakeJMP(0x0054654E, ChooseRimBrandCave);
 
 			// Remove rim size restrictions
 			RemoveRimSizeRestrictions = RimBrandsINI.ReadInteger("RimBrands", "RemoveRimSizeRestrictions", 0) != 0;
@@ -286,6 +289,18 @@ int Init()
 		injector::MakeCALL(0x53EED8, GetRandomCharacterNames, true); // RaceStarter::AddAIOpponentCars
 		injector::MakeCALL(0x53F043, GetRandomCharacterNames, true); // RaceStarter::AddRandomEncounterCars
 		injector::MakeCALL(0x56DA3B, GetRandomCharacterNames, true); // DriftManager::BuildLeaderBoard
+	}
+
+	if (Settings.ReadInteger("Misc", "ExtendFeCarLimits", 0) != 0)
+	{
+		InitFeCarLimits();
+	}
+
+	int forceLod = Settings.ReadInteger("Misc", "ForceLOD", -1);
+	if (forceLod > -1)
+	{
+		*ForceCarLOD = forceLod;
+		*ForceTireLOD = forceLod;
 	}
 
 	return 0;

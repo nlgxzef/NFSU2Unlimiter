@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
 #include "includes\IniReader.h"
+#include "Config.h"
 
 // CarRenderInfo::Render
 
@@ -31,10 +32,13 @@ int LinkLicensePlateToTrunk_Game(int CarTypeID)
 
 int LinkLicensePlateToTrunk(int CarTypeID)
 {
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(CarTypeID));
+	auto config = GetCarConfigByType(CarTypeID);
+	if (config && config->LinkLicensePlateToTrunk != ConfigState_Default)
+	{
+		return config->LinkLicensePlateToTrunk == ConfigState_Enabled;
+	}
 
-	CIniReader UnlimiterCarData(CarININame);
-	return UnlimiterCarData.ReadInteger("CarRenderInfo", "LinkLicensePlateToTrunk", LinkLicensePlateToTrunk_Game(CarTypeID));
+	return LinkLicensePlateToTrunk_Game(CarTypeID);
 }
 
 void __declspec(naked) LinkLicensePlateToTrunkCodeCave()
@@ -56,10 +60,13 @@ void __declspec(naked) LinkLicensePlateToTrunkCodeCave()
 
 int ShowTrunkUnderInFE(int CarTypeID)
 {
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(CarTypeID));
+	auto config = GetCarConfigByType(CarTypeID);
+	if (config && config->ShowTrunkUnderInFE != ConfigState_Default)
+	{
+		return config->ShowTrunkUnderInFE == ConfigState_Enabled;
+	}
 
-	CIniReader UnlimiterCarData(CarININame);
-	return UnlimiterCarData.ReadInteger("CarRenderInfo", "ShowTrunkUnderInFE", ShowTrunkUnderInFE_Game(CarTypeID));
+	return  ShowTrunkUnderInFE_Game(CarTypeID);
 }
 
 DWORD DoRemoveCentreBrakeWithCustomSpoiler = 0x615823;
@@ -67,10 +74,13 @@ DWORD DontRemoveCentreBrakeWithCustomSpoiler = 0x61582B;
 
 int RemoveCentreBrakeWithCustomSpoiler(int CarTypeID)
 {
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(CarTypeID));
+	auto config = GetCarConfigByType(CarTypeID);
+	if (config && config->RemoveCentreBrakeWithCustomSpoiler != ConfigState_Default)
+	{
+		return config->RemoveCentreBrakeWithCustomSpoiler == ConfigState_Enabled;
+	}
 
-	CIniReader UnlimiterCarData(CarININame);
-	return UnlimiterCarData.ReadInteger("CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", RemoveCentreBrakeWithCustomSpoiler_Game(CarTypeID));
+	return  RemoveCentreBrakeWithCustomSpoiler_Game(CarTypeID);
 }
 
 void __declspec(naked) RemoveCentreBrakeWithCustomSpoilerCodeCave()
@@ -113,10 +123,13 @@ DWORD DoesNotHaveSunroof = 0x60C870;
 
 int HasSunroof(int CarTypeID)
 {
-	sprintf(CarININame, "UnlimiterData\\%s.ini", GetCarTypeName(CarTypeID));
+	auto config = GetCarConfigByType(CarTypeID);
+	if (config && config->HasSunroof != ConfigState_Default)
+	{
+		return config->HasSunroof == ConfigState_Enabled;
+	}
 
-	CIniReader UnlimiterCarData(CarININame);
-	return UnlimiterCarData.ReadInteger("CarRenderInfo", "HasSunroof", HasSunroof_Game(CarTypeID));
+	return HasSunroof_Game(CarTypeID);
 }
 
 void __declspec(naked) HasSunroofCodeCave()
@@ -292,7 +305,7 @@ void __declspec(naked) ShowEngineAttrCodeCave()
 			}
 		}
 	}
-	
+
 	_asm
 	{
 		//popad
@@ -347,7 +360,7 @@ void __declspec(naked) CarRenderInfoAttributesCodeCave()
 			}
 		}
 	}
-	
+
 
 	_asm
 	{
@@ -570,7 +583,7 @@ void __fastcall CarRenderInfo_RenderNeon(DWORD* CarRenderInfo, void* EDX_Unused,
 				ShowEngineThruHood = CarPart_GetAppliedAttributeUParam(HoodPart, bStringHash("SHOWENGINE"), 0);
 				if (ShowEngineThruHood) AnimationTime = 1.0;
 			}
-			
+
 			CarRenderInfo_RenderNeon2(
 				CarRenderInfo,
 				eView,
@@ -629,7 +642,7 @@ void __fastcall CarRenderInfo_RenderNeon(DWORD* CarRenderInfo, void* EDX_Unused,
 				ShowAudioThruTrunk = CarPart_GetAppliedAttributeUParam(TrunkPart, bStringHash("SHOWTRUNK"), 0);
 				if (ShowAudioThruTrunk) AnimationTime = 1.0;
 			}
-			
+
 			CarRenderInfo_RenderNeon2(
 				CarRenderInfo,
 				eView,
