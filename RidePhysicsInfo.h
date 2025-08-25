@@ -36,24 +36,23 @@ void __fastcall RidePhysicsInfo_RebuildPhysicsInfo(float* RidePhysicsInfo, void*
         float RearTireOffset = 0;
         if (WideBodyPart && (*((BYTE*)RideInfo + 2104 + 6) == 1)) // check has WIDE_BODY and its visibility
         {
-            AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, bStringHash("FRONT_TIRE_OFFSET"), 0);
+            AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
             FrontTireOffset = *(float*)&AttrVal;
-            AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, bStringHash("REAR_TIRE_OFFSET"), 0);
+            AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
             RearTireOffset = *(float*)&AttrVal;
         }
-        else
+        
+        if (FenderPart && (*((BYTE*)RideInfo + 2104 + 23) == 1)) // check has FENDER and its visibility
         {
-            if (FenderPart && (*((BYTE*)RideInfo + 2104 + 23) == 1)) // check has FENDER and its visibility
-            {
-                AttrVal = CarPart_GetAppliedAttributeUParam(FenderPart, bStringHash("FRONT_TIRE_OFFSET"), 0);
-                FrontTireOffset = *(float*)&AttrVal;
-            }
-            if (QuarterPart && (*((BYTE*)RideInfo + 2104 + 24) == 1)) // check has QUARTER and its visibility
-            {
-                AttrVal = CarPart_GetAppliedAttributeUParam(QuarterPart, bStringHash("REAR_TIRE_OFFSET"), 0);
-                RearTireOffset = *(float*)&AttrVal;
-            }
+            AttrVal = CarPart_GetAppliedAttributeUParam(FenderPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
+            FrontTireOffset += *(float*)&AttrVal;
         }
+        if (QuarterPart && (*((BYTE*)RideInfo + 2104 + 24) == 1)) // check has QUARTER and its visibility
+        {
+            AttrVal = CarPart_GetAppliedAttributeUParam(QuarterPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
+            RearTireOffset += *(float*)&AttrVal;
+        }
+        
 
         // Set wheel offsets
         CompleatCarPhysicsInfo[11] += FrontTireOffset;
@@ -122,4 +121,20 @@ void __fastcall RidePhysicsInfo_RebuildPhysicsInfo(float* RidePhysicsInfo, void*
             break;
         }
     }
+}
+
+float __fastcall RidePhysicsInfo_GetCamberPercent(DWORD* RidePhysicsInfo, void* EDX_Unused)
+{
+    int CarTypeID = *RidePhysicsInfo;
+    float result = .0f;
+
+    if (CarConfigs[CarTypeID].Main.SyncVisualPartsWithPhysics)
+    {
+        if (*((BYTE*)RidePhysicsInfo + 852))
+            result = .5f;
+        if (*((BYTE*)RidePhysicsInfo + 851))
+            return result + .5f;
+    }
+
+    return result;
 }

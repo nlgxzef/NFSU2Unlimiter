@@ -1,7 +1,6 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
 #include "ChooseRimBrand.h"
-#include "includes\IniReader.h"
 
 #define _BrandNameHash 0x839BBC
 
@@ -37,7 +36,7 @@ void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
     }
     else
     {
-        BrandName = CarCustomizeManager_GetBrandNameFromHash((DWORD*)gCarCustomizeManager_0, BrandNameHash);
+        BrandName = CarCustomizeManager_GetBrandNameFromHash((DWORD*)gCarCustomizeManager, BrandNameHash);
         FEngPrintf((DWORD*)RimsBrowser[77], "%s %s", BrandName, PartName);
     }
 
@@ -62,7 +61,7 @@ void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
 
         if (*(int*)_FEDatabase == 1)
         {
-            Cost = PlayerCareerState_GetCarPartCost((DWORD*)ThePlayerCareer, 29, TheCarPart);
+            Cost = PlayerCareerState_GetCarPartCost_Game((DWORD*)ThePlayerCareer, CAR_SLOT_ID::FRONT_WHEEL, TheCarPart);
             FEPrintf(RimsBrowserPackage, 0x380B632, "%d", Cost);
         }
         else
@@ -70,4 +69,20 @@ void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
             FEngSetInvisible_Pkg(RimsBrowserPackage, 0x380B632);
         }
     }
+
+    RefreshDetailsPane((char const*)RimsBrowser[1], RimsBrowser + 85, RimsBrowser + 84, (DWORD*)RimsBrowser[87]);
+}
+
+void __fastcall RimsBrowser_StartBrowsingRims(DWORD* RimsBrowser, void* EDX_Unused)
+{
+    RimsBrowser_StartBrowsingRims_Game(RimsBrowser);
+
+    SetDetailsPaneVisibility((char const*)RimsBrowser[1], 1);
+}
+
+void __fastcall RimsBrowser_StopBrowsingRims(DWORD* RimsBrowser, void* EDX_Unused, bool ass)
+{
+    RimsBrowser_StopBrowsingRims_Game(RimsBrowser, ass);
+
+    SetDetailsPaneVisibility((char const*)RimsBrowser[1], 0);
 }

@@ -1,37 +1,34 @@
 #pragma once
 #include "stdio.h"
 #include "InGameFunctions.h"
-#include "includes\IniReader.h"
+#include "Helpers.h"
 
-char RimBrandID[15];
 char RimBrandName[64];
-char RimBrandString[64];
-char RimBrandIcon[64];
 
 void __fastcall ChooseRimBrand_Setup(DWORD* ChooseRimBrand, void* EDX_Unused)
 {
+    // Read Part Options for the car
+    DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
+    int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
+    
     char const* ChooseRimBrandPackage = (char const*)ChooseRimBrand[1];
 
     // Add stock
-    ChooseRimBrand_AddRimCategory(ChooseRimBrand, bStringHash("STOCK"), bStringHash("VISUAL_RIMS_BRAND_STOCK"), bStringHash("RIMS_BRAND_STOCK"));// STOCK
+    ChooseRimBrand_AddRimCategory(ChooseRimBrand, CT_bStringHash("STOCK"), bStringHash("VISUAL_RIMS_BRAND_STOCK"), bStringHash("RIMS_BRAND_STOCK"));// STOCK
 
     // Read brand from ini
-    CIniReader RimBrandsINI("UnlimiterData\\_RimBrands.ini");
-    int RimBrandsCount = RimBrandsINI.ReadInteger("RimBrands", "NumberOfRimBrands", -1);
-    for (int i = 0; i <= RimBrandsCount; i++)
+    int RimBrandsCount = RimBrands.size();
+    for (int i = 0; i < RimBrandsCount; i++)
     {
-        sprintf(RimBrandID, "Brand%d", i);
-        sprintf(RimBrandName, RimBrandsINI.ReadString(RimBrandID, "BrandName", ""));
-        sprintf(RimBrandIcon, RimBrandsINI.ReadString(RimBrandID, "Texture", ""));
-        sprintf(RimBrandString, RimBrandsINI.ReadString(RimBrandID, "String", ""));
-        ChooseRimBrand_AddRimCategory(ChooseRimBrand, bStringHash(RimBrandName), bStringHash(RimBrandIcon), bStringHash(RimBrandString));
+        if (RemoveRimSizeRestrictions || (IsSUV(CarTypeID) && RimBrands[i].AvailableForSUVs) || (!IsSUV(CarTypeID) && RimBrands[i].AvailableForRegularCars))
+        ChooseRimBrand_AddRimCategory(ChooseRimBrand, RimBrands[i].BrandNameHash, RimBrands[i].TextureHash, RimBrands[i].StringHash);
     }
 
     // Check installed part
-    DWORD* CarPart = CarCustomizeManager_GetInstalledPart((DWORD*)gCarCustomizeManager, 29);
+    DWORD* CarPart = RideInfo_GetPart((DWORD*)gTheRideInfo, 29);
     if (CarPart)
     {
-        unsigned int BrandNameHash = CarPart_GetAppliedAttributeUParam(CarPart, bStringHash("BRAND_NAME"), 0);
+        unsigned int BrandNameHash = CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("BRAND_NAME"), 0);
         if (BrandNameHash)
         {
             if (!FEngGetLastButton(ChooseRimBrandPackage))
@@ -66,46 +63,30 @@ void __fastcall ChooseRimBrand_Setup(DWORD* ChooseRimBrand, void* EDX_Unused)
     (*(void(__thiscall**)(DWORD*))(*(DWORD*)ChooseRimBrand + 16))(ChooseRimBrand);
 }
 
-bool IsNoRimSize(DWORD BrandNameHash)
+int GetRimBrandIDFromHash(DWORD BrandNameHash)
 {
-    CIniReader RimBrandsINI("UnlimiterData\\_RimBrands.ini");
-
-    int RimBrandsCount = RimBrandsINI.ReadInteger("RimBrands", "NumberOfRimBrands", -1);
+    int RimBrandsCount = RimBrands.size();
     if (RimBrandsCount == -1) return 0;
 
     for (int i = 0; i <= RimBrandsCount; i++)
     {
-        sprintf(RimBrandID, "Brand%d", i);
-        sprintf(RimBrandName, RimBrandsINI.ReadString(RimBrandID, "BrandName", ""));
-        int hsh = bStringHash(RimBrandName);
-        if (BrandNameHash == bStringHash(RimBrandName))
+        if (BrandNameHash == RimBrands[i].BrandNameHash)
         {
-            return RimBrandsINI.ReadInteger(RimBrandID, "NoRimSize", 0) != 0;
+            return i;
         }
     }
 
     return 0;
 }
 
+bool IsNoRimSize(DWORD BrandNameHash)
+{
+    return RimBrands[GetRimBrandIDFromHash(BrandNameHash)].NoRimSize != 0;
+}
+
 bool IsNoBrandName(DWORD BrandNameHash)
 {
-    CIniReader RimBrandsINI("UnlimiterData\\_RimBrands.ini");
-
-    int RimBrandsCount = RimBrandsINI.ReadInteger("RimBrands", "NumberOfRimBrands", -1);
-    if (RimBrandsCount == -1) return 0;
-
-    for (int i = 0; i <= RimBrandsCount; i++)
-    {
-        sprintf(RimBrandID, "Brand%d", i);
-        sprintf(RimBrandName, RimBrandsINI.ReadString(RimBrandID, "BrandName", ""));
-        int hsh = bStringHash(RimBrandName);
-        if (BrandNameHash == bStringHash(RimBrandName))
-        {
-            return RimBrandsINI.ReadInteger(RimBrandID, "HideBrandName", 0) != 0;
-        }
-    }
-
-    return 0;
+    return RimBrands[GetRimBrandIDFromHash(BrandNameHash)].HideBrandName != 0;
 }
 
 bool IsRimAvailable(int CarTypeID, DWORD* CarPart, DWORD BrandNameHash)

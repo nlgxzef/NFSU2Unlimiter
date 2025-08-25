@@ -61,6 +61,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>includes</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -82,6 +83,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>includes</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,34 +92,68 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetDir)*.asi" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"  /y</Command>
+      <Command>copy "$(TargetDir)*.asi" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"  /y
+copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"  /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="bReleasePrintf.h" />
+    <ClInclude Include="BuyPerformanceParts.h" />
+    <ClInclude Include="BuyPerfPartWidget.h" />
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="CarCustomizeManager.h" />
     <ClInclude Include="CareerEventData.h" />
+    <ClInclude Include="CarLoader.h" />
+    <ClInclude Include="CarPart.h" />
+    <ClInclude Include="CarPartID.h" />
     <ClInclude Include="CarRenderInfo.h" />
+    <ClInclude Include="CarSlotID.h" />
+    <ClInclude Include="CarTypeInfo.h" />
+    <ClInclude Include="ChooseCustomizeCategory.h" />
     <ClInclude Include="ChooseDecalCategory.h" />
+    <ClInclude Include="ChooseDecalScreen.h" />
     <ClInclude Include="ChoosePaintScreen.h" />
+    <ClInclude Include="ChoosePaintShopCategory.h" />
+    <ClInclude Include="ChoosePerfCategory.h" />
+    <ClInclude Include="ChoosePerformancePackages.h" />
     <ClInclude Include="ChooseRimBrand.h" />
+    <ClInclude Include="ChooseSpinnerBrand.h" />
+    <ClInclude Include="ChooseVinylLayerScreen.h" />
     <ClInclude Include="CodeCaves.h" />
+    <ClInclude Include="CustomizationScreenManager.h" />
     <ClInclude Include="CustomizeNeonMenu.h" />
+    <ClInclude Include="DetailsPane.h" />
+    <ClInclude Include="DialogInterface.h" />
+    <ClInclude Include="FeCarLimits.h" />
+    <ClInclude Include="feDialogConfig.h" />
     <ClInclude Include="FEPackage.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="IcePartsBrowser.h" />
     <ClInclude Include="IceSelectionScreen.h" />
     <ClInclude Include="InGameFunctions.h" />
+    <ClInclude Include="InGameTypes.h" />
+    <ClInclude Include="LoadedSkin.h" />
+    <ClInclude Include="LoadedSkinLayer.h" />
+    <ClInclude Include="NeonPartsBrowser.h" />
+    <ClInclude Include="PartInfoWidget.h" />
     <ClInclude Include="PartSelectionScreen.h" />
+    <ClInclude Include="PerfPart.h" />
+    <ClInclude Include="PlayerCareerState.h" />
     <ClInclude Include="RandomCharacterNames.h" />
+    <ClInclude Include="ReplacementTextureEntry.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RideInfo.h" />
     <ClInclude Include="RidePhysicsInfo.h" />
     <ClInclude Include="RimsBrowser.h" />
+    <ClInclude Include="StarGazerGuide.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StreamingTrafficCarManager.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="UnlimiterData.h" />
     <ClInclude Include="UnlimiterStuff.h" />
     <ClInclude Include="UnlockablesMap.h" />
+    <ClInclude Include="UsedCarTextureInfo.h" />
     <ClInclude Include="UserCalls.h" />
   </ItemGroup>
   <ItemGroup>

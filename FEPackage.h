@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
-#include "includes\IniReader.h"
+#include "Helpers.h"
+#include "includes\ini.h"
 
 char ObjectName[64], ObjectPrefix[64];
 char CloneName[64], ClonePrefix[64];
@@ -13,33 +14,47 @@ bool __fastcall CloneObjectstoShowMoreItemsInMenu(DWORD* FEPackage, void* edx_un
 	int i;
 	DWORD* CloneTarget, * CloneDest, * CloneTargetChild, * CloneChild, * CloneChildLast;
 
-	CIniReader FNGFixesINI("UnlimiterData\\_FNGFixes.ini");
+	auto FNGFixesPath = CurrentWorkingDirectory / "UnlimiterData" / "_FNGFixes.ini";
+	mINI::INIFile FNGFixesINIFile(FNGFixesPath.string());
+	mINI::INIStructure FNGFixesINI;
+	FNGFixesINIFile.read(FNGFixesINI);
 
-	int FNGFixesCount = FNGFixesINI.ReadInteger("FNGFixes", "NumberOfFNGFixes", -1);
+	int FNGFixesCount = mINI_ReadInteger(FNGFixesINI, "FNGFixes", "NumberOfFNGFixes", -1);
 	if (FNGFixesCount == -1) return result;
+
 
 	for (int FNGFixID = 1; FNGFixID <= FNGFixesCount; FNGFixID++)
 	{
 		sprintf(FNGFixName, "FNG%d", FNGFixID);
-		if (stricmp((char*)FEPackage[3], FNGFixesINI.ReadString(FNGFixName, "FNGName", "")) == 0)
+		if (stricmp((char*)FEPackage[3], mINI_ReadString(FNGFixesINI, FNGFixName, "FNGName", "")) == 0)
 		{
-			int NewNumberOfObjects = FNGFixesINI.ReadInteger(FNGFixName, "NumberOfObjects", -1);
+			int NewNumberOfObjects = mINI_ReadInteger(FNGFixesINI, FNGFixName, "NumberOfObjects", -1);
+			bool HasNumberSuffix = mINI_ReadInteger(FNGFixesINI, FNGFixName, "HasNumberSuffix", 1) != 0;
 
-			sprintf(ObjectPrefix, FNGFixesINI.ReadString(FNGFixName, "ObjectPrefix", ""));
-			strcat(ObjectPrefix, "%d");
+			sprintf(ObjectPrefix, mINI_ReadString(FNGFixesINI, FNGFixName, "ObjectPrefix", ""));
 
-			// Get Last available object
-			for (i = 1; i <= NewNumberOfObjects; i++)
+			if (HasNumberSuffix)
 			{
-				sprintf(ObjectName, ObjectPrefix, i);
-				CloneTarget = FEPackage_FindObjectByHash(FEPackage, bStringHash(ObjectName));
-				if (!CloneTarget)
+				strcat(ObjectPrefix, "%d");
+
+				// Get Last available object
+				for (i = 1; i <= NewNumberOfObjects; i++)
 				{
-					i--;
 					sprintf(ObjectName, ObjectPrefix, i);
 					CloneTarget = FEPackage_FindObjectByHash(FEPackage, bStringHash(ObjectName));
-					break;
+					if (!CloneTarget)
+					{
+						i--;
+						sprintf(ObjectName, ObjectPrefix, i);
+						CloneTarget = FEPackage_FindObjectByHash(FEPackage, bStringHash(ObjectName));
+						break;
+					}
 				}
+			}
+			else
+			{
+				sprintf(ObjectName, ObjectPrefix);
+				CloneTarget = FEPackage_FindObjectByHash(FEPackage, bStringHash(ObjectName));
 			}
 
 			// Make enough clones of that object
@@ -49,7 +64,8 @@ bool __fastcall CloneObjectstoShowMoreItemsInMenu(DWORD* FEPackage, void* edx_un
 				{
 					CloneDest = (*(DWORD * (__thiscall**)(DWORD*, bool))(*(DWORD*)CloneTarget + 4))(CloneTarget, false); // FE...::Clone
 
-					sprintf(ObjectName, ObjectPrefix, i + j);
+					if (HasNumberSuffix) sprintf(ObjectName, ObjectPrefix, i + j);
+
 					CloneDest[4] = bStringHash(ObjectName); // FEObject -> NameHash
 					CloneDest[22] = 0; // FEObject -> Cached (Fix crash at FERenderObject::Clear)
 					//FEMinList_AddNode(&(FEPackage[17]), (DWORD*)(FEPackage[20]), CloneDest); // &FEPackage -> Objects, FEPackage -> Objects.Tail
@@ -73,11 +89,9 @@ bool __fastcall CloneObjectstoShowMoreItemsInMenu(DWORD* FEPackage, void* edx_un
 						{
 							if (CloneChild)
 							{
-								CloneChild[4] = CloneTargetChild[4]; // FEObject -> NameHash, copy the child hash from target obj
-
 								sprintf(FNGChildName, "Child%d", c);
 
-								sprintf(ClonePrefix, FNGFixesINI.ReadString(FNGFixName, FNGChildName, ""));
+								sprintf(ClonePrefix, mINI_ReadString(FNGFixesINI, FNGFixName, FNGChildName, ""));
 								if (strcmp(ClonePrefix, ""))
 								{
 									strcat(ClonePrefix, "%d");
@@ -99,6 +113,7 @@ bool __fastcall CloneObjectstoShowMoreItemsInMenu(DWORD* FEPackage, void* edx_un
 			}
 
 			FEPackage_ConnectObjectResources(FEPackage);
+			//FEPackage_BuildMouseObjectStateList(FEPackage);
 		}
 	}
 

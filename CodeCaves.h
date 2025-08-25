@@ -21,21 +21,163 @@ void __declspec(naked) CarLotFixCodeCaveRead()
 	}
 }
 
+void FillCarPickerArrays()
+{
+	bool UnlockRegionalCars = 0;
+
+	int RandomCarCount = injector::ReadMemory<int>(0x4FEB9D, true);
+	int RandomSUVCount = injector::ReadMemory<int>(0x4FEBDB, true);
+	int InitiallyUnlockedCarCount = 8;
+
+	// Check if Extra Options is present. If so, read UnlockRegionalCars value from its config file.
+	if (GetModuleHandleA("NFSU2ExtraOptions.asi"))
+	{
+		auto ExtraOptionsSettings = CurrentWorkingDirectory / "NFSU2ExtraOptionsSettings.ini";
+		mINI::INIFile NFSU2ExtraOptionsSettingsINIFile(ExtraOptionsSettings.string());
+		mINI::INIStructure Settings;
+		NFSU2ExtraOptionsSettingsINIFile.read(Settings);
+
+		UnlockRegionalCars = mINI_ReadInteger(Settings, "Gameplay", "UnlockRegionalCars", 1) != 0;
+	}
+
+	// Read current arrays
+	for (int i = 0; i < RandomCarCount; i++)
+	{
+		RandomlyChooseableCarConfigsNorthAmerica[i] = injector::ReadMemory<BYTE>(0x7F6DA4 + i, true);
+		RandomlyChooseableCarConfigsRestOfWorld[i] = injector::ReadMemory<BYTE>(0x7F6DC0 + i, true);
+	}
+
+	for (int i = 0; i < RandomSUVCount; i++) RandomlyChooseableSUVs[i] = injector::ReadMemory<BYTE>(0x7F6DDC + i, true);
+
+	// Add regional cars
+	if (UnlockRegionalCars)
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = EUExclusiveCars[i];
+			RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = USExclusiveCars[i];
+		}
+	}
+
+	// Add add-on cars
+	for (int i = 46; i < CarCount; i++)
+	{
+		if (CanCarBeDrivenByAI(i) && (IsRacer(i)))
+		{
+			if (IsSUV(i)) RandomlyChooseableSUVs[RandomSUVCount++] = i;
+			else
+			{
+				RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = i;
+				RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = i;
+			}
+		}
+	}
+
+	// Introduce new arrays to the game
+	injector::WriteMemory(0x4FEBA2, RandomlyChooseableCarConfigsNorthAmerica, true);
+	injector::WriteMemory(0x4FEBA9, RandomlyChooseableCarConfigsRestOfWorld, true);
+	injector::WriteMemory(0x4FEBE0, RandomlyChooseableSUVs, true);
+
+	injector::WriteMemory<int>(0x4FEB9D, RandomCarCount, true);
+	injector::WriteMemory<int>(0x4FEBDB, RandomSUVCount, true);
+
+
+	// Initially unlocked cars
+	for (int i = 0; i < InitiallyUnlockedCarCount; i++) // Read current arrays
+	{
+		UnlockedAtBootQuickRaceNorthAmerica[i] = injector::ReadMemory<int>(0x7F7C08 + 4 * i, true);
+		UnlockedAtBootQuickRaceRestOfWorld[i] = injector::ReadMemory<int>(0x7F7C28 + 4 * i, true);
+	}
+
+	// Add regional cars
+	if (UnlockRegionalCars)
+	{
+		for (int i = 0; i < 1; i++) // Only unlock CIVIC or CORSA
+		{
+			UnlockedAtBootQuickRaceNorthAmerica[InitiallyUnlockedCarCount] = EUExclusiveCars[i];
+			UnlockedAtBootQuickRaceRestOfWorld[InitiallyUnlockedCarCount++] = USExclusiveCars[i];
+		}
+	}
+
+	// Add new cars there
+	for (int i = 46; i < CarCount; i++)
+	{
+		if (IsInitiallyUnlocked(i) && (IsRacer(i)))
+		{
+			UnlockedAtBootQuickRaceNorthAmerica[InitiallyUnlockedCarCount] = i;
+			UnlockedAtBootQuickRaceRestOfWorld[InitiallyUnlockedCarCount++] = i;
+			CarLotUnlockData[i] = 1;
+		}
+	}
+
+	// Introduce new arrays to the game
+	injector::WriteMemory(0x529D22, UnlockedAtBootQuickRaceNorthAmerica, true); // Start
+	injector::WriteMemory(0x529D2E, UnlockedAtBootQuickRaceNorthAmerica + 4 * InitiallyUnlockedCarCount, true); // End
+	injector::WriteMemory(0x529D3B, UnlockedAtBootQuickRaceRestOfWorld, true); // Start
+	injector::WriteMemory(0x529D48, UnlockedAtBootQuickRaceRestOfWorld + 4 * InitiallyUnlockedCarCount, true); // End
+
+}
+
+float* TimingStatsKludgeFactor060;
+float* TimingStatsKludgeFactor0100;
+void FixComputeMiscStats()
+{
+	TimingStatsKludgeFactor060 = new float[CarCount];
+	TimingStatsKludgeFactor0100 = new float[CarCount];
+
+	// Copy original values
+	for (int i = 0; i < 46; i++)
+	{
+		TimingStatsKludgeFactor060[i] = CarConfigs[i].Stats.TimingKludgeFactor060 != 0.0f 
+			? CarConfigs[i].Stats.TimingKludgeFactor060 
+			: *((float*)0x007FC120 + i);
+		TimingStatsKludgeFactor0100[i] = CarConfigs[i].Stats.TimingKludgeFactor0100 != 0.0f 
+			? CarConfigs[i].Stats.TimingKludgeFactor0100
+			: *((float*)0x007FC1D8 + i);
+	}
+
+	// Fill the rest of the cars
+	for (int i = 46, j = 0; i < CarCount; i++, j++)
+	{
+		if (j > 45)
+		{
+			j = 0;
+		}
+
+		TimingStatsKludgeFactor060[i] = CarConfigs[i].Stats.TimingKludgeFactor060 != 0.0f
+			? CarConfigs[i].Stats.TimingKludgeFactor060
+			: *((float*)0x007FC120 + j);
+		TimingStatsKludgeFactor0100[i] = CarConfigs[i].Stats.TimingKludgeFactor0100 != 0.0f
+			? CarConfigs[i].Stats.TimingKludgeFactor0100
+			: *((float*)0x007FC1D8 + j);
+	}
+
+	injector::WriteMemory(0x005B089F, TimingStatsKludgeFactor060, true);
+	injector::WriteMemory(0x005B08D6, TimingStatsKludgeFactor0100, true);
+}
+
 // 0x636BF7
 void __declspec(naked) DoUnlimiterStuffCodeCave()
 {
 	// Get count
-	_asm mov dword ptr ds : [_CarTypeInfoArray] , eax;
-	_asm sub eax, 0x0C;
-	_asm mov eax, [eax];
-	_asm mov CarArraySize, eax;
-	_asm mov eax, dword ptr ds : [_CarTypeInfoArray] ;
-	_asm pushad;
+	_asm
+	{
+		mov dword ptr ds : [_CarTypeInfoArray] , eax
+		sub eax, 0x0C
+		mov eax, [eax]
+		mov CarArraySize, eax
+		mov eax, dword ptr ds : [_CarTypeInfoArray] 
+		pushad
+	}
+
 	CarArraySize -= 8;
 	CarCount = CarArraySize / SingleCarTypeInfoBlockSize;
 
 	// Do required stuff
 	//CountRandomEngageStrings();
+
+	// Replacement model if model not found in array
+	if (ReplacementCar > CarCount) ReplacementCar = 1;
 
 	// Car Type Unlimiter
 	injector::WriteMemory<int>(0x41AB83, CarArraySize, true); // StreamingTrafficCarManager::Init
@@ -53,76 +195,30 @@ void __declspec(naked) DoUnlimiterStuffCodeCave()
 	injector::WriteMemory<BYTE>(0x61C671, CarCount, true); // CarLoader::LoadAllPartsAnims
 	injector::WriteMemory<BYTE>(0x6372B4, CarCount, true); // RideInfo::FillWithPreset
 	//injector::WriteMemory<BYTE>(0x4EAE48, CarCount, true); // GarageMainScreen::GarageMainScreen
-	injector::WriteMemory<BYTE>(0x513D1D, CarCount, true); // sub_513C50 -> UICareerCarLot::BuildCarList
+	injector::WriteMemory<BYTE>(0x513D1D, CarCount, true); // PlayerCareerState::BuildUnlockedCareerCarList -> UICareerCarLot::BuildCarList
 
 	// Make them available as opponents
+	LoadCarConfigs();
+	FillCarPickerArrays();
 
-	RandomCarCount = injector::ReadMemory<int>(0x4FEB9D, true);
-	RandomSUVCount = injector::ReadMemory<int>(0x4FEBDB, true);
+	// load configs into UnlimiterData structs
+	//LoadFNGFixes();
+	LoadPaintGroups();
+	LoadRimBrands();
+	LoadVinylGroups();
+	LoadStarGazer();
+	LoadCameraInfo();
 
-	for (TheCounter = 0; TheCounter < RandomCarCount; TheCounter++) // Read current arrays
-	{
-		RandomlyChooseableCarConfigsNorthAmerica[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DA4 + TheCounter, true);
-		RandomlyChooseableCarConfigsRestOfWorld[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DC0 + TheCounter, true);
-	}
-
-	for (TheCounter = 0; TheCounter < RandomSUVCount; TheCounter++) RandomlyChooseableSUVs[TheCounter] = injector::ReadMemory<BYTE>(0x7F6DDC + TheCounter, true);
-
-	// Add new cars there
-	for (TheCounter = 0x2E; TheCounter < CarCount; TheCounter++)
-	{
-		if (CanCarBeDrivenByAI(TheCounter) && (IsRacer(TheCounter)))
-		{
-			if (IsSUV(TheCounter)) RandomlyChooseableSUVs[RandomSUVCount++] = TheCounter;
-			else
-			{
-				RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = TheCounter;
-				RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = TheCounter;
-			}
-		}
-	}
-
-	// Introduce new arrays to the game
-	injector::WriteMemory(0x4FEBA2, RandomlyChooseableCarConfigsNorthAmerica, true);
-	injector::WriteMemory(0x4FEBA9, RandomlyChooseableCarConfigsRestOfWorld, true);
-	injector::WriteMemory(0x4FEBE0, RandomlyChooseableSUVs, true);
-
-	injector::WriteMemory<int>(0x4FEB9D, RandomCarCount, true);
-	injector::WriteMemory<int>(0x4FEBDB, RandomSUVCount, true);
-
-	// Crash Fix (Worked around by cloning the values instead)
-	//injector::WriteMemory<BYTE>(0x5B6B3C, 0xEB, true); // RidePhysicsInfo::MatchPerformance
-
-	// Unlock new cars right at the beginning
-	for (TheCounter = 0; TheCounter < InitiallyUnlockedCarCount; TheCounter++) // Read current arrays
-	{
-		UnlockedAtBootQuickRaceNorthAmerica[TheCounter] = injector::ReadMemory<int>(0x7F7C08 + 4 * TheCounter, true);
-		UnlockedAtBootQuickRaceRestOfWorld[TheCounter] = injector::ReadMemory<int>(0x7F7C28 + 4 * TheCounter, true);
-	}
-
-	// Add new cars there
-	for (TheCounter = 0x2E; TheCounter < CarCount; TheCounter++)
-	{
-		if (IsInitiallyUnlocked(TheCounter) && (IsRacer(TheCounter)))
-		{
-			UnlockedAtBootQuickRaceNorthAmerica[InitiallyUnlockedCarCount] = TheCounter;
-			UnlockedAtBootQuickRaceRestOfWorld[InitiallyUnlockedCarCount++] = TheCounter;
-			CarLotUnlockData[TheCounter] = 1;
-		}
-	}
-
-	// Introduce new arrays to the game
-	injector::WriteMemory(0x529D22, UnlockedAtBootQuickRaceNorthAmerica, true); // Start
-	injector::WriteMemory(0x529D2E, UnlockedAtBootQuickRaceNorthAmerica + 4 * InitiallyUnlockedCarCount, true); // End
-	injector::WriteMemory(0x529D3B, UnlockedAtBootQuickRaceRestOfWorld, true); // Start
-	injector::WriteMemory(0x529D48, UnlockedAtBootQuickRaceRestOfWorld + 4 * InitiallyUnlockedCarCount, true); // End
-
-
+	// Fix misc stats
+	FixComputeMiscStats();
 
 	// Continue
-	_asm popad;
-	_asm push 0x636BFC;
-	_asm retn;
+	_asm
+	{
+		popad
+		push 0x636BFC
+		retn
+	}
 }
 
 // 0x636D6C
@@ -149,6 +245,7 @@ void __declspec(naked) DoUnlimiterStuffCodeCave2()
 		injector::WriteMemory<int>(0x89D424, CarPartCount + 1, true);
 
 		injector::WriteMemory<int>(0x5F04A4, CarPartCount, true); // sub_5F0320
+		injector::WriteMemory<int>(0x5F0675, CarPartCount + 1, true); // sub_5F04D0
 	}
 
 	// Continue

@@ -1,7 +1,6 @@
 #pragma once
 #include "stdio.h"
 #include "InGameFunctions.h"
-#include "includes\IniReader.h"
 #include "UserCalls.h"
 
 using namespace std;

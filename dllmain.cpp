@@ -3,7 +3,7 @@
 #include <string>
 #include <windows.h>
 #include "includes\injector\injector.hpp"
-#include "includes\IniReader.h"
+#include "includes\injector\utility.hpp"
 #include "UnlimiterStuff.h"
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD reason, LPVOID /*lpReserved*/)
