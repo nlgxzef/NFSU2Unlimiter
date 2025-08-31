@@ -265,3 +265,36 @@ void __declspec(naked) PerformanceConfigFixCodeCave()
 	_asm push 0x5994C0;
 	_asm retn;
 }
+
+// 0x61B67C
+int IsUG1_Hash(DWORD CarTypeNameHash)
+{
+	return IsUG1(GetCarTypeIDFromHash(CarTypeNameHash));
+}
+
+// 0x61B686
+int IsUG2_Hash(DWORD CarTypeNameHash)
+{
+	return IsUG2(GetCarTypeIDFromHash(CarTypeNameHash));
+}
+
+// 0x61B68E
+int IsSUV_Hash(DWORD CarTypeNameHash)
+{
+	return IsSUV(GetCarTypeIDFromHash(CarTypeNameHash));
+}
+
+void __declspec(naked) IsSUV_UnInlineCodeCave()
+{
+	_asm
+	{
+		mov dword ptr ds : [esp + 0x28] , eax // IsUG2 result
+
+		push ebp
+		call IsSUV_Hash
+		mov dword ptr ds : [esp + 0x20] , eax
+		add esp, 4
+		push 0x61B6BA
+		retn
+	}
+}

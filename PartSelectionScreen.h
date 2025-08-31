@@ -190,21 +190,21 @@ void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, vo
         CarConfigs[CarTypeID].BodyShop.Attachment1,
         CarConfigs[CarTypeID].BodyShop.Attachment2,
         CarConfigs[CarTypeID].BodyShop.Attachment3,
-        CarConfigs[CarTypeID].BodyShop.Attachment4,
+        CarConfigs[CarTypeID].BodyShop.Attachment4
 	};
     DWORD AttachmentIcons[5] = {
         CarConfigs[CarTypeID].Icons.BodyShopAttachment0,
         CarConfigs[CarTypeID].Icons.BodyShopAttachment1,
         CarConfigs[CarTypeID].Icons.BodyShopAttachment2,
         CarConfigs[CarTypeID].Icons.BodyShopAttachment3,
-        CarConfigs[CarTypeID].Icons.BodyShopAttachment4,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment4
     };
     DWORD AttachmentNames[5] = {
         CarConfigs[CarTypeID].Names.BodyShopAttachment0,
         CarConfigs[CarTypeID].Names.BodyShopAttachment1,
         CarConfigs[CarTypeID].Names.BodyShopAttachment2,
         CarConfigs[CarTypeID].Names.BodyShopAttachment3,
-        CarConfigs[CarTypeID].Names.BodyShopAttachment4,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment4
     };
 
     for (int i = 0; i < NumAttachments; i++)

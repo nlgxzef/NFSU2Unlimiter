@@ -20,6 +20,7 @@ void(__cdecl* j__free)(void* _Block) = (void(__cdecl*)(void*))0x575630;
 int(__thiscall* AddElementToMenuWithStateID)(int _this, int a2, int a3, int a4, int a5) = (int(__thiscall*)(int, int, int, int, int))0x520CB0;
 void* (__thiscall* AddCustomElementToMenu)(void* _this, int a2, int a3, int a4) = (void* (__thiscall*)(void*, int, int, int))0x545920;
 int(__cdecl* FEHashUpper)(const char* a1) = (int(__cdecl*)(const char*))0x505450;
+void(__thiscall* ChooseRimBrand_NotificationMessage_Game)(DWORD* ChooseRimBrand, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x55F080;
 int(__thiscall* ChooseRimBrand_AddRimCategory)(DWORD* _this, int RimBrandName, int RimBrandIcon, int RimBrandHash) = (int(__thiscall*)(DWORD*, int, int, int))0x5463B0;
 int(__thiscall* Player_AutoPilotOn)(DWORD* _Player) = (int(__thiscall*)(DWORD*))0x5FAE20;
 int(__thiscall* Player_AutoPilotOff)(DWORD* _Player) = (int(__thiscall*)(DWORD*))0x5FAF10;
@@ -54,7 +55,7 @@ void(__thiscall* IceSelectionScreen_AddSelection)(DWORD* IceSelectionScreen, uns
 void(__thiscall* IceCategoryThing_Create)(DWORD* IceCategoryThing, int CarAnimLocation, unsigned int CarSlotID, unsigned int TextureHash, unsigned int LanguageHash) = (void(__thiscall*)(DWORD*, int, unsigned int, unsigned int, unsigned int))0x53AA80;
 bool (*IsNeonCompletelyLocked)() = (bool(*)())0x539FB0;
 void(__thiscall* IceSelectionThing_Create)(DWORD* IceSelectionThing, unsigned int CarSlotID, unsigned int TextureHash, unsigned int LanguageHash, int CarAnimLocation, bool IsLocked, char const* FEPackageName) = (void(__thiscall*)(DWORD*, unsigned int, unsigned int, unsigned int, int, bool, char const*))0x53A9D0;
-void(__thiscall* IceCategoryTrunkThing_Create)(DWORD* IceCategoryTrunkThing) = (void(__thiscall*)(DWORD*))0x53AAC0;
+void(__thiscall* IceCategoryTrunkThing_Create_Game)(DWORD* IceCategoryTrunkThing) = (void(__thiscall*)(DWORD*))0x53AAC0;
 void(__thiscall* IceSelectionScreen_SetExtraFunctionTextVisibility)(DWORD* IceSelectionScreen, bool IsVisible) = (void(__thiscall*)(DWORD*, bool))0x547090;
 DWORD* (__thiscall* RideInfo_GetPart)(DWORD* RideInfo, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x6102F0;
 DWORD* (__thiscall* CarCustomizeManager_GetInstalledVinyl)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x50EFD0;
@@ -149,7 +150,9 @@ void(__thiscall* IceSelectionScreen_DoSpecialScroll)(DWORD* IceSelectionScreen, 
 void(__thiscall* IcePartsBrowser_RefreshHeader_Game)(DWORD* IcePartsBrowser) = (void(__thiscall*)(DWORD*))0x547250;
 void(__thiscall* NeonPartsBrowser_RefreshHeader_Game)(DWORD* NeonPartsBrowser) = (void(__thiscall*)(DWORD*))0x547F30;
 void(__thiscall* ChooseDecalScreen_RefreshHeader_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x546F40;
+void(__thiscall* ChooseSpinnerBrand_NotificationMessage_Game)(DWORD* ChooseSpinnerBrand, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x569670;
 void(__thiscall* ChooseSpinnerBrand_RefreshHeader_Game)(DWORD* ChooseSpinnerBrand) = (void(__thiscall*)(DWORD*))0x547330;
+void(__thiscall* RimsBrowser_NotificationMessage_Game)(DWORD* RimsBrowser, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x567A50;
 void(__thiscall* RimsBrowser_StartBrowsingRims_Game)(DWORD* RimsBrowser) = (void(__thiscall*)(DWORD*))0x55FB00;
 void(__thiscall* RimsBrowser_StopBrowsingRims_Game)(DWORD* RimsBrowser, bool ass) = (void(__thiscall*)(DWORD*, bool))0x55FCE0;
 void(__thiscall* ChooseSpinnerBrand_StartBrowsingRims_Game)(DWORD* ChooseSpinnerBrand) = (void(__thiscall*)(DWORD*))0x5614B0;
@@ -229,6 +232,7 @@ void(__thiscall* StreamingTrafficCarManager_ResetStats_Game)(DWORD* StreamingTra
 int(*eLoadStreamingTexture)(DWORD* name_hash_table, int num_hashes, void(*callback)(unsigned int), unsigned int param0, int memory_pool_num) = (int(*)(DWORD*, int, void(*)(unsigned int), unsigned int, int))0x494D60;
 int(*eUnloadStreamingTexture)(DWORD* name_hash_table, int num_hashes) = (int(*)(DWORD*, int))0x490150;
 int(__thiscall* eStreamPackLoader_TestLoadStreamingEntry)(DWORD* eStreamPackLoader, DWORD* name_hash_table, int num_hashes, int memory_pool_num) = (int(__thiscall*)(DWORD*, DWORD*, int, int))0x48D420;
+bool(*IceCategoryIsLocked)(int CarSlotID) = (bool(*)(int))0x539D00;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

@@ -157,7 +157,36 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	char const* IceSelectionScreenPackage = (char const*)IceSelectionScreen[1];
 	DWORD* AMenuOption;
 
-	FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, bStringHash("CUSTOMIZE_TITLE_INTERIORS_SHOP"));
+	FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CT_bStringHash("CUSTOMIZE_TITLE_INTERIORS_SHOP"));
+
+	DWORD TrunkSlotIcons[12] = {
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot1,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot2,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot3,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot4,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot5,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot6,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot7,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot8,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot9,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot10,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot11,
+		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot12
+	};
+	DWORD TrunkSlotNames[12] = {
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot1,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot2,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot3,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot4,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot5,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot6,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot7,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot8,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot9,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot10,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot11,
+		CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioSlot12
+	};
 
 	switch (*(int*)0x838998)
 	{
@@ -174,14 +203,14 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 				FEDoCarPartAnimNow(1, 0, 1.0f);
 			}
 		}
-		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_MAIN");
+		IceSelectionScreen[10] = CT_bStringHash("HELP_CARSPECIALTIES_SHOP_MAIN");
 
 		if ((*(int*)0x83898C != 1) && (CarConfigs[CarTypeID].Specialties.CustomGauges))
 			IceSelectionScreen_AddSelection(
 				IceSelectionScreen, 
-				163, 
-				bStringHash("VISUAL_PART_CUSTOM_HUDS"), 
-				bStringHash("UI_ICE_GAUGES"),
+				CAR_SLOT_ID::CUSTOM_HUD, 
+				CarConfigs[CarTypeID].Icons.SpecialtiesCustomGauges,
+				CarConfigs[CarTypeID].Names.SpecialtiesCustomGauges,
 				-1, 
 				"UI_CustomHUDOverlay.fng");
 
@@ -193,9 +222,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 				IceCategoryThing_Create(
 					AMenuOption, 
 					7, 
-					158, 
-					bStringHash("VISUAL_PART_NEON"), 
-					bStringHash("UI_ICE_NEON"));
+					CAR_SLOT_ID::CABIN_NEON_FRAME, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesNeon,
+					CarConfigs[CarTypeID].Names.SpecialtiesNeon);
 				*((BYTE*)AMenuOption + 34) = IsNeonCompletelyLocked();
 				*((BYTE*)AMenuOption + 35) = 1;
 				(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
@@ -210,9 +239,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					153, 
-					bStringHash("VISUAL_PART_WINDOW_TINTING"), 
-					bStringHash("UI_ICE_TINT"), 
+					CAR_SLOT_ID::WINDOW_TINT, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesWindowTint,
+					CarConfigs[CarTypeID].Names.SpecialtiesWindowTint,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -229,9 +258,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					159, 
-					bStringHash("VISUAL_PART_HEAD_LIGHT_COLOR"), 
-					bStringHash("UI_ICE_HEADLIGHTS"), 
+					CAR_SLOT_ID::HEADLIGHT_BULB, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesHeadlightColor,
+					CarConfigs[CarTypeID].Names.SpecialtiesHeadlightColor,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -247,9 +276,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			if (AMenuOption)
 			{
 				IceSelectionThing_Create(AMenuOption,
-					162, 
-					bStringHash("VISUAL_PART_NOS_PURGE"), 
-					bStringHash("UI_ICE_NOS_PURGE"), 
+					CAR_SLOT_ID::NOS_PURGE, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesNosPurge,
+					CarConfigs[CarTypeID].Names.SpecialtiesNosPurge,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -266,9 +295,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption,
-					161, 
-					bStringHash("VISUAL_PART_HYDRAULICS"), 
-					bStringHash("UI_ICE_HYDRAULICS"), 
+					CAR_SLOT_ID::HYDRAULICS, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesHydraulics,
+					CarConfigs[CarTypeID].Names.SpecialtiesHydraulics,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -283,7 +312,11 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			AMenuOption = (DWORD*)j__malloc(0x60);
 			if (AMenuOption)
 			{
-				IceCategoryTrunkThing_Create(AMenuOption);
+				IceCategoryTrunkThing_Create(
+					AMenuOption,
+					EDX_Unused,
+					CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudio,
+					CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 				(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
 			}
 			else AMenuOption = 0;
@@ -296,9 +329,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					29, 
-					bStringHash("VISUAL_PART_SPINNERS"), 
-					bStringHash("UI_ICE_SPINNERS"), 
+					CAR_SLOT_ID::FRONT_WHEEL, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesSpinners,
+					CarConfigs[CarTypeID].Names.SpecialtiesSpinners,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -315,9 +348,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					9, 
-					bStringHash("VISUAL_PART_SPLIT_HOODS"), 
-					bStringHash("UI_ICE_HOOD"), 
+					CAR_SLOT_ID::HOOD, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesSplitHoods,
+					CarConfigs[CarTypeID].Names.SpecialtiesSplitHoods,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -334,9 +367,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					160, 
-					bStringHash("VISUAL_PART_SCISSOR_DOORS"), 
-					bStringHash("UI_ICE_DOORS"), 
+					CAR_SLOT_ID::DOOR_STYLE, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesDoors,
+					CarConfigs[CarTypeID].Names.SpecialtiesDoors,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -353,9 +386,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					33, 
-					bStringHash("VISUAL_PART_LICENSE_PLATES"), 
-					bStringHash("UI_ICE_LICENSE_PLATES"), 
+					CAR_SLOT_ID::LICENSE_PLATE, 
+					CarConfigs[CarTypeID].Icons.SpecialtiesLicensePlate,
+					CarConfigs[CarTypeID].Names.SpecialtiesLicensePlate,
 					0, 
 					1, 
 					*(char const**)gIceSideBarOverlayName);
@@ -372,7 +405,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	case 2:
 		FEngSetVisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
 		FEngSetVisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
-		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, bStringHash("TRUNK_AUDIO_TITLE"));
+		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
@@ -386,9 +419,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		{
 			IceSelectionThing_Create(
 				AMenuOption, 
-				34, 
-				bStringHash("AUDIO_ICON_CONFIGURE_TRUNK_LAYOUT"), 
-				bStringHash("UI_ICE_TRUNK_AUDIO_LAYOUT_SELECTION"), 
+				CAR_SLOT_ID::TRUNK_AUDIO, 
+				CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioLayout,
+				CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioLayout,
 				0, 
 				1, 
 				*(char const**)gIceSideBarOverlayName);
@@ -402,7 +435,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	case 3:
 		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
 		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
-		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, bStringHash("TRUNK_AUDIO_TITLE"));
+		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
@@ -417,9 +450,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			IceCategoryThing_Create(
 				AMenuOption, 
 				4, 
-				35, 
-				bStringHash("AUDIO_ICON_COMPONENTS"), 
-				bStringHash("UI_ICE_TRUNK_AUDIO_COMPONENTS"));
+				CAR_SLOT_ID::TRUNK_AUDIO_COMP_0, 
+				CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioComponents,
+				CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioComponents);
 			(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
 		}
 		else AMenuOption = 0;
@@ -429,9 +462,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		{
 			IceSelectionThing_Create(
 				AMenuOption, 
-				34, 
-				bStringHash("AUDIO_ICON_CONFIGURE_TRUNK_LAYOUT"), 
-				bStringHash("UI_ICE_TRUNK_AUDIO_LAYOUT_SELECTION"), 
+				CAR_SLOT_ID::TRUNK_AUDIO,
+				CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioLayout,
+				CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioLayout,
 				0, 
 				1, 
 				*(char const**)gIceSideBarOverlayName);
@@ -448,7 +481,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	case 5:
 		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
 		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
-		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, bStringHash("TRUNK_AUDIO_TITLE"));
+		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
@@ -457,7 +490,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_AUDIOCOMPONENTS_SELECT");
 
-		for (int i = 35; i <= 46; ++i)
+		for (int i = CAR_SLOT_ID::TRUNK_AUDIO_COMP_0; i <= CAR_SLOT_ID::TRUNK_AUDIO_COMP_11; ++i)
 		{
 			if (RideInfo_TrunkAudioSlotAvailable((DWORD*)gTheRideInfo, 0, i))
 			{
@@ -467,8 +500,8 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 					IceSelectionThing_Create(
 						AMenuOption, 
 						i, 
-						bStringHash("VISUAL_PART_TRUNK_AUDIO"), 
-						bStringHash("UI_ICE_TRUNK_AUDIO_COMPONENT"), 
+						TrunkSlotIcons[i - CAR_SLOT_ID::TRUNK_AUDIO_COMP_0],
+						TrunkSlotNames[i - CAR_SLOT_ID::TRUNK_AUDIO_COMP_0],
 						0, 
 						1, 
 						*(char const**)gIceSideBarOverlayName);

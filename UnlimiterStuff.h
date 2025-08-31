@@ -8,7 +8,7 @@
 using namespace std;
 
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, ExportCameraInfoIni;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -34,6 +34,7 @@ char AttachmentNameBuf[64];
 #include "DetailsPane.h"
 #include "PartSelectionScreen.h"
 #include "ChooseRimBrand.h"
+#include "IceCategoryTrunkThing.h"
 #include "IceSelectionScreen.h"
 #include "IcePartsBrowser.h"
 #include "NeonPartsBrowser.h"
@@ -82,6 +83,7 @@ int Init()
 	CabinNeonFix = mINI_ReadInteger(Settings, "Fixes", "CabinNeonFix", 1) != 0;
 	RaceEngageDialogFix = mINI_ReadInteger(Settings, "Fixes", "RaceEngageDialogFix", 1) != 0;
 	EnableFNGFixes = mINI_ReadInteger(Settings, "Fixes", "FNGFix", 0) != 0;
+	StreamingTrafficCarManagerFix = mINI_ReadInteger(Settings, "Fixes", "StreamingTrafficCarManagerFix", 0) != 0;
 
 	// Misc
 	ExpandMemoryPools = mINI_ReadInteger(Settings, "Misc", "ExpandMemoryPools", 1) != 0;
@@ -152,7 +154,8 @@ int Init()
 	injector::MakeJMP(0x539B70, IsRimAvailable, true); // 4 references
 
 	// Allow brands to hide their names on rim selection screen + details pane
-	injector::WriteMemory(0x79D884, RimsBrowser_RefreshHeader, true); // RimsBrowser::vtable
+	injector::WriteMemory(0x79D87C, &RimsBrowser_NotificationMessage, true); // RimsBrowser::vtable
+	injector::WriteMemory(0x79D884, &RimsBrowser_RefreshHeader, true); // RimsBrowser::vtable
 	injector::MakeCALL(0x567D34, RimsBrowser_StartBrowsingRims, true); // RimsBrowser::NotificationMessage
 	injector::MakeCALL(0x568010, RimsBrowser_StartBrowsingRims, true); // RimsBrowser::NotificationMessage
 	injector::MakeCALL(0x567C4B, RimsBrowser_StopBrowsingRims, true); // RimsBrowser::NotificationMessage
@@ -234,6 +237,7 @@ int Init()
 	injector::MakeCALL(0x56BCB8, ChooseDecalScreen_RefreshHeader, true); // ChooseDecalScreen::NotificationMessage
 
 	// Add details pane for Spinners
+	injector::WriteMemory(0x79D8A8, &ChooseSpinnerBrand_NotificationMessage, true); // ChooseSpinnerBrand::vtable
 	injector::WriteMemory(0x79D8B0, &ChooseSpinnerBrand_RefreshHeader, true); // ChooseSpinnerBrand::vtable
 	injector::MakeCALL(0x569895, ChooseSpinnerBrand_StartBrowsingRims, true); // ChooseSpinnerBrand::NotificationMessage
 	injector::MakeCALL(0x569A52, ChooseSpinnerBrand_StartBrowsingRims, true); // ChooseSpinnerBrand::NotificationMessage
@@ -327,6 +331,12 @@ int Init()
 	//injector::MakeJMP(0x61548A, CarRenderInfoAttributesCodeCave, true); // CarRenderInfo::UpdateCarReplacementTextures
 	injector::MakeJMP(0x6304C4, ShowEngineAttrCodeCave, true); // CarRenderInfo::Render
 
+	// Game Type Hooks
+	//injector::MakeCALL(0x61B67C, IsUG1_Hash, true); // CarPartDatabase::GetCarPartDirect
+	//injector::MakeCALL(0x61B686, IsUG2_Hash, true); // CarPartDatabase::GetCarPartDirect
+	//injector::MakeRangedNOP(0x61B68E, 0x61B6BA, true);
+	//injector::MakeJMP(0x61B68E, IsSUV_UnInlineCodeCave, true); // CarPartDatabase::GetCarPartDirect
+
 	// (un)Sync Visual Parts With Physics
 	// Engine & Brakes
 	injector::MakeCALL(0x5263E5, RideInfo_SyncVisualPartsWithPhysics_Hook, true); // RaceStarter::AddCareerEventAIOpponents
@@ -394,26 +404,29 @@ int Init()
 		// TODO: Also check ChooseSpinnerBrand or find a smarter way to do this shit
 	}
 
-	// Fix random traffic car skins
-	injector::MakeCALL(0x42F9B3, StreamingTrafficCarManager_Update, true); // TrafficTeleporter::DoTimeStep
-	injector::MakeCALL(0x417A92, StreamingTrafficCarManager_ResetStats, true); // TrafficTeleporter::ctor
-	injector::MakeCALL(0x41AB8F, StreamingTrafficCarManager_ResetStats, true); // StreamingTrafficCarManager::Init
+	if (StreamingTrafficCarManagerFix)
+	{
+		// Fix random traffic car skins
+		injector::MakeCALL(0x42F9B3, StreamingTrafficCarManager_Update, true); // TrafficTeleporter::DoTimeStep
+		injector::MakeCALL(0x417A92, StreamingTrafficCarManager_ResetStats, true); // TrafficTeleporter::ctor
+		injector::MakeCALL(0x41AB8F, StreamingTrafficCarManager_ResetStats, true); // StreamingTrafficCarManager::Init
 
-	// Relocate StreamingTrafficCarManager to allow more traffic cars
-	injector::WriteMemory(0x417A8E, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::ctor
-	injector::WriteMemory(0x417B7F, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::DoSnapshot
-	injector::WriteMemory(0x4221D4, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::dtor
-	injector::WriteMemory(0x42F9AF, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::DoTimeStep
-	injector::WriteMemory(0x4FEA5C, &TheStreamingTrafficCarManager, true); // RaceStarter::AddTrafficCars
-	injector::WriteMemory(0x4FEA71, &TheStreamingTrafficCarManager, true); // RaceStarter::AddTrafficCars
-	injector::WriteMemory(0x57F992, &TheStreamingTrafficCarManager, true); // TrackLoader::LoadHandler
-	injector::WriteMemory(0x57F99C, &TheStreamingTrafficCarManager, true); // TrackLoader::LoadHandler
-	injector::WriteMemory(0x57FA0D, &TheStreamingTrafficCarManager, true); // TrackLoader::LoadHandler
-	injector::WriteMemory(0x580080, &TheStreamingTrafficCarManager, true); // BeginGameFlowLoadingFrontEnd
-	injector::WriteMemory(0x5F4604, &TheStreamingTrafficCarManager, true); // Car::dtor
-	injector::WriteMemory(0x77A991, &TheStreamingTrafficCarManager, true); // Static init??
-	injector::WriteMemory(0x7819A1, &TheStreamingTrafficCarManager, true); // Static init??
-
+		// Relocate StreamingTrafficCarManager to allow more traffic cars
+		injector::WriteMemory(0x417A8E, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::ctor
+		injector::WriteMemory(0x417B7F, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::DoSnapshot
+		injector::WriteMemory(0x4221D4, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::dtor
+		injector::WriteMemory(0x42F9AF, &TheStreamingTrafficCarManager, true); // TrafficTeleporter::DoTimeStep
+		injector::WriteMemory(0x4FEA5C, &TheStreamingTrafficCarManager, true); // RaceStarter::AddTrafficCars
+		injector::WriteMemory(0x4FEA71, &TheStreamingTrafficCarManager, true); // RaceStarter::AddTrafficCars
+		injector::WriteMemory(0x57F992, &TheStreamingTrafficCarManager, true); // TrackLoader::LoadHandler
+		injector::WriteMemory(0x57F99C, &TheStreamingTrafficCarManager, true); // TrackLoader::LoadHandler
+		injector::WriteMemory(0x57FA0D, &TheStreamingTrafficCarManager, true); // TrackLoader::LoadHandler
+		injector::WriteMemory(0x580080, &TheStreamingTrafficCarManager, true); // BeginGameFlowLoadingFrontEnd
+		injector::WriteMemory(0x5F4604, &TheStreamingTrafficCarManager, true); // Car::dtor
+		injector::WriteMemory(0x77A991, &TheStreamingTrafficCarManager, true); // Static init??
+		injector::WriteMemory(0x7819A1, &TheStreamingTrafficCarManager, true); // Static init??
+	}
+	
 	// Texture caves
 	if (!DisableTextureReplacement)
 	{

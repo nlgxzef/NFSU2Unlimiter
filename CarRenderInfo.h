@@ -1185,7 +1185,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	sprintf(TextureNameBuf, "AUDIO_SKIN");
 	NumUsedCarTextures += UsedCarTextureAddToTable(info->TexturesToLoadPerm, NumUsedCarTextures, MaxPermTex, bStringHash(TextureNameBuf));
 
-	char* ShadowSuffix = IsInFE ? (char*)"FE" : (char*)"IG";
+	char* ShadowSuffix = IsInFE || front_end_only ? (char*)"FE" : (char*)"IG";
 	sprintf(TextureNameBuf, "%s_SHADOW%s", CarTypeName, ShadowSuffix); // SHADOWFE/IG
 	TextureHash = bStringHash(TextureNameBuf);
 	NumUsedCarTextures += UsedCarTextureAddToTable(info->TexturesToLoadPerm, NumUsedCarTextures, MaxPermTex, TextureHash);

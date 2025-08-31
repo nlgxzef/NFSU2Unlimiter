@@ -171,7 +171,7 @@ void LoadCarConfigs()
 	DefaultCarConfig.Icons.BodyShopMirrors = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopMirrors", "VISUAL_PART_SIDE_MIRRORS");
 	DefaultCarConfig.Icons.BodyShopExhaust = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopExhaust", "VISUAL_PART_MUFFLERTIP");
 	DefaultCarConfig.Icons.BodyShopRims = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopRims", "VISUAL_PART_RIMS");
-	DefaultCarConfig.Icons.BodyShopRimsCustom = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopRimsCustom", "VISUAL_PART_RIMS");
+	DefaultCarConfig.Icons.BodyShopRimsCustom = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopRimsCustom", "VISUAL_RIMS_BRAND_CUSTOM");
 	DefaultCarConfig.Icons.BodyShopBrakes = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopBrakes", "VISUAL_PART_BRAKES");
 	DefaultCarConfig.Icons.BodyShopCarbonFiber = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopCarbonFiber", "VISUAL_PART_CARBON_FIBRE");
 	DefaultCarConfig.Icons.BodyShopCarbonFiberHood = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopCarbonFiberHood", "VISUAL_PART_CARBON_FIBRE_HOODS");
@@ -208,13 +208,13 @@ void LoadCarConfigs()
 	DefaultCarConfig.Icons.PaintRoofScoopPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintRoofScoopPaint", "PAINT_MOD_PART_ROOF");
 	DefaultCarConfig.Icons.PaintMirrorPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintMirrorPaint", "PAINT_MOD_PART_MIRROR");
 	DefaultCarConfig.Icons.PaintRimPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintRimPaint", "PAINT_MOD_PART_RIMS");
-	DefaultCarConfig.Icons.PaintSpinnerPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintSpinnerPaint", "PAINT_MOD_PART_RIMS");
+	DefaultCarConfig.Icons.PaintSpinnerPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintSpinnerPaint", "PAINT_MOD_PART_INNER_RIM");
 	DefaultCarConfig.Icons.PaintBrakePaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintBrakePaint", "PAINT_MOD_PART_BRAKE_CALIPERS");
 	DefaultCarConfig.Icons.PaintEnginePaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintEnginePaint", "PAINT_MOD_PART_ENGINE_ACCENT");
 	DefaultCarConfig.Icons.PaintTrunkPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintTrunkPaint", "PAINT_MOD_PART_TRUNK_AUDIO");
 	DefaultCarConfig.Icons.PaintExhaustPaint = mINI_ReadHashS(GeneralINI, "Icons", "PaintExhaustPaint", "PAINT_MOD_PART_MUFFLER_TIP");
 	DefaultCarConfig.Icons.PaintVinyls = mINI_ReadHashS(GeneralINI, "Icons", "PaintVinyls", "VISUAL_PART_VINYL");
-	DefaultCarConfig.Icons.PaintVinylsCustom = mINI_ReadHashS(GeneralINI, "Icons", "PaintVinylsCustom", "VISUAL_PART_VINYL");
+	DefaultCarConfig.Icons.PaintVinylsCustom = mINI_ReadHashS(GeneralINI, "Icons", "PaintVinylsCustom", "VINYL_GROUP_CUSTOM");
 	DefaultCarConfig.Icons.PaintDecals = mINI_ReadHashS(GeneralINI, "Icons", "PaintDecals", "VISUAL_PART_DECALS");
 	DefaultCarConfig.Icons.PaintDecalsWindshield = mINI_ReadHashS(GeneralINI, "Icons", "PaintDecalsWindshield", "DECAL_ZONE_WINDSHIELD");
 	DefaultCarConfig.Icons.PaintDecalsWindshield1 = mINI_ReadHashS(GeneralINI, "Icons", "PaintDecalsWindshield1", "DECAL_ZONE_WINDSHIELD");
@@ -325,18 +325,18 @@ void LoadCarConfigs()
 	DefaultCarConfig.Icons.SpecialtiesTrunkAudio = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudio", "VISUAL_PART_TRUNK_AUDIO");
 	DefaultCarConfig.Icons.SpecialtiesTrunkAudioLayout = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioLayout", "AUDIO_ICON_CONFIGURE_TRUNK_LAYOUT");
 	DefaultCarConfig.Icons.SpecialtiesTrunkAudioComponents = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioComponents", "AUDIO_ICON_COMPONENTS");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot1 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot1", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot2 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot2", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot3 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot3", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot4 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot4", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot5 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot5", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot6 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot6", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot7 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot7", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot8 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot8", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot9 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot9", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot10 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot10", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot11 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot11", "VISUAL_PART_TRUNK_AUDIO");
-	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot12 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot12", "VISUAL_PART_TRUNK_AUDIO");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot1 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot1", "AUDIO_ICON_SLOT1");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot2 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot2", "AUDIO_ICON_SLOT2");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot3 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot3", "AUDIO_ICON_SLOT3");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot4 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot4", "AUDIO_ICON_SLOT4");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot5 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot5", "AUDIO_ICON_SLOT5");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot6 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot6", "AUDIO_ICON_SLOT6");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot7 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot7", "AUDIO_ICON_SLOT7");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot8 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot8", "AUDIO_ICON_SLOT8");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot9 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot9", "AUDIO_ICON_SLOT9");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot10 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot10", "AUDIO_ICON_SLOT10");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot11 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot11", "AUDIO_ICON_SLOT11");
+	DefaultCarConfig.Icons.SpecialtiesTrunkAudioSlot12 = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioSlot12", "AUDIO_ICON_SLOT12");
 	DefaultCarConfig.Icons.SpecialtiesSpinners = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesSpinners", "VISUAL_PART_SPINNERS");
 	DefaultCarConfig.Icons.SpecialtiesSplitHoods = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesSplitHoods", "VISUAL_PART_SPLIT_HOODS");
 	DefaultCarConfig.Icons.SpecialtiesDoors = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesDoors", "VISUAL_PART_SCISSOR_DOORS");
@@ -460,9 +460,21 @@ void LoadCarConfigs()
 	DefaultCarConfig.Names.SpecialtiesHeadlightColor = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesHeadlightColor", "UI_ICE_HEADLIGHTS");
 	DefaultCarConfig.Names.SpecialtiesNosPurge = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesNosPurge", "UI_ICE_NOS_PURGE");
 	DefaultCarConfig.Names.SpecialtiesHydraulics = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesHydraulics", "UI_ICE_HYDRAULICS");
-	DefaultCarConfig.Names.SpecialtiesTrunkAudio = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudio", "TRUNK_AUDIO_TITLE");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudio = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudio", "UI_ICE_TRUNK_AUDIO");
 	DefaultCarConfig.Names.SpecialtiesTrunkAudioLayout = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioLayout", "UI_ICE_TRUNK_AUDIO_LAYOUT_SELECTION");
 	DefaultCarConfig.Names.SpecialtiesTrunkAudioComponents = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioComponents", "UI_ICE_TRUNK_AUDIO_COMPONENTS");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot1 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot1", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot2 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot2", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot3 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot3", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot4 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot4", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot5 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot5", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot6 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot6", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot7 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot7", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot8 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot8", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot9 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot9", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot10 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot10", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot11 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot11", "UI_ICE_TRUNK_AUDIO_COMPONENT");
+	DefaultCarConfig.Names.SpecialtiesTrunkAudioSlot12 = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioSlot12", "UI_ICE_TRUNK_AUDIO_COMPONENT");
 	DefaultCarConfig.Names.SpecialtiesSpinners = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesSpinners", "UI_ICE_SPINNERS");
 	DefaultCarConfig.Names.SpecialtiesSplitHoods = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesSplitHoods", "UI_ICE_HOOD");
 	DefaultCarConfig.Names.SpecialtiesDoors = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesDoors", "UI_ICE_DOORS");
@@ -1174,7 +1186,6 @@ void LoadVinylGroups()
 		AVinylGroup.TextureHash = mINI_ReadHashS(VinylGroupsINI, VinylBrandID, "Texture", GetDefaultVinylGroupTexture(i));
 		AVinylGroup.StringHash = mINI_ReadHashS(VinylGroupsINI, VinylBrandID, "String", GetDefaultVinylGroupString(i));
 		sprintf(AVinylGroup.CameraInfoName, mINI_ReadString(VinylGroupsINI, VinylBrandID, "CameraInfo"));
-		//AVinylGroup.UseAltCamera = mINI_ReadInteger(VinylGroupsINI, VinylBrandID, "UseAltCamera", GetDefaultVinylGroupAltCamera(i)) != 0;
 
 		VinylGroups_temp.push_back(AVinylGroup); // Add to temp list
 	}

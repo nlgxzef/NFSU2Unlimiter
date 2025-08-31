@@ -4,6 +4,13 @@
 
 #define _BrandNameHash 0x839BBC
 
+void __fastcall RimsBrowser_NotificationMessage(DWORD* RimsBrowser, void* EDX_Unused, DWORD MessageHash, DWORD* fe_obj, DWORD param1, DWORD param2)
+{
+    RimsBrowser_NotificationMessage_Game(RimsBrowser, MessageHash, fe_obj, param1, param2);
+    if (MessageHash == CT_bStringHash("PAD_LEFT") || MessageHash == CT_bStringHash("PAD_RIGHT"))
+        SetDetailsPaneVisibility((char const*)RimsBrowser[1], 0);
+}
+
 void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
 {
     int CurrentNodeIndex; // eax

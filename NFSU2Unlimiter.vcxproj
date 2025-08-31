@@ -129,6 +129,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="FEPackage.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="IceCategoryTrunkThing.h" />
     <ClInclude Include="IcePartsBrowser.h" />
     <ClInclude Include="IceSelectionScreen.h" />
     <ClInclude Include="InGameFunctions.h" />

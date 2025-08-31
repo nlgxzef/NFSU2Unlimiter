@@ -36,6 +36,16 @@ bool IsTraffic(BYTE CarTypeID)
 	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 2;
 }
 
+int GetCarTypeIDFromHash(DWORD CarTypeNameHash)
+{
+	for (int i = 0; i < CarCount; i++)
+	{
+		if (*(DWORD*)((*(DWORD*)_CarTypeInfoArray) + i * 0x890 + 0xD0) == CarTypeNameHash)
+			return i;
+	}
+	return ReplacementCar;
+}
+
 bool IsInitiallyUnlocked(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
