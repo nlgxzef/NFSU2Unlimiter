@@ -426,7 +426,7 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
                     PaintSelectionThing_Create(APaintSelectionThing,
                         ChoosePaintScreen_GetCarSlotIDForVinylPaintLayer(ChoosePaintScreen, *(int*)_CurrCarSlotID, i),
                         FEngHashString("PAINT_ICON_%d", i),
-                        CT_bStringHash("PAINT_CHOOSE_VINYL_COLORS"),
+                        CarPart_GetAppliedAttributeUParam(CarPart, FEngHashString("COLOR%dLANGUAGEHASH", i-1), CT_bStringHash("PAINT_CHOOSE_VINYL_COLORS")),
                         0,
                         0);
                     (*(void(__thiscall**)(DWORD*, DWORD*))(*(DWORD*)ChoosePaintScreen + 24))(ChoosePaintScreen, APaintSelectionThing);

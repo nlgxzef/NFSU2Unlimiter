@@ -50,7 +50,7 @@ DWORD(__cdecl* FEngGetLastButton)(char const* pkg) = (DWORD(__cdecl*)(char const
 void(__thiscall* ThumbnailScroller_SnapToItem)(DWORD* ThumbnailScroller, unsigned int btn) = (void(__thiscall*)(DWORD*, unsigned int))0x538700;
 bool(*IsCarPartsAnimLoadedForCar)(DWORD CarTypeHash) = (bool(*)(DWORD))0x4A5B10;
 int(*FEGetAnimationState)(int CarAnimLocation) = (int(*)(int))0x4C18B0;
-void(*FEDoCarPartAnimNow)(int CarAnimLocation, bool unk1, float unk2) = (void(*)(int, bool, float))0x4C1860;
+void(*FEDoCarPartAnimNow)(int CarAnimLocation, bool on, float amount) = (void(*)(int, bool, float))0x4C1860;
 void(__thiscall* IceSelectionScreen_AddSelection)(DWORD* IceSelectionScreen, unsigned int CarSlotID, unsigned int TextureHash, unsigned int LanguageHash, int CarAnimLocation, char const* FEPackageName) = (void(__thiscall*)(DWORD*, unsigned int, unsigned int, unsigned int, int, char const*))0x53AB30;
 void(__thiscall* IceCategoryThing_Create)(DWORD* IceCategoryThing, int CarAnimLocation, unsigned int CarSlotID, unsigned int TextureHash, unsigned int LanguageHash) = (void(__thiscall*)(DWORD*, int, unsigned int, unsigned int, unsigned int))0x53AA80;
 bool (*IsNeonCompletelyLocked)() = (bool(*)())0x539FB0;
@@ -146,10 +146,11 @@ void(__thiscall* PartSelectionScreen_StopBrowsingParts_Game)(DWORD* PartSelectio
 void(__thiscall* IceSelectionScreen_RefreshHeader_Game)(DWORD* IceSelectionScreen) = (void(__thiscall*)(DWORD*))0x5470F0;
 void(__thiscall* IceSelectionScreen_StartBrowsingParts_Game)(DWORD* IceSelectionScreen) = (void(__thiscall*)(DWORD*))0x556930;
 void(__thiscall* IceSelectionScreen_StopBrowsingParts_Game)(DWORD* IceSelectionScreen) = (void(__thiscall*)(DWORD*))0x5605B0;
-void(__thiscall* IceSelectionScreen_DoSpecialScroll)(DWORD* IceSelectionScreen, DWORD* IceSelectionThing, bool) = (void(__thiscall*)(DWORD*, DWORD*, bool))0x54FB70;
+void(__thiscall* IceSelectionScreen_DoSpecialScroll_Game)(DWORD* IceSelectionScreen, DWORD* CategoryNode, bool on) = (void(__thiscall*)(DWORD*, DWORD*, bool))0x54FB70;
 void(__thiscall* IcePartsBrowser_RefreshHeader_Game)(DWORD* IcePartsBrowser) = (void(__thiscall*)(DWORD*))0x547250;
 void(__thiscall* NeonPartsBrowser_RefreshHeader_Game)(DWORD* NeonPartsBrowser) = (void(__thiscall*)(DWORD*))0x547F30;
 void(__thiscall* ChooseDecalScreen_RefreshHeader_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x546F40;
+void(__thiscall* ChooseDecalScreen_ToggleColors)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x568710;
 void(__thiscall* ChooseSpinnerBrand_NotificationMessage_Game)(DWORD* ChooseSpinnerBrand, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x569670;
 void(__thiscall* ChooseSpinnerBrand_RefreshHeader_Game)(DWORD* ChooseSpinnerBrand) = (void(__thiscall*)(DWORD*))0x547330;
 void(__thiscall* RimsBrowser_NotificationMessage_Game)(DWORD* RimsBrowser, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x567A50;
@@ -226,13 +227,15 @@ void(__thiscall* IconScrollerMenu_NotificationMessage)(DWORD* IconScrollerMenu, 
 void(__thiscall* IconScrollerMenu_StopDim)(DWORD* IconScrollerMenu) = (void(__thiscall*)(DWORD*))0x538CA0;
 void(__thiscall* CustomizeNeonMenu_StartBrowsingParts)(DWORD* CustomizeNeonMenu) = (void(__thiscall*)(DWORD*))0x557130;
 void(__thiscall* CustomizeNeonMenu_StopBrowsingParts)(DWORD* CustomizeNeonMenu) = (void(__thiscall*)(DWORD*))0x562B10;
-void(__thiscall* CustomizeNeonMenu_DoSpecialScroll)(DWORD* CustomizeNeonMenu, DWORD* NeonSelection, bool) = (void(__thiscall*)(DWORD*, DWORD*, bool))0x50F290;
+void(__thiscall* CustomizeNeonMenu_DoSpecialScroll_Game)(DWORD* CustomizeNeonMenu, DWORD* CategoryNode, bool on) = (void(__thiscall*)(DWORD*, DWORD*, bool))0x50F290;
 void(__thiscall* StreamingTrafficCarManager_Update_Game)(DWORD* StreamingTrafficCarManager) = (void(__thiscall*)(DWORD*))0x412950;
 void(__thiscall* StreamingTrafficCarManager_ResetStats_Game)(DWORD* StreamingTrafficCarManager) = (void(__thiscall*)(DWORD*))0x412840;
 int(*eLoadStreamingTexture)(DWORD* name_hash_table, int num_hashes, void(*callback)(unsigned int), unsigned int param0, int memory_pool_num) = (int(*)(DWORD*, int, void(*)(unsigned int), unsigned int, int))0x494D60;
 int(*eUnloadStreamingTexture)(DWORD* name_hash_table, int num_hashes) = (int(*)(DWORD*, int))0x490150;
 int(__thiscall* eStreamPackLoader_TestLoadStreamingEntry)(DWORD* eStreamPackLoader, DWORD* name_hash_table, int num_hashes, int memory_pool_num) = (int(__thiscall*)(DWORD*, DWORD*, int, int))0x48D420;
 bool(*IceCategoryIsLocked)(int CarSlotID) = (bool(*)(int))0x539D00;
+void(__thiscall* SelectCarCameraMover_MoveToNewDefaultOrientation)(DWORD* SelectCarCameraMover, float FoV, float XEye, float XLook, float YEye, float XRot, float Zoom, float YRot, float AnimTime, float Focus) = (void(__thiscall*)(DWORD*, float, float, float, float, float, float, float, float, float))0x4533B0;
+void(__thiscall* SelectCarCameraMover_SetDefaultOrientation)(DWORD* SelectCarCameraMover, float FoV, float XEye, float XLook, float YEye, float XRot, float Zoom, float YRot, float AnimTime, float Focus) = (void(__thiscall*)(DWORD*, float, float, float, float, float, float, float, float, float))0x445500;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

@@ -71,6 +71,29 @@ bool UsesSupercharger(BYTE CarTypeID)
 	return (SpoolBase == 0.0f) && (SpoolTop == 0.0f);
 }
 
+void GetAndDoFEPartAnim(int CarSlotID, bool on, float amount)
+{
+	DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
+	int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
+	int CarTypeNameHash = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 8))(FECarConfig);
+
+	int location = CarConfigs[CarTypeID].Animations.AnimationType[CarSlotID];
+	bool loaded = IsCarPartsAnimLoadedForCar(CarTypeNameHash);
+
+	if (loaded)
+	{
+		if (location == 5) // Both doors
+		{
+			FEDoCarPartAnimNow(2, on, amount);
+			FEDoCarPartAnimNow(3, on, amount);
+		}
+		else if (location >= 0 && location <= 3) // Not none
+		{
+			FEDoCarPartAnimNow(location, on, amount);
+		}
+	}
+}
+
 void FillUpPerformanceConfig()
 {
 	int PerfConfigFilledSize = 0;

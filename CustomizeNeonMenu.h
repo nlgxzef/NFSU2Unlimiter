@@ -9,6 +9,14 @@ bool HasNeon(DWORD* Part)
     return (unsigned __int8)(*((BYTE*)Part + 5) >> 5) > 2u;
 }
 
+void __fastcall CustomizeNeonMenu_DoSpecialScroll(DWORD* CustomizeNeonMenu, void* EDX_Unused, DWORD* CategoryNode, bool on)
+{
+    if (CategoryNode)
+    {
+        GetAndDoFEPartAnim(CategoryNode[18], on, 1.0f);
+    }
+}
+
 void __fastcall CustomizeNeonMenu_NotificationMessage(DWORD* CustomizeNeonMenu, void* EDX_Unused, DWORD message, DWORD *fe_obj, DWORD param1, DWORD param2)
 {
     if (!*((BYTE*)CustomizeNeonMenu + 345))
@@ -53,7 +61,7 @@ void __fastcall CustomizeNeonMenu_NotificationMessage(DWORD* CustomizeNeonMenu, 
         else if (!FEngIsScriptRunning_Pkg((const char*)CustomizeNeonMenu[1], CT_bStringHash("_EVENT_HANDLER_"), CT_bStringHash("FORWARD")))
         {
             *((BYTE*)CustomizeNeonMenu + 347) = 1;
-            CustomizeNeonMenu_DoSpecialScroll(CustomizeNeonMenu, (DWORD*)CustomizeNeonMenu[22], 0);
+            CustomizeNeonMenu_DoSpecialScroll(CustomizeNeonMenu, EDX_Unused, (DWORD*)CustomizeNeonMenu[22], 0);
             FEngSendMessageToPackage(0x81F0B71A, (const char*)CustomizeNeonMenu[87]);
             FEngSetScript_Pkg_Hsh((const char*)CustomizeNeonMenu[1], CT_bStringHash("_EVENT_HANDLER_"), CT_bStringHash("FORWARD"), 1);
         }

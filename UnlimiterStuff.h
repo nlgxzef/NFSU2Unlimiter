@@ -29,6 +29,8 @@ char AttachmentNameBuf[64];
 #include "CarLoader.h"
 #include "CarCustomizeManager.h"
 #include "CustomizationScreenManager.h"
+#include "SelectCarCameraMover.h"
+#include "GarageMainScreen.h"
 #include "PlayerCareerState.h"
 #include "StarGazerGuide.h"
 #include "DetailsPane.h"
@@ -211,9 +213,16 @@ int Init()
 	injector::MakeCALL(0x55EEDF, PartSelectionScreen_RefreshHeader, true); // PartSelectionScreen::StartBrowsingParts
 	injector::MakeCALL(0x55ED53, PartSelectionScreen_RefreshHeader, true); // PartSelectionScreen::ScrollVertical
 
-	// Add hood animation for ENGINE part + details pane
+	// Add animations + details pane
 	injector::MakeCALL(0x566854, PartSelectionScreen_StartBrowsingParts, true); // PartSelectionScreen::NotificationMessage
 	injector::MakeCALL(0x56659A, PartSelectionScreen_StopBrowsingParts, true); // PartSelectionScreen::NotificationMessage
+
+	// Add animations for Specialties
+	injector::MakeCALL(0x556A87, IceSelectionScreen_DoSpecialScroll, true); // IceSelectionScreen::StartBrowsingParts
+	injector::MakeCALL(0x568B7B, IceSelectionScreen_DoSpecialScroll, true); // IceSelectionScreen::NotificationMessage
+
+	// Add animations for Neon
+	injector::MakeJMP(0x50F290, CustomizeNeonMenu_DoSpecialScroll, true); // 4 references
 
 	// Custom part icons
 	injector::MakeCALL(0x55EE65, PartSelectionScreen_BuildPartsList, true); // PartSelectionScreen::StartBrowsingParts
@@ -235,6 +244,9 @@ int Init()
 	injector::MakeCALL(0x560175, ChooseDecalScreen_RefreshHeader, true); // ChooseDecalScreen::ScrollParts
 	injector::MakeCALL(0x56858B, ChooseDecalScreen_RefreshHeader, true); // ChooseDecalScreen::ChooseDecalScreen
 	injector::MakeCALL(0x56BCB8, ChooseDecalScreen_RefreshHeader, true); // ChooseDecalScreen::NotificationMessage
+
+	// Fix double message while changing colors for Decals
+	injector::MakeJMP(0x56BE1D, DoubleMessageFixCodeCave_ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::NotificationMessage
 
 	// Add details pane for Spinners
 	injector::WriteMemory(0x79D8A8, &ChooseSpinnerBrand_NotificationMessage, true); // ChooseSpinnerBrand::vtable
@@ -315,6 +327,9 @@ int Init()
 	// Camera Info Stuff
 	injector::MakeCALL(0x4A55F7, FindPartCameraInfo, true); // CarOrbiter::SetLookatPart
 	injector::MakeCALL(0x4A5BF7, FindPartCameraInfo, true); // GarageMainScreen::SetAutoRotateParams
+	injector::MakeNOP(0x4D8524, 2, true); // GarageMainScreen::HandleTick, update static camera with every car change instead of only SUV<-->Sedan
+	injector::MakeJMP(0x4D855B, StaticCameraInfoCodeCave_GarageMainScreen_HandleTick, true);
+	injector::MakeJMP(0x4EAF13, StaticCameraInfoCodeCave_GarageMainScreen_ctor, true);
 
 	// Add Powder Coat and High Heat categories to Body Paint
 	injector::MakeJMP(0x55D0D0, ChoosePaintScreen_ScrollPaintTypes, true); // 3 references

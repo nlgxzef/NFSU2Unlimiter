@@ -7,6 +7,16 @@ DWORD GetCarTypeNameHashFromFECarConfig()
 	return (DWORD)(*(int(__thiscall**)(DWORD*))(*(DWORD*)FECarConfig + 8))(FECarConfig);
 }
 
+void __fastcall IceSelectionScreen_DoSpecialScroll(DWORD* IceSelectionScreen, void* EDX_Unused, DWORD* CategoryNode, bool on)
+{
+	IceSelectionScreen_DoSpecialScroll_Game(IceSelectionScreen, CategoryNode, on);
+
+	if (CategoryNode)
+	{
+		GetAndDoFEPartAnim(CategoryNode[18], on, 1.0f);
+	}
+}
+
 int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 {
 	DWORD* NewBNode; // eax MAPDST

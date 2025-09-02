@@ -127,6 +127,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="FeCarLimits.h" />
     <ClInclude Include="feDialogConfig.h" />
     <ClInclude Include="FEPackage.h" />
+    <ClInclude Include="GarageMainScreen.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="IceCategoryTrunkThing.h" />
@@ -147,6 +148,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="RideInfo.h" />
     <ClInclude Include="RidePhysicsInfo.h" />
     <ClInclude Include="RimsBrowser.h" />
+    <ClInclude Include="SelectCarCameraMover.h" />
     <ClInclude Include="StarGazerGuide.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StreamingTrafficCarManager.h" />

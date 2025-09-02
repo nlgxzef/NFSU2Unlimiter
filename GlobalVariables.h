@@ -938,6 +938,12 @@ typedef struct
 	DWORD PerformanceAerodynamicsLevel3;
 } NamesSection;
 
+typedef struct
+{
+	int AnimationType[CAR_SLOT_ID::__NUM];
+} AnimationSection;
+
+
 #define DefaultPerformancePartCount 71
 
 typedef struct
@@ -960,6 +966,7 @@ typedef struct
 	SpecialtiesSection Specialties;
 	IconsSection Icons;
 	NamesSection Names;
+	AnimationSection Animations;
 	PerformancePartsSection PerformanceParts;
 	//StockPartsSection StockParts;
 	//RandomPartsSection RandomParts;

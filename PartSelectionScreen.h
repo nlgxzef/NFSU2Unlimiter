@@ -6,16 +6,13 @@
 
 #define _PartNode_vtbl 0x79AFDC
 
-void __fastcall PartSelectionScreen_DoSpecialScroll(DWORD* PartSelectionScreen, void* EDX_Unused, DWORD* CategoryNode, bool unkb)
+void __fastcall PartSelectionScreen_DoSpecialScroll(DWORD* PartSelectionScreen, void* EDX_Unused, DWORD* CategoryNode, bool on)
 {
     if (CategoryNode)
     {
-        if (CategoryNode[3] == CAR_SLOT_ID::ENGINE && dword_838990 == 0) // ENGINE
+        if (dword_838990 == 0)
         {
-            DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
-            int CarTypeNameHash = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 8))(FECarConfig);
-            if (IsCarPartsAnimLoadedForCar(CarTypeNameHash))
-                FEDoCarPartAnimNow(0, unkb, 1.0);
+            GetAndDoFEPartAnim(CategoryNode[3], on, 1.0f);
         }
     }
 }
