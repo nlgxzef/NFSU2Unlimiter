@@ -241,42 +241,42 @@ CameraInfo* GetPartCameraInfo(int CarTypeID, int CarSlotID)
 	// Change car slot ID if we use a common camera info for this part
 	switch (CarSlotID)
 	{
-	case CAR_SLOT_ID::NEON_ENGINE:
-	case CAR_SLOT_ID::PAINT_ENGINE:
-		CarSlotID = CAR_SLOT_ID::ENGINE;
+	case CARSLOTID_NEON_ENGINE:
+	case CARSLOTID_PAINT_ENGINE:
+		CarSlotID = CARSLOTID_ENGINE;
 		break;
 
-	case CAR_SLOT_ID::TRUNK:
-	case CAR_SLOT_ID::PAINT_AUDIO:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_0:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_1:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_2:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_3:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_4:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_5:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_6:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_7:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_8:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_9:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_10:
-	case CAR_SLOT_ID::TRUNK_AUDIO_COMP_11:
-		CarSlotID = CAR_SLOT_ID::TRUNK_AUDIO;
+	case CARSLOTID_TRUNK:
+	case CARSLOTID_PAINT_AUDIO:
+	case CARSLOTID_TRUNK_AUDIO_COMP_0:
+	case CARSLOTID_TRUNK_AUDIO_COMP_1:
+	case CARSLOTID_TRUNK_AUDIO_COMP_2:
+	case CARSLOTID_TRUNK_AUDIO_COMP_3:
+	case CARSLOTID_TRUNK_AUDIO_COMP_4:
+	case CARSLOTID_TRUNK_AUDIO_COMP_5:
+	case CARSLOTID_TRUNK_AUDIO_COMP_6:
+	case CARSLOTID_TRUNK_AUDIO_COMP_7:
+	case CARSLOTID_TRUNK_AUDIO_COMP_8:
+	case CARSLOTID_TRUNK_AUDIO_COMP_9:
+	case CARSLOTID_TRUNK_AUDIO_COMP_10:
+	case CARSLOTID_TRUNK_AUDIO_COMP_11:
+		CarSlotID = CARSLOTID_TRUNK_AUDIO;
 		break;
 
-	case CAR_SLOT_ID::FENDER:
-		CarSlotID = CAR_SLOT_ID::DECAL_LEFT_DOOR;
+	case CARSLOTID_FENDER:
+		CarSlotID = CARSLOTID_DECAL_LEFT_DOOR;
 		break;
 
-	case CAR_SLOT_ID::QUARTER:
-		CarSlotID = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+	case CARSLOTID_QUARTER:
+		CarSlotID = CARSLOTID_DECAL_RIGHT_QUARTER;
 		break;
 
-	case CAR_SLOT_ID::LICENSE_PLATE:
-		CarSlotID = CAR_SLOT_ID::BRAKELIGHT;
+	case CARSLOTID_LICENSE_PLATE:
+		CarSlotID = CARSLOTID_BRAKELIGHT;
 		break;
 
-	case CAR_SLOT_ID::TOP:
-		CarSlotID = CAR_SLOT_ID::ROOF;
+	case CARSLOTID_TOP:
+		CarSlotID = CARSLOTID_ROOF;
 		break;
 	}
 
@@ -308,7 +308,7 @@ CameraInfo* GetVinylCameraInfo(int CarTypeID, DWORD* TheCarPart)
 {
 	if (!UseCameraInfo) return 0;
 
-	int CarSlotID = CAR_SLOT_ID::VINYL_LAYER0; // Get the CarSlotID from the part data
+	int CarSlotID = CARSLOTID_VINYL_LAYER0; // Get the CarSlotID from the part data
 	int VinylGroupIndex = *((BYTE*)TheCarPart + 5) & 0x1F; // Get the CarSlotID from the part data
 	
 	// Check if we have car-specific Vinyl camera info for this Vinyl
@@ -358,6 +358,9 @@ StaticCameraInfo* GetStaticCameraInfo(int CarTypeID)
 	}
 
 	// If not, check if we have sedans or SUVs static camera info
+
+	if (!StaticCameraGenericFallback) return 0;
+
 	sprintf(CameraInfoName, "%s", IsSUV(CarTypeID) ? "_SUVs" : "_Sedans");
 
 	for (int i = 0; i < TheCameraInfoStuff.StaticCameraInfos.size(); i++)

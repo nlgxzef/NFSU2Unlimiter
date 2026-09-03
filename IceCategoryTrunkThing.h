@@ -9,7 +9,7 @@ void __fastcall IceCategoryTrunkThing_Create(DWORD* IceCategoryTrunkThing, void 
 {
 	IceSelectionThing_Create(
 		IceCategoryTrunkThing,
-		CAR_SLOT_ID::TRUNK_AUDIO, 
+		CARSLOTID_TRUNK_AUDIO, 
 		TextureHash,
 		StringHash,
 		0,
@@ -18,6 +18,6 @@ void __fastcall IceCategoryTrunkThing_Create(DWORD* IceCategoryTrunkThing, void 
 
 	IceCategoryTrunkThing[0] = IceCategoryTrunkThing_vTable;
 	IceCategoryTrunkThing[23] = -1;
-	((BYTE*)IceCategoryTrunkThing)[34] = IceCategoryIsLocked(CAR_SLOT_ID::TRUNK_AUDIO);
+	((BYTE*)IceCategoryTrunkThing)[34] = IceCategoryIsLocked(CARSLOTID_TRUNK_AUDIO);
 	((BYTE*)IceCategoryTrunkThing)[35] = 1;
 }

@@ -1,6 +1,11 @@
 #pragma once
 #include "includes\injector\injector.hpp"
 
+#include <vector>
+#include <algorithm>
+
+#include "InGameFunctions.h"
+
 #define SAVE_REGS_EDX __asm\
 {\
 	__asm push ebx\
@@ -113,26 +118,33 @@ struct CombinedPointers
 	FEOnlineCar* pOnlineCars2[6];
 };
 
-FEStockCar* CombinedCarPointers[182];
+//FEStockCar* CombinedCarPointers[182];
+
+std::vector<FEStockCar> ExtraStockCars;
+std::vector<FEStockCar*> AllCarPointers;
+FEStockCar** AllCarPointersData = nullptr;
+int AllCarPointersCount = 0;
 
 void InitCombinePointers()
 {
-	CombinedPointers* combined = (CombinedPointers*)CombinedCarPointers;
+	AllCarPointers.clear();
+	AllCarPointers.reserve(182 + ExtraStockCars.size());
 
-	memcpy(combined->pStockCars1, FEPlayerCarDB_Player1->pStockCars, 48 * 4);
-	memcpy(combined->pStockCars2, FEPlayerCarDB_Player2->pStockCars, 48 * 4);
+	for (int i = 0; i < 48; i++) AllCarPointers.push_back(FEPlayerCarDB_Player1->pStockCars[i]);
+	for (int i = 0; i < 48; i++) AllCarPointers.push_back(FEPlayerCarDB_Player2->pStockCars[i]);
+	for (size_t i = 0; i < ExtraStockCars.size(); i++) AllCarPointers.push_back(&ExtraStockCars[i]);
 
-	memcpy(combined->pTunedCars1, FEPlayerCarDB_Player1->pTunedCars, 20 * 4);
-	memcpy(combined->pTunedCars2, FEPlayerCarDB_Player2->pTunedCars, 20 * 4);
+	for (int i = 0; i < 20; i++) AllCarPointers.push_back(FEPlayerCarDB_Player1->pTunedCars[i]);
+	for (int i = 0; i < 20; i++) AllCarPointers.push_back(FEPlayerCarDB_Player2->pTunedCars[i]);
+	for (int i = 0; i < 5; i++)  AllCarPointers.push_back(FEPlayerCarDB_Player1->pCareerCars[i]);
+	for (int i = 0; i < 5; i++)  AllCarPointers.push_back(FEPlayerCarDB_Player2->pCareerCars[i]);
+	for (int i = 0; i < 12; i++) AllCarPointers.push_back(FEPlayerCarDB_Player1->pSponsorCars[i]);
+	for (int i = 0; i < 12; i++) AllCarPointers.push_back(FEPlayerCarDB_Player2->pSponsorCars[i]);
+	for (int i = 0; i < 6; i++)  AllCarPointers.push_back(FEPlayerCarDB_Player1->pOnlineCars[i]);
+	for (int i = 0; i < 6; i++)  AllCarPointers.push_back(FEPlayerCarDB_Player2->pOnlineCars[i]);
 
-	memcpy(combined->pCareerCars1, FEPlayerCarDB_Player1->pCareerCars, 5 * 4);
-	memcpy(combined->pCareerCars2, FEPlayerCarDB_Player2->pCareerCars, 5 * 4);
-
-	memcpy(combined->pSponsorCars1, FEPlayerCarDB_Player1->pSponsorCars, 12 * 4);
-	memcpy(combined->pSponsorCars2, FEPlayerCarDB_Player2->pSponsorCars, 12 * 4);
-
-	memcpy(combined->pOnlineCars1, FEPlayerCarDB_Player1->pOnlineCars, 6 * 4);
-	memcpy(combined->pOnlineCars2, FEPlayerCarDB_Player2->pOnlineCars, 6 * 4);
+	AllCarPointersData = AllCarPointers.data();
+	AllCarPointersCount = (int)AllCarPointers.size();
 }
 
 void __fastcall DefaultStockCars(FEPlayerCarDB* player1, int, int)
@@ -142,40 +154,47 @@ void __fastcall DefaultStockCars(FEPlayerCarDB* player1, int, int)
 	if (player1->NumStockCars == 0x30)
 	{
 		int stockCars = 0;
-		FEPlayerCarDB_Player2->NumStockCars = 0;
-		for (int i = 0; i < 0x30; i++)
-		{
-			auto stockCar = FEPlayerCarDB_Player2->StockCars + i;
-			stockCar->Hash = 0;
-			stockCar->PerformanceMeasure = 0;
-			stockCar->unk1 = 0;
-			stockCar->unk2 = 0;
-			stockCar->Filter = 1;
-		}
+		ExtraStockCars.clear();
+
+		int StockCarVTable = FEPlayerCarDB_Player1->StockCars[0].vTable;
+
+		struct Pending { unsigned int Hash; int Type; };
+		std::vector<Pending> Found;
 
 		for (int i = 0; i < CarCount; i++)
 		{
 			auto carTypeInfo = CarTypeInfos + i;
-			if (carTypeInfo->Data[0x10]) // Has geometry file name?
-			{
-				if ((carTypeInfo->Data[0x36] & 0x20000) != 0) // WhatGame?
-				{
-					if (carTypeInfo->Data[0x211] == 0) // carUsageType
-					{
-						stockCars++;
-						if (stockCars > 0x30)
-						{
-							auto stockCar = FEPlayerCarDB_Player2->StockCars + FEPlayerCarDB_Player2->NumStockCars++;
-							stockCar->Hash = FEngHashString("STOCK_%s", carTypeInfo);
-							stockCar->Filter = 1;
-							stockCar->unk2 = 1;
-							stockCar->unk1 = 0;
-							stockCar->PerformanceMeasure = 0;
-							stockCar->Type = i;
-						}
-					}
-				}
-			}
+			
+			if (!carTypeInfo->Data[0x10]) continue;          // has geometry file name?
+			if ((carTypeInfo->Data[0x36] & 0x20000) == 0) continue; // WhatGame?
+			if (carTypeInfo->Data[0x211] != 0) continue;     // carUsageType, 0 = player car
+
+			stockCars++;
+			if (stockCars <= 0x30) continue;                 // the game's own array holds these
+
+			Pending e;
+			e.Hash = FEngHashString("STOCK_%s", carTypeInfo);
+			e.Type = i;
+
+
+			Found.push_back(e);
+		}
+
+		ExtraStockCars.reserve(Found.size());
+
+		for (size_t n = 0; n < Found.size(); n++)
+		{
+			FEStockCar sc;
+
+			sc.vTable = StockCarVTable;
+			sc.unk1 = 0;
+			sc.Hash = Found[n].Hash;
+			sc.PerformanceMeasure = 0;
+			sc.unk2 = 1;
+			sc.Filter = 1;
+			sc.Type = Found[n].Type;
+
+			ExtraStockCars.push_back(sc);
 		}
 	}
 
@@ -189,19 +208,19 @@ FEStockCar* __fastcall GetCarFiltered(FEPlayerCarDB*, int, unsigned int filter, 
 	int prev = -1;
 	if (past)
 	{
-		for (int i = 0; i < 182; i++)
+		for (size_t i = 0; i < AllCarPointers.size(); i++)
 		{
-			if (CombinedCarPointers[i] == past)
+			if (AllCarPointers[i] == past)
 			{
-				prev = i;
+				prev = (int)i;
 			}
 		}
 	}
 
 	FEStockCar* result = nullptr;
-	for (int i = prev + 1; i < 182; i++)
+	for (size_t i = (size_t)(prev + 1); i < AllCarPointers.size(); i++)
 	{
-		FEStockCar* record = CombinedCarPointers[i];
+		FEStockCar* record = AllCarPointers[i];
 		if (record && record->unk2 && ((record->Filter & filter) != 0))
 		{
 			result = record;
@@ -215,9 +234,9 @@ FEStockCar* __fastcall GetCarFiltered(FEPlayerCarDB*, int, unsigned int filter, 
 FEStockCar* __fastcall GetCarRecordByHandle(FEPlayerCarDB*, int, unsigned int hash)
 {
 	FEStockCar* result = nullptr;
-	for (int i = 0; i < 182; i++)
+	for (size_t i = 0; i < AllCarPointers.size(); i++)
 	{
-		FEStockCar* record = CombinedCarPointers[i];
+		FEStockCar* record = AllCarPointers[i];
 		if (record && record->unk2 && record->Hash == hash)
 		{
 			return record;
@@ -243,6 +262,11 @@ bool __fastcall IsCarStock(FEPlayerCarDB*, int, unsigned int hash)
 		{
 			return true;
 		}
+	}
+
+	for (size_t i = 0; i < ExtraStockCars.size(); i++)
+	{
+		if (ExtraStockCars[i].Hash == hash) return true;
 	}
 
 	return false;
@@ -286,6 +310,11 @@ FEStockCar* __fastcall GetStockCarByCarType(FEPlayerCarDB*, int, unsigned int ty
 		}
 	}
 
+	for (size_t i = 0; i < ExtraStockCars.size(); i++)
+	{
+		if (ExtraStockCars[i].Type == type) return &ExtraStockCars[i];
+	}
+
 	return nullptr;
 }
 
@@ -305,6 +334,11 @@ FEStockCar* __fastcall GetStockCarByHash(FEPlayerCarDB*, int, unsigned int hash)
 		{
 			return FEPlayerCarDB_Player2->pStockCars[i];
 		}
+	}
+
+	for (size_t i = 0; i < ExtraStockCars.size(); i++)
+	{
+		if (ExtraStockCars[i].Hash == hash) return &ExtraStockCars[i];
 	}
 
 	return nullptr;
@@ -437,7 +471,7 @@ __declspec(naked) void StartQuickRaceHook1()
 
 	__asm
 	{
-		mov edx, offset CombinedCarPointers;
+		mov edx, [AllCarPointersData];
 
 		jmp hExit;
 	}
@@ -450,7 +484,7 @@ __declspec(naked) void StartQuickRaceHook2()
 	__asm
 	{
 		add edx, 04;
-		cmp eax, 0xB6;
+		cmp eax, [AllCarPointersCount];
 
 		jmp hExit;
 	}
@@ -462,7 +496,7 @@ __declspec(naked) void StartQuickRaceHook3()
 
 	__asm
 	{
-		mov edi, offset CombinedCarPointers;
+		mov edi, [AllCarPointersData];
 		mov edi, [edi + eax * 4];
 
 		jmp hExit;

@@ -68,7 +68,7 @@ void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
 
         if (*(int*)_FEDatabase == 1)
         {
-            Cost = PlayerCareerState_GetCarPartCost_Game((DWORD*)ThePlayerCareer, CAR_SLOT_ID::FRONT_WHEEL, TheCarPart);
+            Cost = PlayerCareerState_GetCarPartCost_Game((DWORD*)ThePlayerCareer, CARSLOTID_FRONT_WHEEL, TheCarPart);
             FEPrintf(RimsBrowserPackage, 0x380B632, "%d", Cost);
         }
         else

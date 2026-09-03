@@ -52,7 +52,7 @@ int __fastcall PlayerCareerState_GetCarPartRep(DWORD* PlayerCareerState, void* E
 
     unlockable = MapCarPartToUnlockable(slot, part);
     result = GetUnlockablePartRep(unlockable, *((BYTE*)part + 5) >> 5);
-    if (slot == CAR_SLOT_ID::BASE_PAINT && *(DWORD*)part == *(DWORD*)(0x890 * type + *(DWORD*)_CarTypeInfoArray + 0x84C) || result == -1)
+    if (slot == CARSLOTID_BASE_PAINT && *(DWORD*)part == *(DWORD*)(0x890 * type + *(DWORD*)_CarTypeInfoArray + 0x84C) || result == -1)
 		return 0; // stock paint
     return CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("REP"), result);
 }

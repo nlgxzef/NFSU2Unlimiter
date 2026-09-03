@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
+#include "PartLink.h"
 #include "ChooseRimBrand.h"
 
 #define _CurrCarSlotID 0x8389A8
@@ -17,8 +18,37 @@ void __fastcall PartSelectionScreen_DoSpecialScroll(DWORD* PartSelectionScreen, 
     }
 }
 
+void PartSelectionScreen_AddCategoryCarbonChecked(DWORD* PSS, unsigned int TextureHash, unsigned int LanguageHash)
+{
+    static const int CarbonSlots[] =
+    {
+        CARSLOTID_HOOD, CARSLOTID_SPOILER, CARSLOTID_ROOF,
+        CARSLOTID_LEFT_SIDE_MIRROR, CARSLOTID_RIGHT_SIDE_MIRROR,
+        CARSLOTID_DOOR_LEFT, CARSLOTID_DOOR_RIGHT,
+    };
+
+    for (int i = 0; i < (int)(sizeof(CarbonSlots) / sizeof(CarbonSlots[0])); i++)
+    {
+        if (!PartLink_IsSlotHidden(CarbonSlots[i]))
+        {
+            PartSelectionScreen_AddCategoryCarbon(PSS, TextureHash, LanguageHash);
+            return;
+        }
+    }
+}
+
+void PartSelectionScreen_AddCategoryChecked(DWORD* PSS, unsigned int CarSlotID, unsigned int TextureHash, unsigned int LanguageHash, bool unk)
+{
+    if (PartLink_IsSlotHidden((int)CarSlotID)) return;
+
+    PartSelectionScreen_AddCategory(PSS, CarSlotID, TextureHash, LanguageHash, unk);
+}
+
 void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, void* EDX_Unused)
 {
+    PartLink_Resolve((DWORD*)gTheRideInfo);
+    PartLinkTraceCategories();
+
     // Read Part Options for the car
     DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
     int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
@@ -27,127 +57,127 @@ void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, vo
 
     PartSelectionScreen_ResetCategories(&PartSelectionScreen[19]);
     if (CarConfigs[CarTypeID].BodyShop.FrontBumper)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::FRONT_BUMPER,
+            CARSLOTID_FRONT_BUMPER,
             CarConfigs[CarTypeID].Icons.BodyShopFrontBumper,
             CarConfigs[CarTypeID].Names.BodyShopFrontBumper,
             0); // FRONT_BUMPER
     
     if (CarConfigs[CarTypeID].BodyShop.RearBumper)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::REAR_BUMPER,
+            CARSLOTID_REAR_BUMPER,
             CarConfigs[CarTypeID].Icons.BodyShopRearBumper,
             CarConfigs[CarTypeID].Names.BodyShopRearBumper,
             0); // REAR_BUMPER
     
     if (CarConfigs[CarTypeID].BodyShop.Skirt)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::SKIRT,
+            CARSLOTID_SKIRT,
             CarConfigs[CarTypeID].Icons.BodyShopSkirt,
             CarConfigs[CarTypeID].Names.BodyShopSkirt,
             0); // SKIRT
     
     if (CarConfigs[CarTypeID].BodyShop.Fender)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::FENDER,
+            CARSLOTID_FENDER,
             CarConfigs[CarTypeID].Icons.BodyShopFender,
             CarConfigs[CarTypeID].Names.BodyShopFender,
             0); // FENDER
  
     if (CarConfigs[CarTypeID].BodyShop.Quarter)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::QUARTER,
+            CARSLOTID_QUARTER,
             CarConfigs[CarTypeID].Icons.BodyShopQuarter,
             CarConfigs[CarTypeID].Names.BodyShopQuarter,
             0); // QUARTER
     
     if (CarConfigs[CarTypeID].BodyShop.Spoiler)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::SPOILER,
+            CARSLOTID_SPOILER,
             CarConfigs[CarTypeID].Icons.BodyShopSpoiler,
             CarConfigs[CarTypeID].Names.BodyShopSpoiler,
             0); // SPOILER
     
     if (CarConfigs[CarTypeID].BodyShop.Hood)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::HOOD,
+            CARSLOTID_HOOD,
             CarConfigs[CarTypeID].Icons.BodyShopHood,
             CarConfigs[CarTypeID].Names.BodyShopHood,
             0); // HOOD
 
     if (CarConfigs[CarTypeID].BodyShop.Engine && !CarConfigs[CarTypeID].Main.SyncVisualPartsWithPhysics)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::ENGINE,
+            CARSLOTID_ENGINE,
             CarConfigs[CarTypeID].Icons.BodyShopEngine,
             CarConfigs[CarTypeID].Names.BodyShopEngine,
             0); // ENGINE
     
     if (CarConfigs[CarTypeID].BodyShop.Trunk)
-        PartSelectionScreen_AddCategory(PartSelectionScreen,
-            CAR_SLOT_ID::TRUNK,
+        PartSelectionScreen_AddCategoryChecked(PartSelectionScreen,
+            CARSLOTID_TRUNK,
             CarConfigs[CarTypeID].Icons.BodyShopTrunk,
             CarConfigs[CarTypeID].Names.BodyShopTrunk,
             0); // TRUNK
     
     if (CarConfigs[CarTypeID].BodyShop.RoofScoops)
-        PartSelectionScreen_AddCategory(PartSelectionScreen,
-            CAR_SLOT_ID::ROOF,
+        PartSelectionScreen_AddCategoryChecked(PartSelectionScreen,
+            CARSLOTID_ROOF,
             CarConfigs[CarTypeID].Icons.BodyShopRoofScoops,
             CarConfigs[CarTypeID].Names.BodyShopRoofScoops,
             0); // ROOF
     
     if (CarConfigs[CarTypeID].BodyShop.Interior)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::BASE,
+            CARSLOTID_BASE,
             CarConfigs[CarTypeID].Icons.BodyShopInterior,
             CarConfigs[CarTypeID].Names.BodyShopInterior,
             0); // BASE
     
     if (CarConfigs[CarTypeID].BodyShop.Roof)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::TOP,
+            CARSLOTID_TOP,
             CarConfigs[CarTypeID].Icons.BodyShopRoof,
             CarConfigs[CarTypeID].Names.BodyShopRoof,
             0); // TOP
     
     if (CarConfigs[CarTypeID].BodyShop.Headlights)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::HEADLIGHT,
+            CARSLOTID_HEADLIGHT,
             CarConfigs[CarTypeID].Icons.BodyShopHeadlights,
             CarConfigs[CarTypeID].Names.BodyShopHeadlights,
             0); // HEADLIGHT
     
     if (CarConfigs[CarTypeID].BodyShop.Taillights)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::BRAKELIGHT,
+            CARSLOTID_BRAKELIGHT,
             CarConfigs[CarTypeID].Icons.BodyShopTaillights,
             CarConfigs[CarTypeID].Names.BodyShopTaillights,
             0); // BRAKELIGHT
     
     if (CarConfigs[CarTypeID].BodyShop.Mirrors)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::WING_MIRROR,
+            CARSLOTID_WING_MIRROR,
             CarConfigs[CarTypeID].Icons.BodyShopMirrors,
             CarConfigs[CarTypeID].Names.BodyShopMirrors,
             0); // WING_MIRROR
     
     if (CarConfigs[CarTypeID].BodyShop.Exhaust)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::EXHAUST,
+            CARSLOTID_EXHAUST,
             CarConfigs[CarTypeID].Icons.BodyShopExhaust,
             CarConfigs[CarTypeID].Names.BodyShopExhaust,
             0); // EXHAUST
@@ -159,57 +189,90 @@ void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, vo
             CarConfigs[CarTypeID].Names.BodyShopRims);
 
     if (CarConfigs[CarTypeID].BodyShop.Brakes && !CarConfigs[CarTypeID].Main.SyncVisualPartsWithPhysics)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::FRONT_BRAKE,
+            CARSLOTID_FRONT_BRAKE,
             CarConfigs[CarTypeID].Icons.BodyShopBrakes,
             CarConfigs[CarTypeID].Names.BodyShopBrakes,
             0); // FRONT_BRAKE
     
     if (CarConfigs[CarTypeID].BodyShop.CarbonFiber)
-        PartSelectionScreen_AddCategoryCarbon(
+        PartSelectionScreen_AddCategoryCarbonChecked(
             PartSelectionScreen,
             CarConfigs[CarTypeID].Icons.BodyShopCarbonFiber,
             CarConfigs[CarTypeID].Names.BodyShopCarbonFiber);
     
     if (CarConfigs[CarTypeID].BodyShop.WideBodyKits)
-        PartSelectionScreen_AddCategory(
+        PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::WIDE_BODY,
+            CARSLOTID_WIDE_BODY,
             CarConfigs[CarTypeID].Icons.BodyShopWideBodyKits,
             CarConfigs[CarTypeID].Names.BodyShopWideBodyKits,
             0); // WIDE_BODY
     
     int NumAttachments = CarConfigs[CarTypeID].BodyShop.Attachments;
 
-    int AttachmentAvailable[5] = {
+    static const int AttachmentSlots[11] = {
+        CARSLOTID_DAMAGE_FRONT,
+        CARSLOTID_DAMAGE_REAR,
+        CARSLOTID_DAMAGE_LEFT,
+        CARSLOTID_DAMAGE_RIGHT,
+        CARSLOTID_DAMAGE_TOP,
+        CARSLOTID_DOOR_PANEL_LEFT,
+        CARSLOTID_DOOR_PANEL_RIGHT,
+        CARSLOTID_DOOR_SILL_LEFT,
+        CARSLOTID_DOOR_SILL_RIGHT,
+        CARSLOTID_HOOD_UNDER,
+        CARSLOTID_TRUNK_UNDER,
+    };
+
+    int AttachmentAvailable[] = {
         CarConfigs[CarTypeID].BodyShop.Attachment0,
         CarConfigs[CarTypeID].BodyShop.Attachment1,
         CarConfigs[CarTypeID].BodyShop.Attachment2,
         CarConfigs[CarTypeID].BodyShop.Attachment3,
-        CarConfigs[CarTypeID].BodyShop.Attachment4
-	};
-    DWORD AttachmentIcons[5] = {
+        CarConfigs[CarTypeID].BodyShop.Attachment4,
+        CarConfigs[CarTypeID].BodyShop.Attachment5,
+        CarConfigs[CarTypeID].BodyShop.Attachment6,
+        CarConfigs[CarTypeID].BodyShop.Attachment7,
+        CarConfigs[CarTypeID].BodyShop.Attachment8,
+        CarConfigs[CarTypeID].BodyShop.Attachment9,
+        CarConfigs[CarTypeID].BodyShop.Attachment10
+    };
+
+    DWORD AttachmentIcons[] = {
         CarConfigs[CarTypeID].Icons.BodyShopAttachment0,
         CarConfigs[CarTypeID].Icons.BodyShopAttachment1,
         CarConfigs[CarTypeID].Icons.BodyShopAttachment2,
         CarConfigs[CarTypeID].Icons.BodyShopAttachment3,
-        CarConfigs[CarTypeID].Icons.BodyShopAttachment4
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment4,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment5,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment6,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment7,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment8,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment9,
+        CarConfigs[CarTypeID].Icons.BodyShopAttachment10
     };
-    DWORD AttachmentNames[5] = {
+    DWORD AttachmentNames[] = {
         CarConfigs[CarTypeID].Names.BodyShopAttachment0,
         CarConfigs[CarTypeID].Names.BodyShopAttachment1,
         CarConfigs[CarTypeID].Names.BodyShopAttachment2,
         CarConfigs[CarTypeID].Names.BodyShopAttachment3,
-        CarConfigs[CarTypeID].Names.BodyShopAttachment4
+        CarConfigs[CarTypeID].Names.BodyShopAttachment4,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment5,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment6,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment7,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment8,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment9,
+        CarConfigs[CarTypeID].Names.BodyShopAttachment10
     };
 
     for (int i = 0; i < NumAttachments; i++)
     {
         if (AttachmentAvailable[i])
-            PartSelectionScreen_AddCategory(
+            PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
-            CAR_SLOT_ID::__ATTACHMENT_MODEL_FIRST + i,
+            AttachmentSlots[i],
             AttachmentIcons[i],
             AttachmentNames[i],
             0);
@@ -340,37 +403,44 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
 
     switch (CarSlotID)
     {
-    case CAR_SLOT_ID::BASE:
-    case CAR_SLOT_ID::FRONT_BUMPER:
-    case CAR_SLOT_ID::REAR_BUMPER:
-    case CAR_SLOT_ID::WIDE_BODY:
-    case CAR_SLOT_ID::ROOF:
-    case CAR_SLOT_ID::TOP:
-    case CAR_SLOT_ID::HOOD:
-    case CAR_SLOT_ID::TRUNK:
-    case CAR_SLOT_ID::SKIRT:
-    case CAR_SLOT_ID::SPOILER:
-    case CAR_SLOT_ID::ENGINE:
-    case CAR_SLOT_ID::HEADLIGHT:
-    case CAR_SLOT_ID::BRAKELIGHT:
-    case CAR_SLOT_ID::EXHAUST:
-    case CAR_SLOT_ID::FENDER:
-    case CAR_SLOT_ID::QUARTER:
-    case CAR_SLOT_ID::FRONT_BRAKE:
-    case CAR_SLOT_ID::REAR_BRAKE:
-    case CAR_SLOT_ID::WING_MIRROR:
-    case CAR_SLOT_ID::DAMAGE_FRONT:
-    case CAR_SLOT_ID::DAMAGE_REAR:
-    case CAR_SLOT_ID::DAMAGE_LEFT:
-    case CAR_SLOT_ID::DAMAGE_RIGHT:
-    case CAR_SLOT_ID::DAMAGE_TOP:
+    case CARSLOTID_BASE:
+    case CARSLOTID_FRONT_BUMPER:
+    case CARSLOTID_REAR_BUMPER:
+    case CARSLOTID_WIDE_BODY:
+    case CARSLOTID_ROOF:
+    case CARSLOTID_TOP:
+    case CARSLOTID_HOOD:
+    case CARSLOTID_TRUNK:
+    case CARSLOTID_SKIRT:
+    case CARSLOTID_SPOILER:
+    case CARSLOTID_ENGINE:
+    case CARSLOTID_HEADLIGHT:
+    case CARSLOTID_BRAKELIGHT:
+    case CARSLOTID_EXHAUST:
+    case CARSLOTID_FENDER:
+    case CARSLOTID_QUARTER:
+    case CARSLOTID_FRONT_BRAKE:
+    case CARSLOTID_REAR_BRAKE:
+    case CARSLOTID_WING_MIRROR:
+    case CARSLOTID_DAMAGE_FRONT:
+    case CARSLOTID_DAMAGE_REAR:
+    case CARSLOTID_DAMAGE_LEFT:
+    case CARSLOTID_DAMAGE_RIGHT:
+    case CARSLOTID_DAMAGE_TOP:
+    case CARSLOTID_DOOR_PANEL_LEFT:
+    case CARSLOTID_DOOR_PANEL_RIGHT:
+    case CARSLOTID_DOOR_SILL_LEFT:
+    case CARSLOTID_DOOR_SILL_RIGHT:
+    case CARSLOTID_HOOD_UNDER:
+    case CARSLOTID_TRUNK_UNDER:
         while (TheCarPart)
         {
             unsigned int IsCF = CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("CARBONFIBRE"), 0) != 0 ? 666 : 0;
             if (*((char*)TheCarPart + 4) == CarPartID && PartAttribFilter == IsCF)
             {
                 if (UnlockSystem_IsCarPartUnlocked(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk)
-                    && (CarSlotID != 9 || (*((BYTE*)TheCarPart + 5) & 0x1F) != 5))
+                    && (CarSlotID != 9 || (*((BYTE*)TheCarPart + 5) & 0x1F) != 5)
+                    && !PartLink_IsHiddenFromMenu(TheCarPart) && !PartLink_IsSlotHidden(CarSlotID))
                 {
                     NewBNode = (DWORD*)j__malloc(0x10u);
                     if (NewBNode)
@@ -396,8 +466,8 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
             TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1);
         }
         break;
-    case CAR_SLOT_ID::FRONT_WHEEL:
-    case CAR_SLOT_ID::REAR_WHEEL:
+    case CARSLOTID_FRONT_WHEEL:
+    case CARSLOTID_REAR_WHEEL:
         while (TheCarPart)
         {
             if (*((char*)TheCarPart + 4) == CarPartID && IsRimAvailable(CarTypeID, TheCarPart, PartAttribFilter))
@@ -425,13 +495,13 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
             TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1);
         }
         break;
-    case CAR_SLOT_ID::DECAL_HOOD:
-    case CAR_SLOT_ID::DECAL_FRONT_WINDOW:
-    case CAR_SLOT_ID::DECAL_REAR_WINDOW:
-    case CAR_SLOT_ID::DECAL_LEFT_DOOR:
-    case CAR_SLOT_ID::DECAL_RIGHT_DOOR:
-    case CAR_SLOT_ID::DECAL_LEFT_QUARTER:
-    case CAR_SLOT_ID::DECAL_RIGHT_QUARTER:
+    case CARSLOTID_DECAL_HOOD:
+    case CARSLOTID_DECAL_FRONT_WINDOW:
+    case CARSLOTID_DECAL_REAR_WINDOW:
+    case CARSLOTID_DECAL_LEFT_DOOR:
+    case CARSLOTID_DECAL_RIGHT_DOOR:
+    case CARSLOTID_DECAL_LEFT_QUARTER:
+    case CARSLOTID_DECAL_RIGHT_QUARTER:
         while (TheCarPart)
         {
             NewBNode = (DWORD*)j__malloc(0x10u);
@@ -456,39 +526,39 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
             TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1);
         }
         break;
-    case CAR_SLOT_ID::BASE_PAINT:
-    case CAR_SLOT_ID::PAINT_ENGINE:
-    case CAR_SLOT_ID::PAINT_SPOILER:
-    case CAR_SLOT_ID::PAINT_BRAKE:
-    case CAR_SLOT_ID::PAINT_EXHAUST:
-    case CAR_SLOT_ID::PAINT_AUDIO:
-    case CAR_SLOT_ID::PAINT_RIM:
-    case CAR_SLOT_ID::PAINT_SPINNER:
-    case CAR_SLOT_ID::PAINT_ROOF:
-    case CAR_SLOT_ID::PAINT_MIRROR:
-    case CAR_SLOT_ID::VINYL_COLOUR0_0:
-    case CAR_SLOT_ID::VINYL_COLOUR0_1:
-    case CAR_SLOT_ID::VINYL_COLOUR0_2:
-    case CAR_SLOT_ID::VINYL_COLOUR0_3:
-    case CAR_SLOT_ID::VINYL_COLOUR1_0:
-    case CAR_SLOT_ID::VINYL_COLOUR1_1:
-    case CAR_SLOT_ID::VINYL_COLOUR1_2:
-    case CAR_SLOT_ID::VINYL_COLOUR1_3:
-    case CAR_SLOT_ID::VINYL_COLOUR2_0:
-    case CAR_SLOT_ID::VINYL_COLOUR2_1:
-    case CAR_SLOT_ID::VINYL_COLOUR2_2:
-    case CAR_SLOT_ID::VINYL_COLOUR2_3:
-    case CAR_SLOT_ID::VINYL_COLOUR3_0:
-    case CAR_SLOT_ID::VINYL_COLOUR3_1:
-    case CAR_SLOT_ID::VINYL_COLOUR3_2:
-    case CAR_SLOT_ID::VINYL_COLOUR3_3:
-    case CAR_SLOT_ID::HUD_BACKING_COLOUR:
-    case CAR_SLOT_ID::HUD_NEEDLE_COLOUR:
-    case CAR_SLOT_ID::HUD_CHARACTER_COLOUR:
+    case CARSLOTID_BASE_PAINT:
+    case CARSLOTID_PAINT_ENGINE:
+    case CARSLOTID_PAINT_SPOILER:
+    case CARSLOTID_PAINT_BRAKE:
+    case CARSLOTID_PAINT_EXHAUST:
+    case CARSLOTID_PAINT_AUDIO:
+    case CARSLOTID_PAINT_RIM:
+    case CARSLOTID_PAINT_SPINNER:
+    case CARSLOTID_PAINT_ROOF:
+    case CARSLOTID_PAINT_MIRROR:
+    case CARSLOTID_VINYL_COLOUR0_0:
+    case CARSLOTID_VINYL_COLOUR0_1:
+    case CARSLOTID_VINYL_COLOUR0_2:
+    case CARSLOTID_VINYL_COLOUR0_3:
+    case CARSLOTID_VINYL_COLOUR1_0:
+    case CARSLOTID_VINYL_COLOUR1_1:
+    case CARSLOTID_VINYL_COLOUR1_2:
+    case CARSLOTID_VINYL_COLOUR1_3:
+    case CARSLOTID_VINYL_COLOUR2_0:
+    case CARSLOTID_VINYL_COLOUR2_1:
+    case CARSLOTID_VINYL_COLOUR2_2:
+    case CARSLOTID_VINYL_COLOUR2_3:
+    case CARSLOTID_VINYL_COLOUR3_0:
+    case CARSLOTID_VINYL_COLOUR3_1:
+    case CARSLOTID_VINYL_COLOUR3_2:
+    case CARSLOTID_VINYL_COLOUR3_3:
+    case CARSLOTID_HUD_BACKING_COLOUR:
+    case CARSLOTID_HUD_NEEDLE_COLOUR:
+    case CARSLOTID_HUD_CHARACTER_COLOUR:
         if (UnifyPaints && 
-            (CarSlotID != CAR_SLOT_ID::HUD_BACKING_COLOUR 
-            && CarSlotID != CAR_SLOT_ID::HUD_NEEDLE_COLOUR 
-            && CarSlotID != CAR_SLOT_ID::HUD_CHARACTER_COLOUR)) // todo: unify hud paint later
+            (CarSlotID != CARSLOTID_HUD_BACKING_COLOUR 
+            && CarSlotID != CARSLOTID_HUD_NEEDLE_COLOUR 
+            && CarSlotID != CARSLOTID_HUD_CHARACTER_COLOUR)) // todo: unify hud paint later
         {
             for (int s = 0; s < 5; s++)
             {
@@ -556,10 +626,10 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
         }
         break;
         
-    case CAR_SLOT_ID::VINYL_LAYER0:
-    case CAR_SLOT_ID::VINYL_LAYER1:
-    case CAR_SLOT_ID::VINYL_LAYER2:
-    case CAR_SLOT_ID::VINYL_LAYER3:
+    case CARSLOTID_VINYL_LAYER0:
+    case CARSLOTID_VINYL_LAYER1:
+    case CARSLOTID_VINYL_LAYER2:
+    case CARSLOTID_VINYL_LAYER3:
         while (TheCarPart)
         {
             if (*((char*)TheCarPart + 4) == CarPartID && (*((BYTE*)TheCarPart + 5) & 0x1F) == PartAttribFilter)
@@ -769,27 +839,27 @@ bool PartSelectionScreen_CanPaintThisPart(DWORD* TheCarPart)
 
     switch (CarSlotID)
     {
-        case CAR_SLOT_ID::ENGINE:
-        case CAR_SLOT_ID::TRUNK_AUDIO:
-        case CAR_SLOT_ID::FRONT_BRAKE:
+        case CARSLOTID_ENGINE:
+        case CARSLOTID_TRUNK_AUDIO:
+        case CARSLOTID_FRONT_BRAKE:
             Paint = (UpgradeLevel > 2) || (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("UNPAINTABLE"), 1) == 0);
             break;
-        case CAR_SLOT_ID::SPOILER:
-        case CAR_SLOT_ID::ROOF:
-        case CAR_SLOT_ID::WING_MIRROR:
+        case CARSLOTID_SPOILER:
+        case CARSLOTID_ROOF:
+        case CARSLOTID_WING_MIRROR:
             Paint = (UpgradeLevel > 0) 
                 && (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("UNPAINTABLE"), 0) == 0) 
                 && (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("CARBONFIBRE"), 0) == 0);
             break;
-        case CAR_SLOT_ID::FRONT_WHEEL:
-        case CAR_SLOT_ID::REAR_WHEEL:
-        case CAR_SLOT_ID::EXHAUST:
+        case CARSLOTID_FRONT_WHEEL:
+        case CARSLOTID_REAR_WHEEL:
+        case CARSLOTID_EXHAUST:
             Paint = (UpgradeLevel > 0);
             break;
-        case CAR_SLOT_ID::FRONT_BUMPER:
-        case CAR_SLOT_ID::REAR_BUMPER:
-        case CAR_SLOT_ID::SKIRT:
-        case CAR_SLOT_ID::WIDE_BODY:
+        case CARSLOTID_FRONT_BUMPER:
+        case CARSLOTID_REAR_BUMPER:
+        case CARSLOTID_SKIRT:
+        case CARSLOTID_WIDE_BODY:
             Paint = (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("UNPAINTABLE"), 0) == 0)
                 && (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("CARBONFIBRE"), 0) == 0);
             break;
@@ -806,14 +876,14 @@ bool PartSelectionScreen_CanNeonThisPart(DWORD* TheCarPart)
 
     switch (CarSlotID)
     {
-    case CAR_SLOT_ID::ENGINE:
-    case CAR_SLOT_ID::TRUNK_AUDIO:
+    case CARSLOTID_ENGINE:
+    case CARSLOTID_TRUNK_AUDIO:
         Neon = (UpgradeLevel > 2) || (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("NEON"), 1) != 0);
         break;
-    case CAR_SLOT_ID::FRONT_BUMPER:
-    case CAR_SLOT_ID::REAR_BUMPER:
-    case CAR_SLOT_ID::SKIRT:
-    case CAR_SLOT_ID::WIDE_BODY:
+    case CARSLOTID_FRONT_BUMPER:
+    case CARSLOTID_REAR_BUMPER:
+    case CARSLOTID_SKIRT:
+    case CARSLOTID_WIDE_BODY:
         Neon = 1;
         break;
     }
@@ -868,30 +938,30 @@ void __fastcall PartSelectionScreen_SetupCarbonParts(DWORD* PartSelectionScreen,
 
     PartSelectionScreen_ResetCategories(&PartSelectionScreen[19]);
     PartSelectionScreen[113] = 0;
-    PartSelectionScreen_AddCategory(
+    PartSelectionScreen_AddCategoryChecked(
         PartSelectionScreen, 
-        CAR_SLOT_ID::HOOD, 
+        CARSLOTID_HOOD, 
         CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberHood,
         CarConfigs[CarTypeID].Names.BodyShopCarbonFiberHood,
         1);// VISUAL_PART_CARBON_FIBRE_HOODS
 
-    PartSelectionScreen_AddCategory(
+    PartSelectionScreen_AddCategoryChecked(
         PartSelectionScreen, 
-        CAR_SLOT_ID::SPOILER,
+        CARSLOTID_SPOILER,
         CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberSpoiler,
         CarConfigs[CarTypeID].Names.BodyShopCarbonFiberSpoiler,
         1);// VISUAL_PART_CARBON_FIBRE_SPOILERS
 
-    PartSelectionScreen_AddCategory(
+    PartSelectionScreen_AddCategoryChecked(
         PartSelectionScreen, 
-        CAR_SLOT_ID::ROOF,
+        CARSLOTID_ROOF,
         CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberRoofScoop,
         CarConfigs[CarTypeID].Names.BodyShopCarbonFiberRoofScoop,
         1);// VISUAL_PART_CARBON_FIBRE_ROOF_SCOOP
 
-    PartSelectionScreen_AddCategory(
+    PartSelectionScreen_AddCategoryChecked(
         PartSelectionScreen, 
-        CAR_SLOT_ID::WING_MIRROR,
+        CARSLOTID_WING_MIRROR,
         CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberMirrors,
         CarConfigs[CarTypeID].Names.BodyShopCarbonFiberMirrors,
         1);// VISUAL_PART_CARBON_FIBRE_MIRRORS
@@ -900,12 +970,12 @@ void __fastcall PartSelectionScreen_SetupCarbonParts(DWORD* PartSelectionScreen,
     CFDoor:
     PartUnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
     locked = UnlockSystem_IsUnlockableUnlocked(PartUnlockFilter, 85, 3, *(DWORD*)0x8389B0) == 0;
-    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::DOOR_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
+    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_DOOR_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
     {
         NewNode = (DWORD*)j__malloc(0x40u);
         if (NewNode)
         {
-            NewNode[3] = CAR_SLOT_ID::DOOR_CARBON;
+            NewNode[3] = CARSLOTID_DOOR_CARBON;
             NewNode[4] = 0;
             NewNode[5] = 0;
             NewNode[6] = 0;
@@ -934,7 +1004,7 @@ void __fastcall PartSelectionScreen_SetupCarbonParts(DWORD* PartSelectionScreen,
         NewNode = (DWORD*)j__malloc(0x40u);
         if (NewNode)
         {
-            NewNode[3] = CAR_SLOT_ID::DOOR_CARBON;
+            NewNode[3] = CARSLOTID_DOOR_CARBON;
             NewNode[4] = 0;
             NewNode[5] = 0;
             NewNode[6] = 0;
@@ -968,12 +1038,12 @@ CFTrunk:
     //++PartSelectionScreen[113];
     PartUnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
     locked = UnlockSystem_IsUnlockableUnlocked(PartUnlockFilter, 86, 3, *(DWORD*)0x8389B0) == 0;
-    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::TRUNK_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
+    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_TRUNK_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
     {
         NewNode = (DWORD*)j__malloc(0x40u);
         if (NewNode)
         {
-            NewNode[3] = CAR_SLOT_ID::TRUNK_CARBON;
+            NewNode[3] = CARSLOTID_TRUNK_CARBON;
             NewNode[4] = 0;
             NewNode[5] = 0;
             NewNode[6] = 0;
@@ -1002,7 +1072,7 @@ CFTrunk:
         NewNode = (DWORD*)j__malloc(0x40u);
         if (NewNode)
         {
-            NewNode[3] = CAR_SLOT_ID::TRUNK_CARBON;
+            NewNode[3] = CARSLOTID_TRUNK_CARBON;
             NewNode[4] = 0;
             NewNode[5] = 0;
             NewNode[6] = 0;
@@ -1035,12 +1105,12 @@ CFWidebody:
     ++PartSelectionScreen[113];
     PartUnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
     locked = UnlockSystem_IsUnlockableUnlocked(PartUnlockFilter, 85, 3, *(DWORD*)0x8389B0) == 0;
-    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::KIT_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
+    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_KIT_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
     {
         NewNode = (DWORD*)j__malloc(0x40u);
         if (NewNode)
         {
-            NewNode[3] = CAR_SLOT_ID::KIT_CARBON;
+            NewNode[3] = CARSLOTID_KIT_CARBON;
             NewNode[4] = 0;
             NewNode[5] = 0;
             NewNode[6] = 0;
@@ -1069,7 +1139,7 @@ CFWidebody:
         NewNode = (DWORD*)j__malloc(0x40u);
         if (NewNode)
         {
-            NewNode[3] = CAR_SLOT_ID::KIT_CARBON;
+            NewNode[3] = CARSLOTID_KIT_CARBON;
             NewNode[4] = 0;
             NewNode[5] = 0;
             NewNode[6] = 0;

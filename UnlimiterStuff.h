@@ -8,6 +8,8 @@
 using namespace std;
 
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
+BYTE CarCountByte; // CarCount clamped to a byte
+bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
 bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
@@ -23,6 +25,7 @@ char AttachmentNameBuf[64];
 #include "CameraInfo.h"
 #include "CarTypeInfo.h"
 #include "CarPart.h"
+#include "CarPartDatabase.h"
 #include "CarRenderInfo.h"
 #include "RideInfo.h"
 #include "RidePhysicsInfo.h"
@@ -62,10 +65,12 @@ char AttachmentNameBuf[64];
 #include "Tachometer.h"
 #include "HUD_Customizer.h"
 #include "CustomHUD_Browser.h"
+#include "FeCarLimits.h"
+#include "PresetCars.h"
 #include "Helpers.h"
 #include "UnlimiterData.h"
 #include "CodeCaves.h"
-#include "FeCarLimits.h"
+#include "Game.h"
 
 int Init()
 {
@@ -77,10 +82,12 @@ int Init()
 	NFSU2UnlimiterSettingsINIFile.read(Settings);
 
 	// Main
-	ReplacementCar = mINI_ReadInteger(Settings, "Main", "ReplacementModel", 1);
+	ReplacementCar = mINI_ReadInteger(Settings, "Main", "ReplacementCar",
+		mINI_ReadInteger(Settings, "Main", "ReplacementModel", 1)); 
 	AllNewCarsInitiallyUnlocked = mINI_ReadInteger(Settings, "Main", "AllNewCarsInitiallyUnlocked", 0) != 0;
 	AllNewCarsCanBeDrivenByAI = mINI_ReadInteger(Settings, "Main", "AllNewCarsCanBeDrivenByAI", 0) != 0;
-	RandomNameHook = mINI_ReadInteger(Settings, "Main", "EnableRandomNameHook", 1) != 0;
+	RandomNameHook = mINI_ReadInteger(Settings, "Main", "RandomNameHook",
+		mINI_ReadInteger(Settings, "Main", "EnableRandomNameHook", 1)) != 0;
 
 	// Fixes
 	DisappearingWheelsFix = mINI_ReadInteger(Settings, "Fixes", "DisappearingWheelsFix", 1) != 0;
@@ -95,16 +102,22 @@ int Init()
 	AddOnOpponentsPartsFix = mINI_ReadInteger(Settings, "Misc", "ForceStockPartsOnAddOnOpponents", 0) != 0;
 	ExtendFeCarLimits = mINI_ReadInteger(Settings, "Misc", "ExtendFeCarLimits", 0) != 0;// Doubles the amount of stock and tuned cars a player can have in a profile.
 
+	// Sponsor Cars
+	PresetCarsInCustomize = mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0) != 0;
+	PresetCarsInQuickRace = mINI_ReadInteger(Settings, "SponsorCars", "EnableInQuickRace", 0) != 0;
+	UnlockSponsorCarsWithoutCheats = mINI_ReadInteger(Settings, "SponsorCars", "UnlockWithoutCheats", 0) != 0;
+
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
 	DisableLightFlareColors = mINI_ReadInteger(Settings, "Debug", "DisableLightFlareColors", 0) != 0;
 	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
+	PartLinkTrace = mINI_ReadInteger(Settings, "Debug", "PartLinkTrace", 0) != 0;
+	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
 
 	// Count Cars Automatically
-	injector::MakeJMP(0x636BF7, DoUnlimiterStuffCodeCave, true); // LoaderCarInfo
-	injector::MakeJMP(0x636D6C, DoUnlimiterStuffCodeCave2, true);
+	injector::WriteMemory(0x7FA898, &LoaderCarInfo_Hook, true); // LoaderTable
 
 	// Fix car lot unlock crash
 	for (TheCounter = 0; TheCounter < 256; TheCounter++) CarLotUnlockData[TheCounter] = 1; // fill with 1s
@@ -475,6 +488,7 @@ int Init()
 		injector::MakeCALL(0x633608, GetUsedCarTextureInfo, true); // LoadedSkin::ctor
 		injector::MakeCALL(0x636855, GetUsedCarTextureInfo, true); // CarRenderInfo::SwitchSkin
 		injector::MakeCALL(0x638472, GetUsedCarTextureInfo, true); // CarRenderInfo::ctor
+		injector::MakeCALL(0x61DAD5, GetDoorlineHash, true); // CompositeSkin
 
 		injector::MakeRangedNOP(0x61FF70, 0x620023, true); // Free up texture replacement slots #47-72 instead of assigning unused leftover decal stuff, CarRenderInfo::UpdateDecalTextures
 		// Resize TexturesToLoadPerm and Temp (Also in LoadedSkin struct)
@@ -608,6 +622,8 @@ int Init()
 	{
 		InitFeCarLimits();
 	}
+
+	InitPresetCars();
 
 	if (ExportCameraInfoIni)
 	{

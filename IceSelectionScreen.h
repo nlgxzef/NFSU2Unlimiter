@@ -32,7 +32,7 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 
 	switch (CarSlotID)
 	{
-	case CAR_SLOT_ID::HOOD: // Split Hoods
+	case CARSLOTID_HOOD: // Split Hoods
 		while (TheCarPart)
 		{
 			if (*((char*)TheCarPart + 4) == CarPartID && (*((BYTE*)TheCarPart + 5) & 0x1F) == 5)
@@ -60,8 +60,8 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 			TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1);
 		}
 		break;
-	case CAR_SLOT_ID::FRONT_WHEEL: // SPINNER
-	case CAR_SLOT_ID::REAR_WHEEL:
+	case CARSLOTID_FRONT_WHEEL: // SPINNER
+	case CARSLOTID_REAR_WHEEL:
 		while (TheCarPart)
 		{
 			if (*((char*)TheCarPart + 4) == CarPartID && IsRimAvailable(CarTypeID, TheCarPart, CT_bStringHash("SPINNER")))
@@ -115,9 +115,9 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 		}
 		break;
 	
-	case CAR_SLOT_ID::NEON_ENGINE: // Hide LED neons from other categories as they aren't supposed to render tubes
-	case CAR_SLOT_ID::NEON_TRUNK:
-	case CAR_SLOT_ID::NEON_CABIN:
+	case CARSLOTID_NEON_ENGINE: // Hide LED neons from other categories as they aren't supposed to render tubes
+	case CARSLOTID_NEON_TRUNK:
+	case CARSLOTID_NEON_CABIN:
 		while (TheCarPart)
 		{
 			if (*((char*)TheCarPart + 4) == CarPartID && (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("LED"), 0) == 0))
@@ -214,7 +214,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		if ((*(int*)0x83898C != 1) && (CarConfigs[CarTypeID].Specialties.CustomGauges))
 			IceSelectionScreen_AddSelection(
 				IceSelectionScreen, 
-				CAR_SLOT_ID::CUSTOM_HUD, 
+				CARSLOTID_CUSTOM_HUD, 
 				CarConfigs[CarTypeID].Icons.SpecialtiesCustomGauges,
 				CarConfigs[CarTypeID].Names.SpecialtiesCustomGauges,
 				-1, 
@@ -228,7 +228,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 				IceCategoryThing_Create(
 					AMenuOption, 
 					7, 
-					CAR_SLOT_ID::CABIN_NEON_FRAME, 
+					CARSLOTID_CABIN_NEON_FRAME, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesNeon,
 					CarConfigs[CarTypeID].Names.SpecialtiesNeon);
 				*((BYTE*)AMenuOption + 34) = IsNeonCompletelyLocked();
@@ -245,7 +245,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					CAR_SLOT_ID::WINDOW_TINT, 
+					CARSLOTID_WINDOW_TINT, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesWindowTint,
 					CarConfigs[CarTypeID].Names.SpecialtiesWindowTint,
 					0, 
@@ -264,7 +264,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					CAR_SLOT_ID::HEADLIGHT_BULB, 
+					CARSLOTID_HEADLIGHT_BULB, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesHeadlightColor,
 					CarConfigs[CarTypeID].Names.SpecialtiesHeadlightColor,
 					0, 
@@ -282,7 +282,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			if (AMenuOption)
 			{
 				IceSelectionThing_Create(AMenuOption,
-					CAR_SLOT_ID::NOS_PURGE, 
+					CARSLOTID_NOS_PURGE, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesNosPurge,
 					CarConfigs[CarTypeID].Names.SpecialtiesNosPurge,
 					0, 
@@ -301,7 +301,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption,
-					CAR_SLOT_ID::HYDRAULICS, 
+					CARSLOTID_HYDRAULICS, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesHydraulics,
 					CarConfigs[CarTypeID].Names.SpecialtiesHydraulics,
 					0, 
@@ -335,7 +335,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					CAR_SLOT_ID::FRONT_WHEEL, 
+					CARSLOTID_FRONT_WHEEL, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesSpinners,
 					CarConfigs[CarTypeID].Names.SpecialtiesSpinners,
 					0, 
@@ -354,7 +354,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					CAR_SLOT_ID::HOOD, 
+					CARSLOTID_HOOD, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesSplitHoods,
 					CarConfigs[CarTypeID].Names.SpecialtiesSplitHoods,
 					0, 
@@ -373,7 +373,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					CAR_SLOT_ID::DOOR_STYLE, 
+					CARSLOTID_DOOR_STYLE, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesDoors,
 					CarConfigs[CarTypeID].Names.SpecialtiesDoors,
 					0, 
@@ -392,7 +392,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			{
 				IceSelectionThing_Create(
 					AMenuOption, 
-					CAR_SLOT_ID::LICENSE_PLATE, 
+					CARSLOTID_LICENSE_PLATE, 
 					CarConfigs[CarTypeID].Icons.SpecialtiesLicensePlate,
 					CarConfigs[CarTypeID].Names.SpecialtiesLicensePlate,
 					0, 
@@ -416,7 +416,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
 			//FEDoCarPartAnimNow(1, 1, 1.0f);
-			GetAndDoFEPartAnim(CAR_SLOT_ID::TRUNK_AUDIO, 1, 1.0f);
+			GetAndDoFEPartAnim(CARSLOTID_TRUNK_AUDIO, 1, 1.0f);
 		}
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_TRUNKLAYOUT_SELECT");
@@ -426,7 +426,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		{
 			IceSelectionThing_Create(
 				AMenuOption, 
-				CAR_SLOT_ID::TRUNK_AUDIO, 
+				CARSLOTID_TRUNK_AUDIO, 
 				CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioLayout,
 				CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioLayout,
 				0, 
@@ -447,7 +447,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
 			//FEDoCarPartAnimNow(1, 1, 1.0f);
-			GetAndDoFEPartAnim(CAR_SLOT_ID::TRUNK_AUDIO, 1, 1.0f);
+			GetAndDoFEPartAnim(CARSLOTID_TRUNK_AUDIO, 1, 1.0f);
 		}
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_TRUNKLAYOUT_OR_COMPONENTS_SELECT");
@@ -458,7 +458,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			IceCategoryThing_Create(
 				AMenuOption, 
 				4, 
-				CAR_SLOT_ID::TRUNK_AUDIO_COMP_0, 
+				CARSLOTID_TRUNK_AUDIO_COMP_0, 
 				CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioComponents,
 				CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioComponents);
 			(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
@@ -470,7 +470,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		{
 			IceSelectionThing_Create(
 				AMenuOption, 
-				CAR_SLOT_ID::TRUNK_AUDIO,
+				CARSLOTID_TRUNK_AUDIO,
 				CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioLayout,
 				CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudioLayout,
 				0, 
@@ -494,12 +494,12 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
 			//FEDoCarPartAnimNow(1, 1, 1.0f);
-			GetAndDoFEPartAnim(CAR_SLOT_ID::TRUNK_AUDIO, 1, 1.0f);
+			GetAndDoFEPartAnim(CARSLOTID_TRUNK_AUDIO, 1, 1.0f);
 		}
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_AUDIOCOMPONENTS_SELECT");
 
-		for (int i = CAR_SLOT_ID::TRUNK_AUDIO_COMP_0; i <= CAR_SLOT_ID::TRUNK_AUDIO_COMP_11; ++i)
+		for (int i = CARSLOTID_TRUNK_AUDIO_COMP_0; i <= CARSLOTID_TRUNK_AUDIO_COMP_11; ++i)
 		{
 			if (RideInfo_TrunkAudioSlotAvailable((DWORD*)gTheRideInfo, 0, i))
 			{
@@ -509,8 +509,8 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 					IceSelectionThing_Create(
 						AMenuOption, 
 						i, 
-						TrunkSlotIcons[i - CAR_SLOT_ID::TRUNK_AUDIO_COMP_0],
-						TrunkSlotNames[i - CAR_SLOT_ID::TRUNK_AUDIO_COMP_0],
+						TrunkSlotIcons[i - CARSLOTID_TRUNK_AUDIO_COMP_0],
+						TrunkSlotNames[i - CARSLOTID_TRUNK_AUDIO_COMP_0],
 						0, 
 						1, 
 						*(char const**)gIceSideBarOverlayName);

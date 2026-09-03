@@ -3,7 +3,7 @@
 
 bool __fastcall CarCustomizeManager_IsEnginePaintable(DWORD* CarCustomizeManager, void* EDX_Unused)
 {
-	DWORD* Part = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::ENGINE);
+	DWORD* Part = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_ENGINE);
 
     if (!CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("UNPAINTABLE"), 1)) return true;
 
@@ -12,7 +12,7 @@ bool __fastcall CarCustomizeManager_IsEnginePaintable(DWORD* CarCustomizeManager
 
 bool __fastcall CarCustomizeManager_IsTrunkPaintable(DWORD* CarCustomizeManager, void* EDX_Unused)
 {
-    DWORD* Part = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::TRUNK_AUDIO);
+    DWORD* Part = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_TRUNK_AUDIO);
 
     if (!CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("UNPAINTABLE"), 1)) return true;
 
@@ -21,8 +21,8 @@ bool __fastcall CarCustomizeManager_IsTrunkPaintable(DWORD* CarCustomizeManager,
 
 bool __fastcall CarCustomizeManager_AreBrakesPaintable(DWORD* CarCustomizeManager, void* EDX_Unused)
 {
-    DWORD* FPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::FRONT_BRAKE);
-    DWORD* RPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::REAR_BRAKE);
+    DWORD* FPart = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_FRONT_BRAKE);
+    DWORD* RPart = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_REAR_BRAKE);
 
     if (!CarPart_GetAppliedAttributeUParam(FPart, CT_bStringHash("UNPAINTABLE"), 1)
         || !CarPart_GetAppliedAttributeUParam(RPart, CT_bStringHash("UNPAINTABLE"), 1)) return true;
@@ -43,22 +43,22 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
     DWORD NamePartialHash;
     DWORD PartHash;
 
-    if (CarSlotID >= CAR_SLOT_ID::DECAL_HOOD && CarSlotID <= CAR_SLOT_ID::WIDEBODY_DECAL_RIGHT_QUARTER)
+    if (CarSlotID >= CARSLOTID_DECAL_HOOD && CarSlotID <= CARSLOTID_WIDEBODY_DECAL_RIGHT_QUARTER)
     {
         CarPartID = GetCarPartFromSlot(CarSlotID);
         DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
         CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
 
-        WideBodyPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::WIDE_BODY);
-        QuarterPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::QUARTER);
-        HoodPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::HOOD);
+        WideBodyPart = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_WIDE_BODY);
+        QuarterPart = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_QUARTER);
+        HoodPart = RideInfo_GetPart(CarCustomizeManager + 592, CARSLOTID_HOOD);
 
         if (WideBodyPart)
         {
             if (*((BYTE*)WideBodyPart + 5) >> 5)
                 CarSlotID = CarCustomizeManager_TranslateToWidebodyLayoutSlotIfNecessary(CarSlotID);
         }
-        if (QuarterPart && (CarSlotID == CAR_SLOT_ID::DECAL_LEFT_QUARTER || CarSlotID == CAR_SLOT_ID::DECAL_RIGHT_QUARTER))
+        if (QuarterPart && (CarSlotID == CARSLOTID_DECAL_LEFT_QUARTER || CarSlotID == CARSLOTID_DECAL_RIGHT_QUARTER))
         {
             for (int i = 0; i <= 99; i++)
             {
@@ -72,15 +72,15 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
                 {
                     switch (CarSlotID)
                     {
-                    case CAR_SLOT_ID::DECAL_LEFT_QUARTER: // DECAL_LEFT_QUARTER
-                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_LEFT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_LEFT_QUARTER_RECT_MEDIUM" : "DECAL_LEFT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
-                    case CAR_SLOT_ID::DECAL_RIGHT_QUARTER: // DECAL_RIGHT_QUARTER
-                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_RIGHT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_RIGHT_QUARTER_RECT_MEDIUM" : "DECAL_RIGHT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
+                    case CARSLOTID_DECAL_LEFT_QUARTER: // DECAL_LEFT_QUARTER
+                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_LEFT_QUARTER_RECT_MEDIUM" : "DECAL_LEFT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
+                    case CARSLOTID_DECAL_RIGHT_QUARTER: // DECAL_RIGHT_QUARTER
+                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_RIGHT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_RIGHT_QUARTER_RECT_MEDIUM" : "DECAL_RIGHT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
                     }
                 }
             }
         }
-        if (HoodPart && CarSlotID == CAR_SLOT_ID::DECAL_HOOD)
+        if (HoodPart && CarSlotID == CARSLOTID_DECAL_HOOD)
         {
             for (int i = 0; i <= 99; i++)
             {
@@ -91,7 +91,7 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
 
                 if (*(unsigned int*)HoodPart == PartHash)
                 {
-                    return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_HOOD, bStringHash2(LayoutID == 1 ? "DECAL_HOOD_RECT_MEDIUM" : "DECAL_HOOD_RECT_SMALL", NamePartialHash), 0, -1);
+                    return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_HOOD, bStringHash2(LayoutID == 1 ? "DECAL_HOOD_RECT_MEDIUM" : "DECAL_HOOD_RECT_SMALL", NamePartialHash), 0, -1);
                 }
             }
         }
@@ -116,9 +116,9 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutInSetup(DWORD* CarCustomizeManage
     DWORD* SelPartInSetup; // esi
     int SelPartSlot; // eax
 
-    if (slot < CAR_SLOT_ID::DECAL_HOOD)
+    if (slot < CARSLOTID_DECAL_HOOD)
         return 0;
-    if (slot > CAR_SLOT_ID::WIDEBODY_DECAL_RIGHT_QUARTER)
+    if (slot > CARSLOTID_WIDEBODY_DECAL_RIGHT_QUARTER)
         return 0;
     LastSelPartInSetup = CarCustomizeManager + 18;
     if ((DWORD*)CarCustomizeManager[18] == CarCustomizeManager + 18)

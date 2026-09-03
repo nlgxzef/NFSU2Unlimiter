@@ -48,7 +48,7 @@ void __fastcall ChooseRimBrand_Setup(DWORD* ChooseRimBrand, void* EDX_Unused)
     // Check installed part
     int LastButton = FEngGetLastButton(ChooseRimBrandPackage); // returns hash
 
-    DWORD* CarPart = RideInfo_GetPart((DWORD*)gTheRideInfo, RimsToCustomize == -1 ? CAR_SLOT_ID::REAR_WHEEL : CAR_SLOT_ID::FRONT_WHEEL);
+    DWORD* CarPart = RideInfo_GetPart((DWORD*)gTheRideInfo, RimsToCustomize == -1 ? CARSLOTID_REAR_WHEEL : CARSLOTID_FRONT_WHEEL);
     if (CarPart)
     {
         unsigned int BrandNameHash = LastButton ? LastButton : CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("BRAND_NAME"), 0);

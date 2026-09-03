@@ -11,7 +11,7 @@ char FNGFixName[8], FNGChildName[8];
 bool __fastcall CloneObjectstoShowMoreItemsInMenu(DWORD* FEPackage, void* edx_unused, DWORD* FEGameInterface)
 {
 	bool result = FEPackage_Startup(FEPackage, FEGameInterface);
-	int i;
+	int i = 0;
 	DWORD* CloneTarget, * CloneDest, * CloneTargetChild, * CloneChild, * CloneChildLast;
 
 	auto FNGFixesPath = CurrentWorkingDirectory / "UnlimiterData" / "_FNGFixes.ini";

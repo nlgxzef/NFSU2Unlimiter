@@ -15,6 +15,8 @@
 #include "bReleasePrintf.h"
 
 // Structures
+#include "bChunk.h"
+#include "bList.h"
 #include "bVector.h"
 #include "bMatrix.h"
 #include "ePositionMarker.h"

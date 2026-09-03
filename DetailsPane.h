@@ -22,6 +22,7 @@ struct DetailsPane
 	bool DecalIcon;
 	bool TrunkSlotIcon;
 	int NumSlots; // Decal or trunk audio slots
+	bool FilterIcon;
 };
 
 DetailsPane DetailsGroup;
@@ -67,6 +68,8 @@ DWORD NumTrunkSlotIcons[] =
 	CT_bStringHash("AUDIO_ICON_SLOT11"),
 	CT_bStringHash("AUDIO_ICON_SLOT12")
 };
+
+bool PartLink_HasLink(DWORD* CarPart); // shut up c3861
 
 void UpdateDetailsPaneIcon(int IconID, DWORD TextureHash, bool enabled)
 {
@@ -117,6 +120,7 @@ void SetOtherIcons(DWORD* CarPart)
 	DetailsGroup.DecalIcon = 0;
 	DetailsGroup.TrunkSlotIcon = 0;
 	DetailsGroup.NumSlots = 0; // Color or trunk audio slots
+	DetailsGroup.FilterIcon = 0;
 
 	// Choose other icons based on the part type
 	int CarSlotID = GetCarSlotIDFromPart(*((BYTE*)CarPart + 4));
@@ -125,7 +129,7 @@ void SetOtherIcons(DWORD* CarPart)
 	// Custom widebody
 	bool IsCustom = 0;
 
-	if (CarSlotID == CAR_SLOT_ID::WIDE_BODY)
+	if (CarSlotID == CARSLOTID_WIDE_BODY)
 	{
 		DetailsGroup.CustomIcon = 1;
 
@@ -143,14 +147,14 @@ void SetOtherIcons(DWORD* CarPart)
 
 	switch (CarSlotID)
 	{
-	case CAR_SLOT_ID::FENDER:
-	case CAR_SLOT_ID::QUARTER:
-	case CAR_SLOT_ID::WIDE_BODY:
-	case CAR_SLOT_ID::DAMAGE_FRONT:
-	case CAR_SLOT_ID::DAMAGE_REAR:
-	case CAR_SLOT_ID::DAMAGE_LEFT:
-	case CAR_SLOT_ID::DAMAGE_RIGHT:
-	case CAR_SLOT_ID::DAMAGE_TOP:
+	case CARSLOTID_FENDER:
+	case CARSLOTID_QUARTER:
+	case CARSLOTID_WIDE_BODY:
+	case CARSLOTID_DAMAGE_FRONT:
+	case CARSLOTID_DAMAGE_REAR:
+	case CARSLOTID_DAMAGE_LEFT:
+	case CARSLOTID_DAMAGE_RIGHT:
+	case CARSLOTID_DAMAGE_TOP:
 		DetailsGroup.WheelAttrIcon = 1;
 
 		if (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0)
@@ -164,36 +168,36 @@ void SetOtherIcons(DWORD* CarPart)
 
 	switch (CarSlotID)
 	{
-	case CAR_SLOT_ID::ENGINE:
-	case CAR_SLOT_ID::TRUNK_AUDIO:
+	case CARSLOTID_ENGINE:
+	case CARSLOTID_TRUNK_AUDIO:
 		DetailsGroup.PaintableIcon = 1;
 		IsPaintable = (DetailsGroup.UpgradeLevel > 2) || (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("UNPAINTABLE"), 1) == 0);
 		break;
-	case CAR_SLOT_ID::SPOILER:
-	case CAR_SLOT_ID::ROOF:
-	case CAR_SLOT_ID::WING_MIRROR:
+	case CARSLOTID_SPOILER:
+	case CARSLOTID_ROOF:
+	case CARSLOTID_WING_MIRROR:
 		DetailsGroup.PaintableIcon = 1;
 		IsPaintable = (DetailsGroup.UpgradeLevel > 0)
 			&& (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("UNPAINTABLE"), 0) == 0)
 			&& (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("CARBONFIBRE"), 0) == 0);
 		break;
-	case CAR_SLOT_ID::FRONT_WHEEL:
-	case CAR_SLOT_ID::REAR_WHEEL:
-	case CAR_SLOT_ID::FRONT_BRAKE:
-	case CAR_SLOT_ID::REAR_BRAKE:
-	case CAR_SLOT_ID::EXHAUST:
+	case CARSLOTID_FRONT_WHEEL:
+	case CARSLOTID_REAR_WHEEL:
+	case CARSLOTID_FRONT_BRAKE:
+	case CARSLOTID_REAR_BRAKE:
+	case CARSLOTID_EXHAUST:
 		DetailsGroup.PaintableIcon = 1;
 		IsPaintable = (DetailsGroup.UpgradeLevel > 0) || (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("UNPAINTABLE"), 1) == 0);
 		break;
-	case CAR_SLOT_ID::FENDER:
-	case CAR_SLOT_ID::QUARTER:
-	case CAR_SLOT_ID::HOOD:
-	case CAR_SLOT_ID::TRUNK:
-	case CAR_SLOT_ID::DAMAGE_FRONT:
-	case CAR_SLOT_ID::DAMAGE_REAR:
-	case CAR_SLOT_ID::DAMAGE_LEFT:
-	case CAR_SLOT_ID::DAMAGE_RIGHT:
-	case CAR_SLOT_ID::DAMAGE_TOP:
+	case CARSLOTID_FENDER:
+	case CARSLOTID_QUARTER:
+	case CARSLOTID_HOOD:
+	case CARSLOTID_TRUNK:
+	case CARSLOTID_DAMAGE_FRONT:
+	case CARSLOTID_DAMAGE_REAR:
+	case CARSLOTID_DAMAGE_LEFT:
+	case CARSLOTID_DAMAGE_RIGHT:
+	case CARSLOTID_DAMAGE_TOP:
 		DetailsGroup.PaintableIcon = 1;
 		IsPaintable = (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("UNPAINTABLE"), 0) == 0)
 			&& (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("CARBONFIBRE"), 0) == 0);
@@ -204,21 +208,21 @@ void SetOtherIcons(DWORD* CarPart)
 	bool CF = 0;
 	switch (CarSlotID)
 	{
-	case CAR_SLOT_ID::BASE:
-	case CAR_SLOT_ID::FENDER:
-	case CAR_SLOT_ID::QUARTER:
-	case CAR_SLOT_ID::SPOILER:
-	case CAR_SLOT_ID::ROOF:
-	case CAR_SLOT_ID::HOOD:
-	case CAR_SLOT_ID::TRUNK:
-	case CAR_SLOT_ID::HEADLIGHT:
-	case CAR_SLOT_ID::BRAKELIGHT:
-	case CAR_SLOT_ID::WING_MIRROR:
-	case CAR_SLOT_ID::DAMAGE_FRONT:
-	case CAR_SLOT_ID::DAMAGE_REAR:
-	case CAR_SLOT_ID::DAMAGE_LEFT:
-	case CAR_SLOT_ID::DAMAGE_RIGHT:
-	case CAR_SLOT_ID::DAMAGE_TOP:
+	case CARSLOTID_BASE:
+	case CARSLOTID_FENDER:
+	case CARSLOTID_QUARTER:
+	case CARSLOTID_SPOILER:
+	case CARSLOTID_ROOF:
+	case CARSLOTID_HOOD:
+	case CARSLOTID_TRUNK:
+	case CARSLOTID_HEADLIGHT:
+	case CARSLOTID_BRAKELIGHT:
+	case CARSLOTID_WING_MIRROR:
+	case CARSLOTID_DAMAGE_FRONT:
+	case CARSLOTID_DAMAGE_REAR:
+	case CARSLOTID_DAMAGE_LEFT:
+	case CARSLOTID_DAMAGE_RIGHT:
+	case CARSLOTID_DAMAGE_TOP:
 		CF = CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("CARBONFIBRE"), 0);
 		if (CF)
 		{
@@ -233,23 +237,23 @@ void SetOtherIcons(DWORD* CarPart)
 
 	switch (CarSlotID)
 	{
-	case CAR_SLOT_ID::ENGINE:
-	case CAR_SLOT_ID::TRUNK_AUDIO:
+	case CARSLOTID_ENGINE:
+	case CARSLOTID_TRUNK_AUDIO:
 		DetailsGroup.NeonIcon = 1;
 		HasNeons = (DetailsGroup.UpgradeLevel > 2) || (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("NEON"), 0) != 0);
 		break;
 	}
 
 	// Trunk audio slots
-	if (CarSlotID == CAR_SLOT_ID::TRUNK_AUDIO)
+	if (CarSlotID == CARSLOTID_TRUNK_AUDIO)
 	{
 		DetailsGroup.TrunkSlotIcon = 1;
 
-		for (int i = CAR_SLOT_ID::TRUNK_AUDIO_COMP_11; i >= CAR_SLOT_ID::TRUNK_AUDIO_COMP_0; i--)
+		for (int i = CARSLOTID_TRUNK_AUDIO_COMP_11; i >= CARSLOTID_TRUNK_AUDIO_COMP_0; i--)
 		{
 			if (CarPart_TrunkAudioSlotAvailable(CarPart, 0, i))
 			{
-				DetailsGroup.NumSlots = i - CAR_SLOT_ID::TRUNK_AUDIO_COMP_0 + 1;
+				DetailsGroup.NumSlots = i - CARSLOTID_TRUNK_AUDIO_COMP_0 + 1;
 				break;
 			}
 		}
@@ -257,7 +261,7 @@ void SetOtherIcons(DWORD* CarPart)
 
 	// Remap (vinyl paint)
 	bool Remap = 0;
-	if (CarSlotID >= CAR_SLOT_ID::VINYL_LAYER0 && CarSlotID <= CAR_SLOT_ID::VINYL_LAYER3)
+	if (CarSlotID >= CARSLOTID_VINYL_LAYER0 && CarSlotID <= CARSLOTID_VINYL_LAYER3)
 	{
 		DetailsGroup.RemapIcon = 1;
 		DetailsGroup.NumSlots = CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("REMAP"), 0)
@@ -268,12 +272,33 @@ void SetOtherIcons(DWORD* CarPart)
 	// Decals
 	bool HasDecals = 0;
 
-	if (CarSlotID == CAR_SLOT_ID::HOOD)
+	if (CarSlotID == CARSLOTID_HOOD)
 	{
 		DetailsGroup.DecalIcon = 1;
 
 		if (DetailsGroup.UpgradeLevel == 0) HasDecals = 1;
 		else if (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("EXCLUDEDECAL"), 0) != CT_bStringHash("DECAL_HOOD")) HasDecals = 1;
+	}
+
+	// Filter
+	bool IsFiltered = 0;
+	switch (CarSlotID)
+	{
+	case CARSLOTID_BODY:
+	case CARSLOTID_WIDE_BODY:
+	case CARSLOTID_FRONT_BUMPER:
+	case CARSLOTID_REAR_BUMPER:
+	case CARSLOTID_SKIRT:
+	case CARSLOTID_FENDER:
+	case CARSLOTID_QUARTER:
+	case CARSLOTID_HEADLIGHT:
+	case CARSLOTID_BRAKELIGHT:
+	case CARSLOTID_HOOD:
+	case CARSLOTID_TRUNK:
+	case CARSLOTID_SPOILER:
+		DetailsGroup.FilterIcon = 1;
+
+		if (PartLink_HasLink(CarPart)) IsFiltered = 1;
 	}
 
 	// Finally update the icons
@@ -285,6 +310,7 @@ void SetOtherIcons(DWORD* CarPart)
 	if (DetailsGroup.TrunkSlotIcon) UpdateDetailsPaneIcon(CurrentIconID++, NumTrunkSlotIcons[DetailsGroup.NumSlots], DetailsGroup.NumSlots > 0);
 	if (DetailsGroup.RemapIcon) UpdateDetailsPaneIcon(CurrentIconID++, NumRemapIcons[DetailsGroup.NumSlots], DetailsGroup.NumSlots > 0);
 	if (DetailsGroup.DecalIcon) UpdateDetailsPaneIcon(CurrentIconID++, CT_bStringHash("DECAL_ZONE_HOOD"), HasDecals);
+	if (DetailsGroup.FilterIcon) UpdateDetailsPaneIcon(CurrentIconID++, CT_bStringHash("GENERIC_REMOVE"), IsFiltered);
 }
 
 void UpdateDetailsPane(DWORD *CarPart)

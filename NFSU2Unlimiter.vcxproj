@@ -97,6 +97,8 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="bChunk.h" />
+    <ClInclude Include="bList.h" />
     <ClInclude Include="bMatrix.h" />
     <ClInclude Include="bReleasePrintf.h" />
     <ClInclude Include="BuyPerformanceParts.h" />
@@ -107,6 +109,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="CareerEventData.h" />
     <ClInclude Include="CarLoader.h" />
     <ClInclude Include="CarPart.h" />
+    <ClInclude Include="CarPartDatabase.h" />
     <ClInclude Include="CarPartID.h" />
     <ClInclude Include="CarRenderInfo.h" />
     <ClInclude Include="CarSlotID.h" />
@@ -133,6 +136,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="FeCarLimits.h" />
     <ClInclude Include="feDialogConfig.h" />
     <ClInclude Include="FEPackage.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="GarageMainScreen.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Helpers.h" />
@@ -146,9 +150,11 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="LoadedSkinLayer.h" />
     <ClInclude Include="NeonPartsBrowser.h" />
     <ClInclude Include="PartInfoWidget.h" />
+    <ClInclude Include="PartLink.h" />
     <ClInclude Include="PartSelectionScreen.h" />
     <ClInclude Include="PerfPart.h" />
     <ClInclude Include="PlayerCareerState.h" />
+    <ClInclude Include="PresetCars.h" />
     <ClInclude Include="RandomCharacterNames.h" />
     <ClInclude Include="ReplacementTextureEntry.h" />
     <ClInclude Include="resource.h" />

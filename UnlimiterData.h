@@ -29,6 +29,12 @@ void LoadCarConfigs()
 	DefaultCarConfig.Main.InductionType = mINI_ReadInteger(GeneralINI, "Main", "InductionType", 0);
 	DefaultCarConfig.Main.ScaleBrakesWithRims = mINI_ReadInteger(GeneralINI, "Main", "ScaleBrakesWithRims", 1);
 	DefaultCarConfig.Main.SyncVisualPartsWithPhysics = mINI_ReadInteger(GeneralINI, "Main", "SyncVisualPartsWithPhysics", 1);
+	DefaultCarConfig.Main.SyncBrakesWithPhysics = mINI_ReadInteger(GeneralINI, "Main", "SyncBrakesWithPhysics", DefaultCarConfig.Main.SyncVisualPartsWithPhysics) != 0;
+	DefaultCarConfig.Main.MirrorBrakes = mINI_ReadInteger(GeneralINI, "Main", "MirrorBrakes", 1) != 0;
+	DefaultCarConfig.Main.AlwaysShowHoodUnder = mINI_ReadInteger(GeneralINI, "Main", "AlwaysShowHoodUnder", 0) != 0;
+	DefaultCarConfig.Main.AlwaysShowTrunkUnder = mINI_ReadInteger(GeneralINI, "Main", "AlwaysShowTrunkUnder", 0) != 0;
+	DefaultCarConfig.Main.AlwaysShowDoorPanels = mINI_ReadInteger(GeneralINI, "Main", "AlwaysShowDoorPanels", 0) != 0;
+	DefaultCarConfig.Main.AlwaysShowDoorSills = mINI_ReadInteger(GeneralINI, "Main", "AlwaysShowDoorSills", 0) != 0;
 	DefaultCarConfig.Main.CanBeDrivenByAI = mINI_ReadInteger(GeneralINI, "Main", "CanBeDrivenByAI", 1) != 0;
 
 	// CarRenderInfo
@@ -83,12 +89,18 @@ void LoadCarConfigs()
 	DefaultCarConfig.BodyShop.RimsCustom = mINI_ReadInteger(GeneralINI, "BodyShop", "RimsCustom", 0) != 0;
 	DefaultCarConfig.BodyShop.CarbonFiber = mINI_ReadInteger(GeneralINI, "BodyShop", "CarbonFiber", 1) != 0;
 	DefaultCarConfig.BodyShop.WideBodyKits = mINI_ReadInteger(GeneralINI, "BodyShop", "WideBodyKits", 1) != 0;
-	DefaultCarConfig.BodyShop.Attachments = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachments", 0) % 6;
+	DefaultCarConfig.BodyShop.Attachments = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachments", 0) % 12;
 	DefaultCarConfig.BodyShop.Attachment0 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment0", DefaultCarConfig.BodyShop.Attachments > 0) != 0;
 	DefaultCarConfig.BodyShop.Attachment1 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment1", DefaultCarConfig.BodyShop.Attachments > 1) != 0;
 	DefaultCarConfig.BodyShop.Attachment2 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment2", DefaultCarConfig.BodyShop.Attachments > 2) != 0;
 	DefaultCarConfig.BodyShop.Attachment3 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment3", DefaultCarConfig.BodyShop.Attachments > 3) != 0;
 	DefaultCarConfig.BodyShop.Attachment4 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment4", DefaultCarConfig.BodyShop.Attachments > 4) != 0;
+	DefaultCarConfig.BodyShop.Attachment5 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment5", DefaultCarConfig.BodyShop.Attachments > 5) != 0;
+	DefaultCarConfig.BodyShop.Attachment6 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment6", DefaultCarConfig.BodyShop.Attachments > 6) != 0;
+	DefaultCarConfig.BodyShop.Attachment7 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment7", DefaultCarConfig.BodyShop.Attachments > 7) != 0;
+	DefaultCarConfig.BodyShop.Attachment8 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment8", DefaultCarConfig.BodyShop.Attachments > 8) != 0;
+	DefaultCarConfig.BodyShop.Attachment9 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment9", DefaultCarConfig.BodyShop.Attachments > 9) != 0;
+	DefaultCarConfig.BodyShop.Attachment10 = mINI_ReadInteger(GeneralINI, "BodyShop", "Attachment10", DefaultCarConfig.BodyShop.Attachments > 10) != 0;
 
 	// Performance
 	DefaultCarConfig.Performance.Engine = mINI_ReadInteger(GeneralINI, "Performance", "Engine", 1) != 0;
@@ -190,6 +202,12 @@ void LoadCarConfigs()
 	DefaultCarConfig.Icons.BodyShopAttachment2 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment2", "VISUAL_PART_ATTACHMENT3");
 	DefaultCarConfig.Icons.BodyShopAttachment3 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment3", "VISUAL_PART_ATTACHMENT4");
 	DefaultCarConfig.Icons.BodyShopAttachment4 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment4", "VISUAL_PART_ATTACHMENT5");
+	DefaultCarConfig.Icons.BodyShopAttachment5 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment5", "VISUAL_PART_ATTACHMENT6");
+	DefaultCarConfig.Icons.BodyShopAttachment6 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment6", "VISUAL_PART_ATTACHMENT7");
+	DefaultCarConfig.Icons.BodyShopAttachment7 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment7", "VISUAL_PART_ATTACHMENT8");
+	DefaultCarConfig.Icons.BodyShopAttachment8 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment8", "VISUAL_PART_ATTACHMENT9");
+	DefaultCarConfig.Icons.BodyShopAttachment9 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment9", "VISUAL_PART_ATTACHMENT10");
+	DefaultCarConfig.Icons.BodyShopAttachment10 = mINI_ReadHashS(GeneralINI, "Icons", "BodyShopAttachment10", "VISUAL_PART_ATTACHMENT11");
 	DefaultCarConfig.Icons.PerformanceEngine = mINI_ReadHashS(GeneralINI, "Icons", "PerformanceEngine", "PERFORMANCE_ENGINE");
 	DefaultCarConfig.Icons.PerformanceECU = mINI_ReadHashS(GeneralINI, "Icons", "PerformanceECU", "PERFORMANCE_ECU");
 	DefaultCarConfig.Icons.PerformanceTransmission = mINI_ReadHashS(GeneralINI, "Icons", "PerformanceTransmission", "PERFORMANCE_TRANSMISSION");
@@ -420,6 +438,12 @@ void LoadCarConfigs()
 	DefaultCarConfig.Names.BodyShopAttachment2 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment2", "VISUAL_PART_ATTACHMENT3");
 	DefaultCarConfig.Names.BodyShopAttachment3 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment3", "VISUAL_PART_ATTACHMENT4");
 	DefaultCarConfig.Names.BodyShopAttachment4 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment4", "VISUAL_PART_ATTACHMENT5");
+	DefaultCarConfig.Names.BodyShopAttachment5 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment5", "VISUAL_PART_ATTACHMENT6");
+	DefaultCarConfig.Names.BodyShopAttachment6 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment6", "VISUAL_PART_ATTACHMENT7");
+	DefaultCarConfig.Names.BodyShopAttachment7 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment7", "VISUAL_PART_ATTACHMENT8");
+	DefaultCarConfig.Names.BodyShopAttachment8 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment8", "VISUAL_PART_ATTACHMENT9");
+	DefaultCarConfig.Names.BodyShopAttachment9 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment9", "VISUAL_PART_ATTACHMENT10");
+	DefaultCarConfig.Names.BodyShopAttachment10 = mINI_ReadHashS(GeneralINI, "Names", "BodyShopAttachment10", "VISUAL_PART_ATTACHMENT11");
 	DefaultCarConfig.Names.PerformanceEngine = mINI_ReadHashS(GeneralINI, "Names", "PerformanceEngine", "PERF_CATEGORY_ENGINE");
 	DefaultCarConfig.Names.PerformanceECU = mINI_ReadHashS(GeneralINI, "Names", "PerformanceECU", "PERF_CATEGORY_ECU");
 	DefaultCarConfig.Names.PerformanceTransmission = mINI_ReadHashS(GeneralINI, "Names", "PerformanceTransmission", "PERF_CATEGORY_TRANSMISSION");
@@ -515,58 +539,58 @@ void LoadCarConfigs()
 
 	// Animation Types
 	// Init with -1s to avoid unintended animations
-	for (int s = 0; s < CAR_SLOT_ID::__NUM; s++)
+	for (int s = 0; s < CARSLOTID_NUM; s++)
 	{
 		DefaultCarConfig.Animations.AnimationType[s] = -1;
 	}
 
 
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_BUMPER] = mINI_ReadInteger(GeneralINI, "Animations", "FrontBumper", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::REAR_BUMPER] = mINI_ReadInteger(GeneralINI, "Animations", "RearBumper", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::SKIRT] = mINI_ReadInteger(GeneralINI, "Animations", "Skirt", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FENDER] = mINI_ReadInteger(GeneralINI, "Animations", "Fender", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::QUARTER] = mINI_ReadInteger(GeneralINI, "Animations", "Quarter", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::SPOILER] = mINI_ReadInteger(GeneralINI, "Animations", "Spoiler", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HOOD] = mINI_ReadInteger(GeneralINI, "Animations", "Hood", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::ENGINE] = mINI_ReadInteger(GeneralINI, "Animations", "Engine", 0);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::TRUNK] = mINI_ReadInteger(GeneralINI, "Animations", "Trunk", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::ROOF] = mINI_ReadInteger(GeneralINI, "Animations", "RoofScoops", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::BASE] = mINI_ReadInteger(GeneralINI, "Animations", "Interior", 5);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::TOP] = mINI_ReadInteger(GeneralINI, "Animations", "Roof", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HEADLIGHT] = mINI_ReadInteger(GeneralINI, "Animations", "Headlights", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::BRAKELIGHT] = mINI_ReadInteger(GeneralINI, "Animations", "Taillights", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::WING_MIRROR] = mINI_ReadInteger(GeneralINI, "Animations", "Mirrors", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::EXHAUST] = mINI_ReadInteger(GeneralINI, "Animations", "Exhaust", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_WHEEL] = mINI_ReadInteger(GeneralINI, "Animations", "Rims", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_BRAKE] = mINI_ReadInteger(GeneralINI, "Animations", "Brakes", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::WIDE_BODY] = mINI_ReadInteger(GeneralINI, "Animations", "WideBodyKits", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_FRONT] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment0", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_REAR] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment1", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_LEFT] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment2", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_RIGHT] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment3", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_TOP] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment4", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::BASE_PAINT] = mINI_ReadInteger(GeneralINI, "Animations", "BasePaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_SPOILER] = mINI_ReadInteger(GeneralINI, "Animations", "SpoilerPaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_ROOF] = mINI_ReadInteger(GeneralINI, "Animations", "RoofScoopPaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_MIRROR] = mINI_ReadInteger(GeneralINI, "Animations", "MirrorPaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_RIM] = mINI_ReadInteger(GeneralINI, "Animations", "RimPaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_SPINNER] = mINI_ReadInteger(GeneralINI, "Animations", "SpinnerPaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_BRAKE] = mINI_ReadInteger(GeneralINI, "Animations", "BrakePaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_ENGINE] = mINI_ReadInteger(GeneralINI, "Animations", "EnginePaint", 0);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_AUDIO] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkPaint", 1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_EXHAUST] = mINI_ReadInteger(GeneralINI, "Animations", "ExhaustPaint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON] = mINI_ReadInteger(GeneralINI, "Animations", "UnderglowNeon", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_ENGINE] = mINI_ReadInteger(GeneralINI, "Animations", "EngineNeon", 0);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_CABIN] = mINI_ReadInteger(GeneralINI, "Animations", "CabinNeon", 5);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::CABIN_NEON_FRAME] = mINI_ReadInteger(GeneralINI, "Animations", "CabinNeonLayout", 5);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_TRUNK] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkNeon", 1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::WINDOW_TINT] = mINI_ReadInteger(GeneralINI, "Animations", "WindowTint", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HEADLIGHT_BULB] = mINI_ReadInteger(GeneralINI, "Animations", "HeadlightColor", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NOS_PURGE] = mINI_ReadInteger(GeneralINI, "Animations", "NosPurge", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HYDRAULICS] = mINI_ReadInteger(GeneralINI, "Animations", "Hydraulics", -1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::TRUNK_AUDIO] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkAudio", 1);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DOOR_STYLE] = mINI_ReadInteger(GeneralINI, "Animations", "Doors", 5);
-	DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::LICENSE_PLATE] = mINI_ReadInteger(GeneralINI, "Animations", "LicensePlate", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_FRONT_BUMPER] = mINI_ReadInteger(GeneralINI, "Animations", "FrontBumper", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_REAR_BUMPER] = mINI_ReadInteger(GeneralINI, "Animations", "RearBumper", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_SKIRT] = mINI_ReadInteger(GeneralINI, "Animations", "Skirt", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_FENDER] = mINI_ReadInteger(GeneralINI, "Animations", "Fender", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_QUARTER] = mINI_ReadInteger(GeneralINI, "Animations", "Quarter", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_SPOILER] = mINI_ReadInteger(GeneralINI, "Animations", "Spoiler", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_HOOD] = mINI_ReadInteger(GeneralINI, "Animations", "Hood", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_ENGINE] = mINI_ReadInteger(GeneralINI, "Animations", "Engine", 0);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_TRUNK] = mINI_ReadInteger(GeneralINI, "Animations", "Trunk", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_ROOF] = mINI_ReadInteger(GeneralINI, "Animations", "RoofScoops", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_BASE] = mINI_ReadInteger(GeneralINI, "Animations", "Interior", 5);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_TOP] = mINI_ReadInteger(GeneralINI, "Animations", "Roof", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT] = mINI_ReadInteger(GeneralINI, "Animations", "Headlights", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_BRAKELIGHT] = mINI_ReadInteger(GeneralINI, "Animations", "Taillights", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_WING_MIRROR] = mINI_ReadInteger(GeneralINI, "Animations", "Mirrors", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_EXHAUST] = mINI_ReadInteger(GeneralINI, "Animations", "Exhaust", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_FRONT_WHEEL] = mINI_ReadInteger(GeneralINI, "Animations", "Rims", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_FRONT_BRAKE] = mINI_ReadInteger(GeneralINI, "Animations", "Brakes", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_WIDE_BODY] = mINI_ReadInteger(GeneralINI, "Animations", "WideBodyKits", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_FRONT] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment0", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_REAR] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment1", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_LEFT] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment2", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_RIGHT] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment3", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_TOP] = mINI_ReadInteger(GeneralINI, "Animations", "Attachment4", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_BASE_PAINT] = mINI_ReadInteger(GeneralINI, "Animations", "BasePaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_SPOILER] = mINI_ReadInteger(GeneralINI, "Animations", "SpoilerPaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_ROOF] = mINI_ReadInteger(GeneralINI, "Animations", "RoofScoopPaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_MIRROR] = mINI_ReadInteger(GeneralINI, "Animations", "MirrorPaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_RIM] = mINI_ReadInteger(GeneralINI, "Animations", "RimPaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_SPINNER] = mINI_ReadInteger(GeneralINI, "Animations", "SpinnerPaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_BRAKE] = mINI_ReadInteger(GeneralINI, "Animations", "BrakePaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_ENGINE] = mINI_ReadInteger(GeneralINI, "Animations", "EnginePaint", 0);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_AUDIO] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkPaint", 1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_EXHAUST] = mINI_ReadInteger(GeneralINI, "Animations", "ExhaustPaint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON] = mINI_ReadInteger(GeneralINI, "Animations", "UnderglowNeon", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON_ENGINE] = mINI_ReadInteger(GeneralINI, "Animations", "EngineNeon", 0);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON_CABIN] = mINI_ReadInteger(GeneralINI, "Animations", "CabinNeon", 5);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_CABIN_NEON_FRAME] = mINI_ReadInteger(GeneralINI, "Animations", "CabinNeonLayout", 5);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON_TRUNK] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkNeon", 1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_WINDOW_TINT] = mINI_ReadInteger(GeneralINI, "Animations", "WindowTint", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT_BULB] = mINI_ReadInteger(GeneralINI, "Animations", "HeadlightColor", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_NOS_PURGE] = mINI_ReadInteger(GeneralINI, "Animations", "NosPurge", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_HYDRAULICS] = mINI_ReadInteger(GeneralINI, "Animations", "Hydraulics", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_TRUNK_AUDIO] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkAudio", 1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DOOR_STYLE] = mINI_ReadInteger(GeneralINI, "Animations", "Doors", 5);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_LICENSE_PLATE] = mINI_ReadInteger(GeneralINI, "Animations", "LicensePlate", -1);
 
 	// PerformanceParts
 	for (int p = 0; p < DefaultPerformancePartCount; p++)
@@ -591,6 +615,13 @@ void LoadCarConfigs()
 		ACarConfig.Main.InductionType = mINI_ReadInteger(CarINI, "Main", "InductionType", DefaultCarConfig.Main.InductionType);
 		ACarConfig.Main.ScaleBrakesWithRims = mINI_ReadInteger(CarINI, "Main", "ScaleBrakesWithRims", DefaultCarConfig.Main.ScaleBrakesWithRims);
 		ACarConfig.Main.SyncVisualPartsWithPhysics = mINI_ReadInteger(CarINI, "Main", "SyncVisualPartsWithPhysics", DefaultCarConfig.Main.SyncVisualPartsWithPhysics);
+		ACarConfig.Main.SyncBrakesWithPhysics = mINI_ReadInteger(CarINI, "Main", "SyncBrakesWithPhysics",
+			mINI_ReadInteger(CarINI, "Main", "SyncVisualPartsWithPhysics", DefaultCarConfig.Main.SyncBrakesWithPhysics)) != 0;
+		ACarConfig.Main.MirrorBrakes = mINI_ReadInteger(CarINI, "Main", "MirrorBrakes", DefaultCarConfig.Main.MirrorBrakes) != 0;
+		ACarConfig.Main.AlwaysShowHoodUnder = mINI_ReadInteger(CarINI, "Main", "AlwaysShowHoodUnder", DefaultCarConfig.Main.AlwaysShowHoodUnder) != 0;
+		ACarConfig.Main.AlwaysShowTrunkUnder = mINI_ReadInteger(CarINI, "Main", "AlwaysShowTrunkUnder", DefaultCarConfig.Main.AlwaysShowTrunkUnder) != 0;
+		ACarConfig.Main.AlwaysShowDoorPanels = mINI_ReadInteger(CarINI, "Main", "AlwaysShowDoorPanels", DefaultCarConfig.Main.AlwaysShowDoorPanels) != 0;
+		ACarConfig.Main.AlwaysShowDoorSills = mINI_ReadInteger(CarINI, "Main", "AlwaysShowDoorSills", DefaultCarConfig.Main.AlwaysShowDoorSills) != 0;
 		ACarConfig.Main.CanBeDrivenByAI = mINI_ReadInteger(CarINI, "Main", "CanBeDrivenByAI", DefaultCarConfig.Main.CanBeDrivenByAI) != 0;
 
 		// CarRenderInfo
@@ -645,12 +676,18 @@ void LoadCarConfigs()
 		ACarConfig.BodyShop.RimsCustom = mINI_ReadInteger(CarINI, "BodyShop", "RimsCustom", DefaultCarConfig.BodyShop.RimsCustom) != 0;
 		ACarConfig.BodyShop.CarbonFiber = mINI_ReadInteger(CarINI, "BodyShop", "CarbonFiber", DefaultCarConfig.BodyShop.CarbonFiber) != 0;
 		ACarConfig.BodyShop.WideBodyKits = mINI_ReadInteger(CarINI, "BodyShop", "WideBodyKits", DefaultCarConfig.BodyShop.WideBodyKits) != 0;
-		ACarConfig.BodyShop.Attachments = mINI_ReadInteger(CarINI, "BodyShop", "Attachments", DefaultCarConfig.BodyShop.Attachments) % 6;
+		ACarConfig.BodyShop.Attachments = mINI_ReadInteger(CarINI, "BodyShop", "Attachments", DefaultCarConfig.BodyShop.Attachments) % 12;
 		ACarConfig.BodyShop.Attachment0 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment0", ACarConfig.BodyShop.Attachments > 0) != 0;
 		ACarConfig.BodyShop.Attachment1 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment1", ACarConfig.BodyShop.Attachments > 1) != 0;
 		ACarConfig.BodyShop.Attachment2 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment2", ACarConfig.BodyShop.Attachments > 2) != 0;
 		ACarConfig.BodyShop.Attachment3 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment3", ACarConfig.BodyShop.Attachments > 3) != 0;
 		ACarConfig.BodyShop.Attachment4 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment4", ACarConfig.BodyShop.Attachments > 4) != 0;
+		ACarConfig.BodyShop.Attachment5 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment5", ACarConfig.BodyShop.Attachments > 5) != 0;
+		ACarConfig.BodyShop.Attachment6 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment6", ACarConfig.BodyShop.Attachments > 6) != 0;
+		ACarConfig.BodyShop.Attachment7 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment7", ACarConfig.BodyShop.Attachments > 7) != 0;
+		ACarConfig.BodyShop.Attachment8 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment8", ACarConfig.BodyShop.Attachments > 8) != 0;
+		ACarConfig.BodyShop.Attachment9 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment9", ACarConfig.BodyShop.Attachments > 9) != 0;
+		ACarConfig.BodyShop.Attachment10 = mINI_ReadInteger(CarINI, "BodyShop", "Attachment10", ACarConfig.BodyShop.Attachments > 10) != 0;
 
 		// Performance
 		ACarConfig.Performance.Engine = mINI_ReadInteger(CarINI, "Performance", "Engine", DefaultCarConfig.Performance.Engine) != 0;
@@ -752,6 +789,12 @@ void LoadCarConfigs()
 		ACarConfig.Icons.BodyShopAttachment2 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment2", DefaultCarConfig.Icons.BodyShopAttachment2);
 		ACarConfig.Icons.BodyShopAttachment3 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment3", DefaultCarConfig.Icons.BodyShopAttachment3);
 		ACarConfig.Icons.BodyShopAttachment4 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment4", DefaultCarConfig.Icons.BodyShopAttachment4);
+		ACarConfig.Icons.BodyShopAttachment5 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment5", DefaultCarConfig.Icons.BodyShopAttachment5);
+		ACarConfig.Icons.BodyShopAttachment6 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment6", DefaultCarConfig.Icons.BodyShopAttachment6);
+		ACarConfig.Icons.BodyShopAttachment7 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment7", DefaultCarConfig.Icons.BodyShopAttachment7);
+		ACarConfig.Icons.BodyShopAttachment8 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment8", DefaultCarConfig.Icons.BodyShopAttachment8);
+		ACarConfig.Icons.BodyShopAttachment9 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment9", DefaultCarConfig.Icons.BodyShopAttachment9);
+		ACarConfig.Icons.BodyShopAttachment10 = mINI_ReadHash(CarINI, "Icons", "BodyShopAttachment10", DefaultCarConfig.Icons.BodyShopAttachment10);
 		ACarConfig.Icons.PerformanceEngine = mINI_ReadHash(CarINI, "Icons", "PerformanceEngine", DefaultCarConfig.Icons.PerformanceEngine);
 		ACarConfig.Icons.PerformanceECU = mINI_ReadHash(CarINI, "Icons", "PerformanceECU", DefaultCarConfig.Icons.PerformanceECU);
 		ACarConfig.Icons.PerformanceTransmission = mINI_ReadHash(CarINI, "Icons", "PerformanceTransmission", DefaultCarConfig.Icons.PerformanceTransmission);
@@ -982,6 +1025,12 @@ void LoadCarConfigs()
 		ACarConfig.Names.BodyShopAttachment2 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment2", DefaultCarConfig.Names.BodyShopAttachment2);
 		ACarConfig.Names.BodyShopAttachment3 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment3", DefaultCarConfig.Names.BodyShopAttachment3);
 		ACarConfig.Names.BodyShopAttachment4 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment4", DefaultCarConfig.Names.BodyShopAttachment4);
+		ACarConfig.Names.BodyShopAttachment5 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment5", DefaultCarConfig.Names.BodyShopAttachment5);
+		ACarConfig.Names.BodyShopAttachment6 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment6", DefaultCarConfig.Names.BodyShopAttachment6);
+		ACarConfig.Names.BodyShopAttachment7 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment7", DefaultCarConfig.Names.BodyShopAttachment7);
+		ACarConfig.Names.BodyShopAttachment8 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment8", DefaultCarConfig.Names.BodyShopAttachment8);
+		ACarConfig.Names.BodyShopAttachment9 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment9", DefaultCarConfig.Names.BodyShopAttachment9);
+		ACarConfig.Names.BodyShopAttachment10 = mINI_ReadHash(CarINI, "Names", "BodyShopAttachment10", DefaultCarConfig.Names.BodyShopAttachment10);
 		ACarConfig.Names.PerformanceEngine = mINI_ReadHash(CarINI, "Names", "PerformanceEngine", DefaultCarConfig.Names.PerformanceEngine);
 		ACarConfig.Names.PerformanceECU = mINI_ReadHash(CarINI, "Names", "PerformanceECU", DefaultCarConfig.Names.PerformanceECU);
 		ACarConfig.Names.PerformanceTransmission = mINI_ReadHash(CarINI, "Names", "PerformanceTransmission", DefaultCarConfig.Names.PerformanceTransmission);
@@ -1170,57 +1219,57 @@ void LoadCarConfigs()
 
 		// Animation Types
 		// Init with -1s to avoid unintended animations
-		for (int s = 0; s < CAR_SLOT_ID::__NUM; s++)
+		for (int s = 0; s < CARSLOTID_NUM; s++)
 		{
 			ACarConfig.Animations.AnimationType[s] = -1;
 		}
 
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_BUMPER] = mINI_ReadInteger(CarINI, "Animations", "FrontBumper", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_BUMPER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::REAR_BUMPER] = mINI_ReadInteger(CarINI, "Animations", "RearBumper", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::REAR_BUMPER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::SKIRT] = mINI_ReadInteger(CarINI, "Animations", "Skirt", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::SKIRT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::FENDER] = mINI_ReadInteger(CarINI, "Animations", "Fender", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FENDER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::QUARTER] = mINI_ReadInteger(CarINI, "Animations", "Quarter", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::QUARTER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::SPOILER] = mINI_ReadInteger(CarINI, "Animations", "Spoiler", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::SPOILER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::HOOD] = mINI_ReadInteger(CarINI, "Animations", "Hood", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HOOD]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::ENGINE] = mINI_ReadInteger(CarINI, "Animations", "Engine", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::ENGINE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::TRUNK] = mINI_ReadInteger(CarINI, "Animations", "Trunk", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::TRUNK]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::ROOF] = mINI_ReadInteger(CarINI, "Animations", "RoofScoops", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::ROOF]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::BASE] = mINI_ReadInteger(CarINI, "Animations", "Interior", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::BASE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::TOP] = mINI_ReadInteger(CarINI, "Animations", "Roof", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::TOP]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::HEADLIGHT] = mINI_ReadInteger(CarINI, "Animations", "Headlights", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HEADLIGHT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::BRAKELIGHT] = mINI_ReadInteger(CarINI, "Animations", "Taillights", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::BRAKELIGHT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::WING_MIRROR] = mINI_ReadInteger(CarINI, "Animations", "Mirrors", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::WING_MIRROR]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::EXHAUST] = mINI_ReadInteger(CarINI, "Animations", "Exhaust", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::EXHAUST]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_WHEEL] = mINI_ReadInteger(CarINI, "Animations", "Rims", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_WHEEL]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_BRAKE] = mINI_ReadInteger(CarINI, "Animations", "Brakes", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::FRONT_BRAKE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::WIDE_BODY] = mINI_ReadInteger(CarINI, "Animations", "WideBodyKits", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::WIDE_BODY]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_FRONT] = mINI_ReadInteger(CarINI, "Animations", "Attachment0", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_FRONT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_REAR] = mINI_ReadInteger(CarINI, "Animations", "Attachment1", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_REAR]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_LEFT] = mINI_ReadInteger(CarINI, "Animations", "Attachment2", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_LEFT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_RIGHT] = mINI_ReadInteger(CarINI, "Animations", "Attachment3", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_RIGHT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_TOP] = mINI_ReadInteger(CarINI, "Animations", "Attachment4", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DAMAGE_TOP]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::BASE_PAINT] = mINI_ReadInteger(CarINI, "Animations", "BasePaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::BASE_PAINT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_SPOILER] = mINI_ReadInteger(CarINI, "Animations", "SpoilerPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_SPOILER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_ROOF] = mINI_ReadInteger(CarINI, "Animations", "RoofScoopPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_ROOF]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_MIRROR] = mINI_ReadInteger(CarINI, "Animations", "MirrorPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_MIRROR]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_RIM] = mINI_ReadInteger(CarINI, "Animations", "RimPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_RIM]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_SPINNER] = mINI_ReadInteger(CarINI, "Animations", "SpinnerPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_SPINNER]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_BRAKE] = mINI_ReadInteger(CarINI, "Animations", "BrakePaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_BRAKE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_ENGINE] = mINI_ReadInteger(CarINI, "Animations", "EnginePaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_ENGINE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_AUDIO] = mINI_ReadInteger(CarINI, "Animations", "TrunkPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_AUDIO]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_EXHAUST] = mINI_ReadInteger(CarINI, "Animations", "ExhaustPaint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::PAINT_EXHAUST]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON] = mINI_ReadInteger(CarINI, "Animations", "UnderglowNeon", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_ENGINE] = mINI_ReadInteger(CarINI, "Animations", "EngineNeon", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_ENGINE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_CABIN] = mINI_ReadInteger(CarINI, "Animations", "CabinNeon", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_CABIN]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::CABIN_NEON_FRAME] = mINI_ReadInteger(CarINI, "Animations", "CabinNeonLayout", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::CABIN_NEON_FRAME]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_TRUNK] = mINI_ReadInteger(CarINI, "Animations", "TrunkNeon", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NEON_TRUNK]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::WINDOW_TINT] = mINI_ReadInteger(CarINI, "Animations", "WindowTint", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::WINDOW_TINT]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::HEADLIGHT_BULB] = mINI_ReadInteger(CarINI, "Animations", "HeadlightColor", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HEADLIGHT_BULB]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::NOS_PURGE] = mINI_ReadInteger(CarINI, "Animations", "NosPurge", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::NOS_PURGE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::HYDRAULICS] = mINI_ReadInteger(CarINI, "Animations", "Hydraulics", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::HYDRAULICS]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::TRUNK_AUDIO] = mINI_ReadInteger(CarINI, "Animations", "TrunkAudio", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::TRUNK_AUDIO]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::DOOR_STYLE] = mINI_ReadInteger(CarINI, "Animations", "Doors", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::DOOR_STYLE]);
-		ACarConfig.Animations.AnimationType[CAR_SLOT_ID::LICENSE_PLATE] = mINI_ReadInteger(CarINI, "Animations", "LicensePlate", DefaultCarConfig.Animations.AnimationType[CAR_SLOT_ID::LICENSE_PLATE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_FRONT_BUMPER] = mINI_ReadInteger(CarINI, "Animations", "FrontBumper", DefaultCarConfig.Animations.AnimationType[CARSLOTID_FRONT_BUMPER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_REAR_BUMPER] = mINI_ReadInteger(CarINI, "Animations", "RearBumper", DefaultCarConfig.Animations.AnimationType[CARSLOTID_REAR_BUMPER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_SKIRT] = mINI_ReadInteger(CarINI, "Animations", "Skirt", DefaultCarConfig.Animations.AnimationType[CARSLOTID_SKIRT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_FENDER] = mINI_ReadInteger(CarINI, "Animations", "Fender", DefaultCarConfig.Animations.AnimationType[CARSLOTID_FENDER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_QUARTER] = mINI_ReadInteger(CarINI, "Animations", "Quarter", DefaultCarConfig.Animations.AnimationType[CARSLOTID_QUARTER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_SPOILER] = mINI_ReadInteger(CarINI, "Animations", "Spoiler", DefaultCarConfig.Animations.AnimationType[CARSLOTID_SPOILER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_HOOD] = mINI_ReadInteger(CarINI, "Animations", "Hood", DefaultCarConfig.Animations.AnimationType[CARSLOTID_HOOD]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_ENGINE] = mINI_ReadInteger(CarINI, "Animations", "Engine", DefaultCarConfig.Animations.AnimationType[CARSLOTID_ENGINE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_TRUNK] = mINI_ReadInteger(CarINI, "Animations", "Trunk", DefaultCarConfig.Animations.AnimationType[CARSLOTID_TRUNK]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_ROOF] = mINI_ReadInteger(CarINI, "Animations", "RoofScoops", DefaultCarConfig.Animations.AnimationType[CARSLOTID_ROOF]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_BASE] = mINI_ReadInteger(CarINI, "Animations", "Interior", DefaultCarConfig.Animations.AnimationType[CARSLOTID_BASE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_TOP] = mINI_ReadInteger(CarINI, "Animations", "Roof", DefaultCarConfig.Animations.AnimationType[CARSLOTID_TOP]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT] = mINI_ReadInteger(CarINI, "Animations", "Headlights", DefaultCarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_BRAKELIGHT] = mINI_ReadInteger(CarINI, "Animations", "Taillights", DefaultCarConfig.Animations.AnimationType[CARSLOTID_BRAKELIGHT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_WING_MIRROR] = mINI_ReadInteger(CarINI, "Animations", "Mirrors", DefaultCarConfig.Animations.AnimationType[CARSLOTID_WING_MIRROR]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_EXHAUST] = mINI_ReadInteger(CarINI, "Animations", "Exhaust", DefaultCarConfig.Animations.AnimationType[CARSLOTID_EXHAUST]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_FRONT_WHEEL] = mINI_ReadInteger(CarINI, "Animations", "Rims", DefaultCarConfig.Animations.AnimationType[CARSLOTID_FRONT_WHEEL]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_FRONT_BRAKE] = mINI_ReadInteger(CarINI, "Animations", "Brakes", DefaultCarConfig.Animations.AnimationType[CARSLOTID_FRONT_BRAKE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_WIDE_BODY] = mINI_ReadInteger(CarINI, "Animations", "WideBodyKits", DefaultCarConfig.Animations.AnimationType[CARSLOTID_WIDE_BODY]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_FRONT] = mINI_ReadInteger(CarINI, "Animations", "Attachment0", DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_FRONT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_REAR] = mINI_ReadInteger(CarINI, "Animations", "Attachment1", DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_REAR]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_LEFT] = mINI_ReadInteger(CarINI, "Animations", "Attachment2", DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_LEFT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_RIGHT] = mINI_ReadInteger(CarINI, "Animations", "Attachment3", DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_RIGHT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_TOP] = mINI_ReadInteger(CarINI, "Animations", "Attachment4", DefaultCarConfig.Animations.AnimationType[CARSLOTID_DAMAGE_TOP]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_BASE_PAINT] = mINI_ReadInteger(CarINI, "Animations", "BasePaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_BASE_PAINT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_SPOILER] = mINI_ReadInteger(CarINI, "Animations", "SpoilerPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_SPOILER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_ROOF] = mINI_ReadInteger(CarINI, "Animations", "RoofScoopPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_ROOF]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_MIRROR] = mINI_ReadInteger(CarINI, "Animations", "MirrorPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_MIRROR]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_RIM] = mINI_ReadInteger(CarINI, "Animations", "RimPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_RIM]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_SPINNER] = mINI_ReadInteger(CarINI, "Animations", "SpinnerPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_SPINNER]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_BRAKE] = mINI_ReadInteger(CarINI, "Animations", "BrakePaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_BRAKE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_ENGINE] = mINI_ReadInteger(CarINI, "Animations", "EnginePaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_ENGINE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_AUDIO] = mINI_ReadInteger(CarINI, "Animations", "TrunkPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_AUDIO]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_PAINT_EXHAUST] = mINI_ReadInteger(CarINI, "Animations", "ExhaustPaint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_PAINT_EXHAUST]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_NEON] = mINI_ReadInteger(CarINI, "Animations", "UnderglowNeon", DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_NEON_ENGINE] = mINI_ReadInteger(CarINI, "Animations", "EngineNeon", DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON_ENGINE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_NEON_CABIN] = mINI_ReadInteger(CarINI, "Animations", "CabinNeon", DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON_CABIN]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_CABIN_NEON_FRAME] = mINI_ReadInteger(CarINI, "Animations", "CabinNeonLayout", DefaultCarConfig.Animations.AnimationType[CARSLOTID_CABIN_NEON_FRAME]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_NEON_TRUNK] = mINI_ReadInteger(CarINI, "Animations", "TrunkNeon", DefaultCarConfig.Animations.AnimationType[CARSLOTID_NEON_TRUNK]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_WINDOW_TINT] = mINI_ReadInteger(CarINI, "Animations", "WindowTint", DefaultCarConfig.Animations.AnimationType[CARSLOTID_WINDOW_TINT]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT_BULB] = mINI_ReadInteger(CarINI, "Animations", "HeadlightColor", DefaultCarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT_BULB]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_NOS_PURGE] = mINI_ReadInteger(CarINI, "Animations", "NosPurge", DefaultCarConfig.Animations.AnimationType[CARSLOTID_NOS_PURGE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_HYDRAULICS] = mINI_ReadInteger(CarINI, "Animations", "Hydraulics", DefaultCarConfig.Animations.AnimationType[CARSLOTID_HYDRAULICS]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_TRUNK_AUDIO] = mINI_ReadInteger(CarINI, "Animations", "TrunkAudio", DefaultCarConfig.Animations.AnimationType[CARSLOTID_TRUNK_AUDIO]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_DOOR_STYLE] = mINI_ReadInteger(CarINI, "Animations", "Doors", DefaultCarConfig.Animations.AnimationType[CARSLOTID_DOOR_STYLE]);
+		ACarConfig.Animations.AnimationType[CARSLOTID_LICENSE_PLATE] = mINI_ReadInteger(CarINI, "Animations", "LicensePlate", DefaultCarConfig.Animations.AnimationType[CARSLOTID_LICENSE_PLATE]);
 
 		// PerformanceParts
 		for (int p = 0; p < DefaultPerformancePartCount; p++)
@@ -1232,6 +1281,53 @@ void LoadCarConfigs()
 	}
 
 	CarConfigs = std::move(CarConfigs_temp); // Replace global list with temp
+}
+
+void LoadPresetCarOverrides()
+{
+	PresetCarOverrides.clear();
+
+	auto PresetCarsINIPath = CurrentWorkingDirectory / "UnlimiterData" / "_PresetCars.ini";
+	mINI::INIFile PresetCarsINIFile(PresetCarsINIPath.string());
+	mINI::INIStructure PresetCarsINI;
+	PresetCarsINIFile.read(PresetCarsINI);
+
+	PresetCarsOnlyListed = mINI_ReadInteger(PresetCarsINI, "PresetCars", "OnlyListedPresets", 0) != 0;
+
+	for (int g = 0; g < PARTLINK_MAX_PRESET_GROUPS; g++)
+	{
+		char Key[16];
+		sprintf(Key, "GroupName%d", g);
+
+		char* Value = mINI_ReadString(PresetCarsINI, "PresetCars", Key, "");
+		if (Value[0]) sprintf(PresetGroupNames[g], "%s", Value);
+	}
+
+	for (auto const& Section : PresetCarsINI)
+	{
+		std::string const& Name = Section.first;
+
+		if (Name.empty()) continue;
+		if (_stricmp(Name.c_str(), "PresetCars") == 0) continue;
+
+		PresetCarOverride o;
+
+		o.NameHash = FEHashUpper(Name.c_str());
+		o.Enabled = mINI_ReadInteger(PresetCarsINI, Name, "Enabled", 1) != 0;
+		o.Group = mINI_ReadInteger(PresetCarsINI, Name, "Group", 0);
+
+		char* Cond = mINI_ReadString(PresetCarsINI, Name, "UnlockCondition", "None");
+		o.UnlockCondition = (_stricmp(Cond, "Code") == 0) ? PRESET_UNLOCK_CODE : PRESET_UNLOCK_NONE;
+		char* Code = mINI_ReadString(PresetCarsINI, Name, "UnlockValue", "");
+		strncpy(o.UnlockValue, Code, sizeof(o.UnlockValue) - 1);
+		o.UnlockValue[sizeof(o.UnlockValue) - 1] = 0;
+
+		char* Display = mINI_ReadString(PresetCarsINI, Name, "DisplayName", "");
+		strncpy(o.DisplayName, Display, sizeof(o.DisplayName) - 1);
+		o.DisplayName[sizeof(o.DisplayName) - 1] = 0;
+
+		PresetCarOverrides.push_back(o);
+	}
 }
 
 void LoadRimBrands()
@@ -1261,6 +1357,57 @@ void LoadRimBrands()
 		ARimBrand.AvailableForSUVs = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForSUVs", GetDefaultRimBrandAvailableForSUVs(i)) != 0;
 
 		RimBrands_temp.push_back(ARimBrand); // Add to temp list
+	}
+
+	// Load from folder
+	auto ExtraINIPath = CurrentWorkingDirectory / "UnlimiterData" / "RimBrands";
+	if (std::filesystem::exists(ExtraINIPath))
+	{
+		auto it = std::filesystem::directory_iterator(ExtraINIPath);
+
+		for (const auto& entry : it)
+		{
+			if (NumRimBrands >= MaximumRimBrandCount) break;
+
+			if (entry.is_regular_file() && entry.path().extension() == ".ini") // Check if .ini
+			{
+				auto itINIPath = entry.path();
+				mINI::INIFile itINIFile(itINIPath.string());
+				mINI::INIStructure itINI;
+				itINIFile.read(itINI);
+
+				ARimBrand.BrandNameHash = mINI_ReadInteger(itINI, "Brand", "BrandName");
+				ARimBrand.TextureHash = mINI_ReadHashS(itINI, "Brand", "Texture");
+				ARimBrand.StringHash = mINI_ReadHashS(itINI, "Brand", "String");
+				ARimBrand.NoRimSize = mINI_ReadInteger(itINI, "Brand", "NoRimSize", 0) != 0;
+				ARimBrand.AvailableForRegularCars = mINI_ReadInteger(itINI, "Brand", "AvailableForRegularCars", 1) != 0;
+				ARimBrand.AvailableForSUVs = mINI_ReadInteger(itINI, "Brand", "AvailableForSUVs", 0) != 0;
+
+				// If we already have a grup with the same hash, overwrite it
+				bool found = 0;
+
+				for (int k = 0; k < RimBrands_temp.size(); k++)
+				{
+					if (RimBrands_temp[k].BrandNameHash == ARimBrand.BrandNameHash) // overwrite
+					{
+						RimBrands_temp[k].StringHash = ARimBrand.StringHash;
+						RimBrands_temp[k].TextureHash = ARimBrand.TextureHash;
+						RimBrands_temp[k].NoRimSize = ARimBrand.NoRimSize;
+						RimBrands_temp[k].AvailableForRegularCars = ARimBrand.AvailableForRegularCars;
+						RimBrands_temp[k].AvailableForSUVs = ARimBrand.AvailableForSUVs;
+
+						found = 1;
+						break;
+					}
+				}
+
+				if (!found && NumRimBrands < MaximumRimBrandCount - 1)
+				{
+					RimBrands_temp.push_back(ARimBrand); // Add to temp list
+					NumRimBrands++;
+				}
+			}
+		}
 	}
 
 	RimBrands = std::move(RimBrands_temp); // Replace global list with temp
@@ -1297,6 +1444,53 @@ void LoadVinylGroups()
 		sprintf(AVinylGroup.CameraInfoName, mINI_ReadString(VinylGroupsINI, VinylBrandID, "CameraInfo"));
 
 		VinylGroups_temp.push_back(AVinylGroup); // Add to temp list
+	}
+
+	// Load from folder
+	auto ExtraINIPath = CurrentWorkingDirectory / "UnlimiterData" / "VinylGroups";
+	if (std::filesystem::exists(ExtraINIPath))
+	{
+		auto it = std::filesystem::directory_iterator(ExtraINIPath);
+
+		for (const auto& entry : it)
+		{
+			if (NumVinylGroups >= MaximumVinylGroupCount) break;
+
+			if (entry.is_regular_file() && entry.path().extension() == ".ini") // Check if .ini
+			{
+				auto itINIPath = entry.path();
+				mINI::INIFile itINIFile(itINIPath.string());
+				mINI::INIStructure itINI;
+				itINIFile.read(itINI);
+
+				AVinylGroup.Index = mINI_ReadInteger(itINI, "Group", "Index");
+				AVinylGroup.TextureHash = mINI_ReadHashS(itINI, "Group", "Texture");
+				AVinylGroup.StringHash = mINI_ReadHashS(itINI, "Group", "String");
+				sprintf(AVinylGroup.CameraInfoName, mINI_ReadString(itINI, "Group", "CameraInfo"));
+
+				// If we already have a grup with the same hash, overwrite it
+				bool found = 0;
+
+				for (int k = 0; k < VinylGroups_temp.size(); k++)
+				{
+					if (VinylGroups_temp[k].Index == AVinylGroup.Index) // overwrite
+					{
+						VinylGroups_temp[k].StringHash = AVinylGroup.StringHash;
+						VinylGroups_temp[k].TextureHash = AVinylGroup.TextureHash;
+						strcpy(AVinylGroup.CameraInfoName, VinylGroups_temp[k].CameraInfoName);
+
+						found = 1;
+						break;
+					}
+				}
+
+				if (!found && NumVinylGroups < MaximumVinylGroupCount - 1)
+				{
+					VinylGroups_temp.push_back(AVinylGroup); // Add to temp list
+					NumVinylGroups++;
+				}
+			}
+		}
 	}
 
 	VinylGroups = std::move(VinylGroups_temp); // Replace global list with temp
@@ -1342,6 +1536,63 @@ void LoadPaintGroups()
 		APaintGroup.AvailableForVinyl = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForVinyl", GetDefaultPaintBrandAvailableForVinyl(i)) != 0;
 
 		PaintGroups_temp.push_back(APaintGroup); // Add to temp list
+	}
+
+	// Load from folder
+	auto ExtraINIPath = CurrentWorkingDirectory / "UnlimiterData" / "PaintGroups";
+	if (std::filesystem::exists(ExtraINIPath))
+	{
+		auto it = std::filesystem::directory_iterator(ExtraINIPath);
+
+		for (const auto& entry : it)
+		{
+			if (NumPaintGroups >= MaximumPaintBrandCount) break;
+
+			if (entry.is_regular_file() && entry.path().extension() == ".ini") // Check if .ini
+			{
+				auto itINIPath = entry.path();
+				mINI::INIFile itINIFile(itINIPath.string());
+				mINI::INIStructure itINI;
+				itINIFile.read(itINI);
+
+				APaintGroup.BrandNameHash = mINI_ReadHashS(itINI, "Group", "BrandName");
+				APaintGroup.StringHash = mINI_ReadHashS(itINI, "Group", "String");
+				APaintGroup.AvailableForBody = mINI_ReadInteger(itINI, "Group", "AvailableForBody", 1) != 0;
+				APaintGroup.AvailableForRims = mINI_ReadInteger(itINI, "Group", "AvailableForRims", 0) != 0;
+				APaintGroup.AvailableForBrakes = mINI_ReadInteger(itINI, "Group", "AvailableForBrakes", 0) != 0;
+				APaintGroup.AvailableForHoses = mINI_ReadInteger(itINI, "Group", "AvailableForHoses", 1) != 0;
+				APaintGroup.AvailableForTrunk = mINI_ReadInteger(itINI, "Group", "AvailableForTrunk", 1) != 0;
+				APaintGroup.AvailableForMuffler = mINI_ReadInteger(itINI, "Group", "AvailableForMuffler", 1) != 0;
+				APaintGroup.AvailableForVinyl = mINI_ReadInteger(itINI, "Group", "AvailableForVinyl", 0) != 0;
+
+				// If we already have a grup with the same hash, overwrite it
+				bool found = 0;
+
+				for (int k = 0; k < PaintGroups_temp.size(); k++)
+				{
+					if (PaintGroups_temp[k].BrandNameHash == APaintGroup.BrandNameHash) // overwrite
+					{
+						PaintGroups_temp[k].StringHash = APaintGroup.StringHash;
+						PaintGroups_temp[k].AvailableForBody = APaintGroup.AvailableForBody;
+						PaintGroups_temp[k].AvailableForRims = APaintGroup.AvailableForRims;
+						PaintGroups_temp[k].AvailableForBrakes = APaintGroup.AvailableForBrakes;
+						PaintGroups_temp[k].AvailableForHoses = APaintGroup.AvailableForHoses;
+						PaintGroups_temp[k].AvailableForTrunk = APaintGroup.AvailableForTrunk;
+						PaintGroups_temp[k].AvailableForMuffler = APaintGroup.AvailableForMuffler;
+						PaintGroups_temp[k].AvailableForVinyl = APaintGroup.AvailableForVinyl;
+
+						found = 1;
+						break;
+					}
+				}
+
+				if (!found && NumPaintGroups < MaximumPaintBrandCount - 1)
+				{
+					PaintGroups_temp.push_back(APaintGroup); // Add to temp list
+					NumPaintGroups++;
+				}
+			}
+		}
 	}
 
 	PaintGroups = std::move(PaintGroups_temp);

@@ -236,42 +236,42 @@ void __fastcall ChooseDecalCategory_InstallNeededLayoutPart(DWORD *ChooseDecalCa
 	DWORD* LayoutPart; // eax
 	int LayoutID = 2; // [esp+0h] [ebp-4h]
 
-	int location = CAR_SLOT_ID::__LAST_NONRENDER;
-	int slot = CAR_SLOT_ID::__LAST_NONRENDER;
+	int location = CARSLOTID_LAST_NONRENDER;
+	int slot = CARSLOTID_LAST_NONRENDER;
 
 	switch (*(DWORD*)(ChooseDecalCategory[22] + 72))
 	{
 	case 0x20006: // Left Quarter Layout 1
 		LayoutID = 1;
-		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
-		slot = CAR_SLOT_ID::DECAL_LEFT_QUARTER_TEX0;
+		location = CARSLOTID_DECAL_LEFT_QUARTER;
+		slot = CARSLOTID_DECAL_LEFT_QUARTER_TEX0;
 		break;
 
 	case 0x20007: // Left Quarter Layout 2
-		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
-		slot = CAR_SLOT_ID::DECAL_LEFT_QUARTER_TEX0;
+		location = CARSLOTID_DECAL_LEFT_QUARTER;
+		slot = CARSLOTID_DECAL_LEFT_QUARTER_TEX0;
 		break;
 		
 	case 0x20008: // Right Quarter Layout 1
 		LayoutID = 1;
-		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
-		slot = CAR_SLOT_ID::DECAL_RIGHT_QUARTER_TEX0;
+		location = CARSLOTID_DECAL_RIGHT_QUARTER;
+		slot = CARSLOTID_DECAL_RIGHT_QUARTER_TEX0;
 		break;
 
 	case 0x20009: // Right Quarter Layout 2
-		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
-		slot = CAR_SLOT_ID::DECAL_RIGHT_QUARTER_TEX0;
+		location = CARSLOTID_DECAL_RIGHT_QUARTER;
+		slot = CARSLOTID_DECAL_RIGHT_QUARTER_TEX0;
 		break;
 
 	case 0x2000A: // Hood Layout 1
 		LayoutID = 1;
-		location = CAR_SLOT_ID::DECAL_HOOD;
-		slot = CAR_SLOT_ID::DECAL_HOOD_TEX0;
+		location = CARSLOTID_DECAL_HOOD;
+		slot = CARSLOTID_DECAL_HOOD_TEX0;
 		break;
 
 	case 0x2000B: // Hood Layout 2
-		location = CAR_SLOT_ID::DECAL_HOOD;
-		slot = CAR_SLOT_ID::DECAL_HOOD_TEX0;
+		location = CARSLOTID_DECAL_HOOD;
+		slot = CARSLOTID_DECAL_HOOD_TEX0;
 		break;
 
 	default:
@@ -302,35 +302,35 @@ bool __fastcall ChooseDecalCategory_NeedsNewLayoutPart(DWORD* ChooseDecalCategor
 	DWORD* LayoutPart, *InstalledPart; // eax
 	int LayoutID = 2; // [esp+0h] [ebp-4h]
 
-	int location = CAR_SLOT_ID::__LAST_NONRENDER;
+	int location = CARSLOTID_LAST_NONRENDER;
 
 	switch (*(DWORD*)(ChooseDecalCategory[22] + 72))
 	{
 	case 0x20006: // Left Quarter Layout 1
 		LayoutID = 1;
-		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
+		location = CARSLOTID_DECAL_LEFT_QUARTER;
 		break;
 
 	case 0x20007: // Left Quarter Layout 2
-		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
+		location = CARSLOTID_DECAL_LEFT_QUARTER;
 		break;
 
 	case 0x20008: // Right Quarter Layout 1
 		LayoutID = 1;
-		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+		location = CARSLOTID_DECAL_RIGHT_QUARTER;
 		break;
 
 	case 0x20009: // Right Quarter Layout 2
-		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+		location = CARSLOTID_DECAL_RIGHT_QUARTER;
 		break;
 
 	case 0x2000A: // Hood Layout 1
 		LayoutID = 1;
-		location = CAR_SLOT_ID::DECAL_HOOD;
+		location = CARSLOTID_DECAL_HOOD;
 		break;
 
 	case 0x2000B: // Hood Layout 2
-		location = CAR_SLOT_ID::DECAL_HOOD;
+		location = CARSLOTID_DECAL_HOOD;
 		break;
 
 	default:

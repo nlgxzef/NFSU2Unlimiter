@@ -79,6 +79,7 @@ int RimsToCustomize = 0; // -1 = Rear, 0 = All, 1 = Front
 
 // Default values for Rim Brands if _RimBrands.ini is N/A
 #define DefaultRimBrandCount 23
+#define MaximumRimBrandCount 64
 
 char* DefaultRimBrandNames[]
 {
@@ -172,6 +173,7 @@ bool DefaultRimBrandAvailableForSUVs[]
 
 // Default values for Vinyl Groups if _VinylGroups.ini is N/A
 #define DefaultVinylGroupCount 29
+#define MaximumVinylGroupCount 32
 
 int DefaultVinylGroupIndexes[]
 {
@@ -331,7 +333,7 @@ int DefaultRepForStars[]
 };
 
 // _General.ini & CARNAME.ini
-typedef struct
+struct MainSection
 {
 	int InitiallyUnlocked;
 	bool ForceLODA;
@@ -339,10 +341,16 @@ typedef struct
 	int InductionType; // 0 = Turbo, 1 = Supercharger, 2+ = Twincharger??
 	bool ScaleBrakesWithRims;
 	bool SyncVisualPartsWithPhysics;
+	bool SyncBrakesWithPhysics;
+	bool MirrorBrakes;
+	bool AlwaysShowHoodUnder;
+	bool AlwaysShowTrunkUnder;
+	bool AlwaysShowDoorPanels;
+	bool AlwaysShowDoorSills;
 	bool CanBeDrivenByAI;
-} MainSection;
+};
 
-typedef struct
+struct TextureSection
 {
 	bool HeadlightOn;
 	bool BrakelightOn;
@@ -353,36 +361,36 @@ typedef struct
 	bool Reverse;
 	bool BrakelightOnfInGame;
 	bool TireInnerMask;
-} TextureSection;
+};
 
-typedef struct
+struct CarRenderInfoSection
 {
 	bool LinkLicensePlateToTrunk;
 	bool ShowTrunkUnderInFE;
 	bool RemoveCentreBrakeWithCustomSpoiler;
 	bool HasSunroof;
-} CarRenderInfoSection;
+};
 
-typedef struct
+struct StatsSection
 {
 	float TimingKludgeFactor060;
 	float TimingKludgeFactor0100;
-} StatsSection;
+};
 
-typedef struct
+struct StarGazerSection
 {
 	int StartingRep;
-} StarGazerSection;
+};
 
-typedef struct
+struct CategorySection
 {
 	bool BodyShop;
 	bool Performance;
 	bool Paint;
 	bool Specialties;
-} CategorySection;
+};
 
-typedef struct
+struct BodyShopSection
 {
 	bool FrontBumper;
 	bool RearBumper;
@@ -411,9 +419,15 @@ typedef struct
 	bool Attachment2;
 	bool Attachment3;
 	bool Attachment4;
-} BodyShopSection;
+	bool Attachment5;
+	bool Attachment6;
+	bool Attachment7;
+	bool Attachment8;
+	bool Attachment9;
+	bool Attachment10;
+};
 
-typedef struct
+struct PerformanceSection
 {
 	bool Engine;
 	bool ECU;
@@ -426,9 +440,9 @@ typedef struct
 	bool Induction;
 	bool Aerodynamics;
 	bool TestDyno;
-} PerformanceSection;
+};
 
-typedef struct
+struct PaintSection
 {
 	bool Paint;
 	bool PaintCustom;
@@ -453,9 +467,9 @@ typedef struct
 	bool DecalsRightDoor;
 	bool DecalsLeftQuarter;
 	bool DecalsRightQuarter;
-} PaintSection;
+};
 
-typedef struct
+struct SpecialtiesSection
 {
 	bool CustomGauges;
 	bool Neon;
@@ -472,9 +486,9 @@ typedef struct
 	bool SplitHoods;
 	bool Doors;
 	bool LicensePlate;
-} SpecialtiesSection;
+};
 
-typedef struct
+struct IconsSection
 {
 	DWORD CategoryBodyShop;
 	DWORD CategoryPerformance;
@@ -520,6 +534,12 @@ typedef struct
 	DWORD BodyShopAttachment2;
 	DWORD BodyShopAttachment3;
 	DWORD BodyShopAttachment4;
+	DWORD BodyShopAttachment5;
+	DWORD BodyShopAttachment6;
+	DWORD BodyShopAttachment7;
+	DWORD BodyShopAttachment8;
+	DWORD BodyShopAttachment9;
+	DWORD BodyShopAttachment10;
 	DWORD PerformanceEngine;
 	DWORD PerformanceECU;
 	DWORD PerformanceTransmission;
@@ -704,9 +724,9 @@ typedef struct
 	DWORD PerformanceAerodynamicsLevel1;
 	DWORD PerformanceAerodynamicsLevel2;
 	DWORD PerformanceAerodynamicsLevel3;
-} IconsSection;
+};
 
-typedef struct
+struct NamesSection
 {
 	DWORD CategoryBodyShop;
 	DWORD CategoryPerformance;
@@ -752,6 +772,12 @@ typedef struct
 	DWORD BodyShopAttachment2;
 	DWORD BodyShopAttachment3;
 	DWORD BodyShopAttachment4;
+	DWORD BodyShopAttachment5;
+	DWORD BodyShopAttachment6;
+	DWORD BodyShopAttachment7;
+	DWORD BodyShopAttachment8;
+	DWORD BodyShopAttachment9;
+	DWORD BodyShopAttachment10;
 	DWORD PerformanceEngine;
 	DWORD PerformanceECU;
 	DWORD PerformanceTransmission;
@@ -937,22 +963,22 @@ typedef struct
 	DWORD PerformanceAerodynamicsLevel1;
 	DWORD PerformanceAerodynamicsLevel2;
 	DWORD PerformanceAerodynamicsLevel3;
-} NamesSection;
+};
 
-typedef struct
+struct AnimationSection
 {
-	int AnimationType[CAR_SLOT_ID::__NUM];
-} AnimationSection;
+	int AnimationType[CARSLOTID_NUM];
+};
 
 
 #define DefaultPerformancePartCount 71
 
-typedef struct
+struct PerformancePartsSection
 {
 	DWORD ReplacementHashes[DefaultPerformancePartCount];
-} PerformancePartsSection;
+};
 
-typedef struct
+struct CarConfig
 {
 	DWORD* CarTypeInfo;
 	MainSection Main;
@@ -971,29 +997,29 @@ typedef struct
 	PerformancePartsSection PerformanceParts;
 	//StockPartsSection StockParts;
 	//RandomPartsSection RandomParts;
-} CarConfig;
+};
 
 CarConfig DefaultCarConfig;
 std::vector<CarConfig> CarConfigs;
 
 // _FNGFixes.ini
-typedef struct
+struct Child
 {
 	char Prefix[64];
-} Child;
+};
 
-typedef struct
+struct FNGFix
 {
 	char FNGName[64];
 	char ObjectPrefix[64];
 	int NumberOfObjects;
 	std::vector<Child> Children;
-} FNGFix;
+};
 
 std::vector<FNGFix> FNGFixes;
 
 // _RimBrands.ini
-typedef struct
+struct RimBrand
 {
 	DWORD BrandNameHash;
 	DWORD StringHash;
@@ -1002,23 +1028,23 @@ typedef struct
 	bool HideBrandName;
 	bool AvailableForRegularCars;
 	bool AvailableForSUVs;
-} RimBrand;
+};
 
 std::vector<RimBrand> RimBrands;
 
 // _VinylGroups.ini
-typedef struct
+struct VinylGroup
 {
 	int Index;
 	DWORD StringHash;
 	DWORD TextureHash;
 	char CameraInfoName[MAX_PATH];
-} VinylGroup;
+};
 
 std::vector<VinylGroup> VinylGroups;
 
 // _PaintGroups.ini
-typedef struct
+struct PaintGroup
 {
 	DWORD BrandNameHash;
 	DWORD StringHash;
@@ -1029,7 +1055,7 @@ typedef struct
 	bool AvailableForTrunk;
 	bool AvailableForMuffler;
 	bool AvailableForVinyl;
-} PaintGroup;
+};
 
 std::vector<PaintGroup> PaintGroups;
 
@@ -1037,18 +1063,19 @@ int NumAvailablePaintGroups = 0;
 int AvailablePaintGroups[MaximumPaintBrandCount];
 
 // _StarGazer.ini
-typedef struct
+struct StarGazer
 {
 	int MaxStars;
 	int MaxRep;
 	int ForceRep;
 	int Rep[StarGazerMaxStars + 1];
-} StarGazer;
+};
 
 StarGazer TheStarGazer;
 
 // Camera Info Stuff is in CameraInfo.h
 bool UseCameraInfo = false;
+bool StaticCameraGenericFallback = true;
 
 float CarSelectTireSteerAngle_Backup;
 

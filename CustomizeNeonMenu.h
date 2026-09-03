@@ -88,15 +88,15 @@ void __fastcall CustomizeNeonMenu_NotificationMessage(DWORD* CustomizeNeonMenu, 
         }
         if (*(BYTE*)(CustomizeNeonMenu[22] + 34))
             return;
-        DWORD *Part = RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::ENGINE);
-        if (*(DWORD*)(CustomizeNeonMenu[22] + 72) == CAR_SLOT_ID::NEON_ENGINE && !HasNeon(Part))
+        DWORD *Part = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_ENGINE);
+        if (*(DWORD*)(CustomizeNeonMenu[22] + 72) == CARSLOTID_NEON_ENGINE && !HasNeon(Part))
         {
             DialogInterface_ShowOk((const char*)CustomizeNeonMenu[1], "GenericDialog_SMALL.fng", CT_bStringHash("CUSTOMIZE_CONFIRM_NEED_TO_UPGRADE_ENGINE"));
             dword_838970 = 0x34DC1BEC;
             return;
         }
-        Part = RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::TRUNK_AUDIO);
-        if (*(DWORD*)(CustomizeNeonMenu[22] + 72) == CAR_SLOT_ID::NEON_TRUNK && !HasNeon(Part))
+        Part = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_TRUNK_AUDIO);
+        if (*(DWORD*)(CustomizeNeonMenu[22] + 72) == CARSLOTID_NEON_TRUNK && !HasNeon(Part))
         {
             DialogInterface_ShowOk((const char*)CustomizeNeonMenu[1], "GenericDialog_SMALL.fng", CT_bStringHash("CUSTOMIZE_CONFIRM_NEED_TO_UPGRADE_TRUNK_AUDIO"));
             dword_838970 = 0x34DC1BEC;

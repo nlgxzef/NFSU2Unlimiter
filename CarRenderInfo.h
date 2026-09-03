@@ -769,7 +769,7 @@ void __fastcall CarRenderInfo_UpdateCarReplacementTextures(DWORD* CarRenderInfo,
 		if (RideInfo)
 		{
 			// INTERIOR
-			DWORD* Part = (DWORD*)RideInfo[356 + CAR_SLOT_ID::BASE];
+			DWORD* Part = (DWORD*)RideInfo[356 + CARSLOTID_BASE];
 			sprintf(srcTextureNameBuf, "%s_INTERIOR", GetCarTypeName(RideInfo[0]));
 			srcTextureHash = bStringHash(srcTextureNameBuf);
 
@@ -783,7 +783,7 @@ void __fastcall CarRenderInfo_UpdateCarReplacementTextures(DWORD* CarRenderInfo,
 			}
 
 			// LICENSEPLATE
-			Part = (DWORD*)RideInfo[356 + CAR_SLOT_ID::LICENSE_PLATE];
+			Part = (DWORD*)RideInfo[356 + CARSLOTID_LICENSE_PLATE];
 
 			if (Part)
 			{
@@ -798,9 +798,9 @@ void __fastcall CarRenderInfo_UpdateCarReplacementTextures(DWORD* CarRenderInfo,
 
 			int CurrTexReplSlot = 51;
 
-			for (int i = 0; i < CAR_SLOT_ID::__ATTACHMENT_MODEL_NUM; i++)
+			for (int i = 0; i < CARSLOTID_ATTACHMENT_MODEL_NUM; i++)
 			{
-				Part = (DWORD*)RideInfo[356 + CAR_SLOT_ID::DAMAGE_FRONT + i];
+				Part = (DWORD*)RideInfo[356 + CARSLOTID_DAMAGE_FRONT + i];
 
 				if (Part)
 				{
@@ -815,7 +815,7 @@ void __fastcall CarRenderInfo_UpdateCarReplacementTextures(DWORD* CarRenderInfo,
 			}
 
 			// Neon Texture Stuff
-			Part = (DWORD*)RideInfo[356 + CAR_SLOT_ID::NEON];
+			Part = (DWORD*)RideInfo[356 + CARSLOTID_NEON];
 			sprintf(srcTextureNameBuf, "%s_NEON", GetCarTypeName(RideInfo[0]));
 			srcTextureHash = bStringHash(srcTextureNameBuf);
 
@@ -849,7 +849,7 @@ void __fastcall CarRenderInfo_UpdateCarReplacementTextures(DWORD* CarRenderInfo,
 
 DWORD GetWheelTextureHash(DWORD* _RideInfo, int index)
 {
-	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CAR_SLOT_ID::FRONT_WHEEL : CAR_SLOT_ID::REAR_WHEEL)];
+	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CARSLOTID_FRONT_WHEEL : CARSLOTID_REAR_WHEEL)];
 	if (!RimPart) return 0;
 
 	DWORD TextureHash = CarPart_GetTextureName(RimPart);
@@ -862,7 +862,7 @@ DWORD GetWheelTextureHash(DWORD* _RideInfo, int index)
 
 DWORD GetWheelTextureMaskHash(DWORD* _RideInfo, int index)
 {
-	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CAR_SLOT_ID::FRONT_WHEEL : CAR_SLOT_ID::REAR_WHEEL)];
+	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CARSLOTID_FRONT_WHEEL : CARSLOTID_REAR_WHEEL)];
 	if (!RimPart) return 0;
 
 	DWORD TextureHash = CarPart_GetTextureName(RimPart);
@@ -874,7 +874,7 @@ DWORD GetWheelTextureMaskHash(DWORD* _RideInfo, int index)
 
 DWORD GetSpinnerTextureHash(DWORD* _RideInfo, int index)
 {
-	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CAR_SLOT_ID::FRONT_WHEEL : CAR_SLOT_ID::REAR_WHEEL)];
+	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CARSLOTID_FRONT_WHEEL : CARSLOTID_REAR_WHEEL)];
 	if (!RimPart) return 0;
 
 	DWORD TextureHash = CarPart_GetAppliedAttributeUParam(RimPart, CT_bStringHash("SPINNER_TEXTURE"), 0);
@@ -883,11 +883,73 @@ DWORD GetSpinnerTextureHash(DWORD* _RideInfo, int index)
 
 DWORD GetSpinnerTextureMaskHash(DWORD* _RideInfo, int index)
 {
-	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CAR_SLOT_ID::FRONT_WHEEL : CAR_SLOT_ID::REAR_WHEEL)];
+	DWORD* RimPart = (DWORD*)_RideInfo[356 + (index == 0 ? CARSLOTID_FRONT_WHEEL : CARSLOTID_REAR_WHEEL)];
 	if (!RimPart) return 0;
 
 	DWORD TextureHash = CarPart_GetAppliedAttributeUParam(RimPart, CT_bStringHash("SPINNER_TEXTURE"), 0);
 	return TextureHash ? bStringHash2((char*)"_MASK", TextureHash) : 0;
+}
+
+int BodyPartsToLookForDoorline[] = {
+	CARSLOTID_WIDE_BODY,
+	CARSLOTID_FRONT_BUMPER,
+	CARSLOTID_REAR_BUMPER,
+	CARSLOTID_SKIRT,
+	CARSLOTID_BODY
+};
+
+DWORD GetDoorlineHash(DWORD* _RideInfo)
+{
+	char* CarTypeName = GetCarTypeName(_RideInfo[0]);
+	DWORD result = bStringHash2("_DOORLINE", bStringHash(CarTypeName)); //GetDoorlineHash_Game(_RideInfo);
+	DWORD resultKit = bStringHash2("_KIT", result); //GetDoorlineHash_Game(_RideInfo);
+	DWORD resultWide = bStringHash2("_WIDEBODY", result); //GetDoorlineHash_Game(_RideInfo);
+	
+	// Look for body parts to check if any of them have a custom doorline
+	for (int i = 0; i < 5; i++)
+	{
+		DWORD* part = (DWORD*)_RideInfo[356 + BodyPartsToLookForDoorline[i]];
+
+		if (part) 
+		{
+			if (*(BYTE*)(part + 5) >> 5) // non-stock
+				return i == 0
+				? CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE"), resultWide)
+				: CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE"), resultKit);
+
+			else if (i < 4) continue;
+			else return CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE"), result); // stock
+		}
+	}
+
+	return result;
+}
+
+DWORD GetDoorlineMaskHash(DWORD* _RideInfo)
+{
+	char* CarTypeName = GetCarTypeName(_RideInfo[0]);
+	DWORD CarTypeNameHash = bStringHash(CarTypeName);
+	DWORD result = bStringHash2("_DOORLINE_MASK", CarTypeNameHash);
+	DWORD resultKit = bStringHash2("_DOORLINE_KIT_MASK", CarTypeNameHash);
+	DWORD resultWide = bStringHash2("_DOORLINE_WIDEBODY_MASK", CarTypeNameHash);
+
+	// Look for body parts to check if any of them have a custom doorline mask
+	for (int i = 0; i < 5; i++)
+	{
+		DWORD* part = (DWORD*)_RideInfo[356 + BodyPartsToLookForDoorline[i]];
+
+		if (part)
+		{
+			if (*(BYTE*)(part + 5) >> 5) // non-stock
+				return i == 0
+				? CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE_MASK"), resultWide)
+				: CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE_MASK"), resultKit);
+			else if (i < 4) continue;
+			else return CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE_MASK"), result); // stock
+		}
+	}
+
+	return result;
 }
 
 void CompositeRim(DWORD* _RideInfo)
@@ -902,7 +964,7 @@ void CompositeRim(DWORD* _RideInfo)
 		CompositeWheelHash = _RideInfo[354 + i]; // DUMMY_WHEELx, DUMMY_WHEEL_REARx?? or DUMMY_SPINNERx
 		WheelTexHash = GetWheelTextureHash(_RideInfo, i);
 		WheelInnerMaskTexHash = GetWheelTextureMaskHash(_RideInfo, i);
-		CompositeWheel(_RideInfo, CompositeWheelHash, WheelTexHash, WheelInnerMaskTexHash, CAR_SLOT_ID::PAINT_RIM/* + i*/);
+		CompositeWheel(_RideInfo, CompositeWheelHash, WheelTexHash, WheelInnerMaskTexHash, CARSLOTID_PAINT_RIM/* + i*/);
 	}
 }
 
@@ -911,7 +973,7 @@ int GetTempCarSkinTextures(DWORD* textures_to_load, int num_textures, int max_te
 	// Vinyls
 	for (int i = 0; i < 4; ++i) // VINYL_LAYER0-3
 	{
-		DWORD* VinylPart = (DWORD*)ride[356 + CAR_SLOT_ID::VINYL_LAYER0 + i];
+		DWORD* VinylPart = (DWORD*)ride[356 + CARSLOTID_VINYL_LAYER0 + i];
 		if (VinylPart)
 		{
 			DWORD VinylLayerHash = GetVinylLayerHash_Game(ride, i);
@@ -1002,7 +1064,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 
 	info->MappedGlobalHash = CT_bStringHash("GLOBAL_SKIN1"); // Global Skin1
 
-	DWORD* Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::FRONT_WHEEL]; // Front wheel
+	DWORD* Part = (DWORD*)ride_info[356 + CARSLOTID_FRONT_WHEEL]; // Front wheel
 	DWORD TextureHash = 0;
 	
 	if (Part)
@@ -1024,7 +1086,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 		info->MappedWheelHash = 0; // No front wheel
 	}
 	
-	DWORD *RPart = (DWORD*)ride_info[356 + CAR_SLOT_ID::REAR_WHEEL]; // Rear wheel
+	DWORD *RPart = (DWORD*)ride_info[356 + CARSLOTID_REAR_WHEEL]; // Rear wheel
 	if (RPart && (Part[0] != RPart[0])) // Check if rear wheel is different from front wheel
 	{
 		TextureHash = CarPart_GetTextureName(RPart);
@@ -1049,7 +1111,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	}
 	else // non-skinnable cars
 	{
-		Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::BASE_PAINT]; // paint
+		Part = (DWORD*)ride_info[356 + CARSLOTID_BASE_PAINT]; // paint
 
 		TextureHash = info->MappedSkinHash;
 		info->ReplaceSkinHash = TextureHash;
@@ -1102,13 +1164,13 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	}
 
 	// Check texture name from attributes
-	Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::HEADLIGHT]; // Headlights
+	Part = (DWORD*)ride_info[356 + CARSLOTID_HEADLIGHT]; // Headlights
 	if (Part)
 	{
 		HLTex = CarPart_GetAppliedAttributeUParam(Part, 0x10C98090, HLTex); // TEXTURE_NAME
 	}
 
-	Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::BRAKELIGHT]; // Brakelights
+	Part = (DWORD*)ride_info[356 + CARSLOTID_BRAKELIGHT]; // Brakelights
 	if (Part)
 	{
 		BLTex = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME"), BLTex);
@@ -1179,7 +1241,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 
 	sprintf(TextureNameBuf, "%s_INTERIOR", CarTypeName); // INTERIOR
 	TextureHash = bStringHash(TextureNameBuf);
-	Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::BASE]; // Interior
+	Part = (DWORD*)ride_info[356 + CARSLOTID_BASE]; // Interior
 	if (Part)
 	{
 		TextureHash = CarPart_GetAppliedAttributeUParam(Part, 0x10C98090, TextureHash); // TEXTURE_NAME
@@ -1237,7 +1299,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 
 	if (front_end_only || engine)
 	{
-		Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::ENGINE];
+		Part = (DWORD*)ride_info[356 + CARSLOTID_ENGINE];
 		TextureHash = Part ? CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME"), 0) : 0; // TEXTURE_NAME
 		NumUsedCarTextures += UsedCarTextureAddToTable(info->TexturesToLoadPerm, NumUsedCarTextures, MaxPermTex, TextureHash);
 	}
@@ -1245,9 +1307,9 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	// Attachments
 	DWORD srcTextureHash = 0;
 
-	for (int i = 0; i < CAR_SLOT_ID::__ATTACHMENT_MODEL_NUM; i++)
+	for (int i = 0; i < CARSLOTID_ATTACHMENT_MODEL_NUM; i++)
 	{
-		Part = (DWORD*)ride_info[356 + CAR_SLOT_ID::DAMAGE_FRONT + i];
+		Part = (DWORD*)ride_info[356 + CARSLOTID_DAMAGE_FRONT + i];
 
 		if (Part)
 		{
@@ -1266,10 +1328,10 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	DWORD Shape;
 	DWORD DecalNameHash;
 
-	int DecalSlot1 = CAR_SLOT_ID::DECAL_HOOD_TEX0;
-	int DecalSlot8 = CAR_SLOT_ID::DECAL_HOOD_TEX7;
+	int DecalSlot1 = CARSLOTID_DECAL_HOOD_TEX0;
+	int DecalSlot8 = CARSLOTID_DECAL_HOOD_TEX7;
 
-	for (int i = CAR_SLOT_ID::__DECAL_MODEL_FIRST; i <= __DECAL_MODEL_LAST; i++)
+	for (int i = CARSLOTID_DECAL_MODEL_FIRST; i <= CARSLOTID_DECAL_MODEL_LAST; i++)
 	{
 		Part = (DWORD*)ride_info[356 + i]; // Decal dummy part
 		if (Part)
@@ -1702,7 +1764,7 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 
 	if (CarRenderInfo[2]) // CarTypeInfo
 	{
-		for (int i = CAR_SLOT_ID::__MODEL_NUM * 2 - 1; i >= 0; i--) // 63 slots, 2 models for 4 LODs
+		for (int i = CARSLOTID_MODEL_NUM * 2 - 1; i >= 0; i--) // 63 slots, 2 models for 4 LODs
 		{
 			Marker = 0;
 			Model = (DWORD*)(CarRenderInfo[1514 + i * 4]);
@@ -1721,47 +1783,47 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 					{
 					case CT_bStringHash("CENTRE_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 2, 0, 0), 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 2, 0, 0), 0);
 						if (!Flare->ColourTint) goto _LeftHeadlight;
 						break;
 					case CT_bStringHash("RIGHT_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 1, 0, 0), 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 1, 0, 0), 0);
 						if (!Flare->ColourTint) goto _LeftHeadlight;
 						break;
 					case CT_bStringHash("LEFT_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
 					_LeftHeadlight:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 0, 0, 0), 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 0, 0, 0), 0);
 						break;
 
 
 					case CT_bStringHash("CENTRE_BRAKELIGHT"):
 						FlareType = 1; // ELF_CAR_BRAKELIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::BRAKELIGHT, 2, 0, 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 2, 0, 0);
 						if (!Flare->ColourTint) goto _LeftBrakelight;
 						break;
 					case CT_bStringHash("RIGHT_BRAKELIGHT"):
 						FlareType = 1; // ELF_CAR_BRAKELIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::BRAKELIGHT, 1, 0, 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 1, 0, 0);
 						if (!Flare->ColourTint) goto _LeftBrakelight;
 						break;
 					case CT_bStringHash("LEFT_BRAKELIGHT"):
 						FlareType = 1; // ELF_CAR_BRAKELIGHT
 					_LeftBrakelight:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::BRAKELIGHT, 0, 0, 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 0, 0, 0);
 						break;
 
 
 					case CT_bStringHash("RIGHT_REVERSE"):
 						FlareType = 3; // ELF_CAR_REVERSELIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::BRAKELIGHT, 4, 0, 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 4, 0, 0);
 						if (!Flare->ColourTint) goto _LeftReverse;
 						break;
 					case CT_bStringHash("LEFT_REVERSE"):
 						FlareType = 3; // ELF_CAR_REVERSELIGHT
 					_LeftReverse:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::BRAKELIGHT, 3, 0, 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 3, 0, 0);
 						break;
 
 
@@ -1869,7 +1931,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 
 		// Check for US parking lights
 		bool USParkingLights = 0;
-		DWORD* HeadlightPart = RideInfo_GetPart(RideInfo, CAR_SLOT_ID::HEADLIGHT);
+		DWORD* HeadlightPart = RideInfo_GetPart(RideInfo, CARSLOTID_HEADLIGHT);
 		if (HeadlightPart) USParkingLights = CarPart_GetAppliedAttributeUParam(HeadlightPart, bStringHash((char*)"US_PARKING_LIGHTS"), 0) != 0;
 
 		int PixelSize = eView_GetPixelSize(view, position, 3.0f);
@@ -2036,7 +2098,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			int v35 = 0;
 
 			// Spoiler
-			DWORD* SpoilerPart = RideInfo_GetPart(RideInfo, CAR_SLOT_ID::SPOILER);
+			DWORD* SpoilerPart = RideInfo_GetPart(RideInfo, CARSLOTID_SPOILER);
 			if (SpoilerPart && *(BYTE*)(SpoilerPart + 5) >> 5 && RemoveCentreBrakeWithCustomSpoiler(RideInfo[0]))
 				IntsCentreBrakelight = 0.0;
 

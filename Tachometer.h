@@ -32,7 +32,7 @@ void ChooseLoadableTextures(int car_type, DWORD* engine_info, int units, DWORD* 
             DWORD* ride = DriverInfoByPlayerNumber + 4; // Get RideInfo from DriverInfo
             if (ride)
             {
-                DWORD* Part = RideInfo_GetPart(ride, CAR_SLOT_ID::CUSTOM_HUD); // get HUD
+                DWORD* Part = RideInfo_GetPart(ride, CARSLOTID_CUSTOM_HUD); // get HUD
                 if (Part)
                 {
                     prefix_hash = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME"), prefix_hash); // Get custom prefix

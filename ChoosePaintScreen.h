@@ -26,41 +26,41 @@ bool __fastcall ChoosePaintScreen_CanPaintThisPart(DWORD* ChoosePaintScreen, voi
     if (State == 1)
         return 1;
     CategoryNode = ChoosePaintScreen[22];
-    CarSlotID = CAR_SLOT_ID::__LAST_NONRENDER;
+    CarSlotID = CARSLOTID_LAST_NONRENDER;
     if (CategoryNode)
         CarSlotID = *(DWORD*)(CategoryNode + 72);
     switch (CarSlotID)
     {
-    case CAR_SLOT_ID::BASE_PAINT:
+    case CARSLOTID_BASE_PAINT:
         return 1;
-    case CAR_SLOT_ID::PAINT_ENGINE:
+    case CARSLOTID_PAINT_ENGINE:
         return CarCustomizeManager_IsEnginePaintable((DWORD*)gCarCustomizeManager, EDX_Unused);
-    case CAR_SLOT_ID::PAINT_SPOILER:
-        CarSlotIDToCheck = CAR_SLOT_ID::SPOILER;
+    case CARSLOTID_PAINT_SPOILER:
+        CarSlotIDToCheck = CARSLOTID_SPOILER;
         goto CheckIfPaintable;
-    case CAR_SLOT_ID::PAINT_BRAKE:
+    case CARSLOTID_PAINT_BRAKE:
         return CarCustomizeManager_AreBrakesPaintable((DWORD*)gCarCustomizeManager, EDX_Unused);
-    case CAR_SLOT_ID::PAINT_EXHAUST:
-        CarSlotIDToCheck = CAR_SLOT_ID::EXHAUST;
+    case CARSLOTID_PAINT_EXHAUST:
+        CarSlotIDToCheck = CARSLOTID_EXHAUST;
         goto CheckIfPaintable;
-    case CAR_SLOT_ID::PAINT_AUDIO:
+    case CARSLOTID_PAINT_AUDIO:
         return CarCustomizeManager_IsTrunkPaintable((DWORD*)gCarCustomizeManager, EDX_Unused);
-    case CAR_SLOT_ID::PAINT_RIM:
-    case CAR_SLOT_ID::PAINT_SPINNER:
-        CarSlotIDToCheck = CAR_SLOT_ID::FRONT_WHEEL;
+    case CARSLOTID_PAINT_RIM:
+    case CARSLOTID_PAINT_SPINNER:
+        CarSlotIDToCheck = CARSLOTID_FRONT_WHEEL;
         goto CheckIfPaintable;
-    case CAR_SLOT_ID::PAINT_ROOF:
-        CarSlotIDToCheck = CAR_SLOT_ID::ROOF;
+    case CARSLOTID_PAINT_ROOF:
+        CarSlotIDToCheck = CARSLOTID_ROOF;
         goto CheckIfPaintable;
-    case CAR_SLOT_ID::PAINT_MIRROR:
-        CarSlotIDToCheck = CAR_SLOT_ID::WING_MIRROR;
+    case CARSLOTID_PAINT_MIRROR:
+        CarSlotIDToCheck = CARSLOTID_WING_MIRROR;
     CheckIfPaintable:
         TheCarPart = RideInfo_GetPart((DWORD*)gTheRideInfo, CarSlotIDToCheck);
         if (!TheCarPart
             || (*((BYTE*)TheCarPart + 5) & 0xE0) == 0
-            || (CarSlotIDToCheck == CAR_SLOT_ID::SPOILER 
-                || CarSlotIDToCheck == CAR_SLOT_ID::ROOF 
-                || CarSlotIDToCheck == CAR_SLOT_ID::WING_MIRROR) // SPOILER, ROOF, WING_MIRROR
+            || (CarSlotIDToCheck == CARSLOTID_SPOILER 
+                || CarSlotIDToCheck == CARSLOTID_ROOF 
+                || CarSlotIDToCheck == CARSLOTID_WING_MIRROR) // SPOILER, ROOF, WING_MIRROR
             && (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("CARBONFIBRE"), 0)
                 || CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("UNPAINTABLE"), 0))) // UNPAINTABLE
         {
@@ -68,10 +68,10 @@ bool __fastcall ChoosePaintScreen_CanPaintThisPart(DWORD* ChoosePaintScreen, voi
         }
         if (CategoryNode)
         {
-            if (CarSlotID == CAR_SLOT_ID::SPINNER)
+            if (CarSlotID == CARSLOTID_SPINNER)
             {
                  result = CarPart_HasAppliedAttribute(TheCarPart, CT_bStringHash("SPINNER_TEXTURE"))
-                     || (TheCarPart != RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::REAR_WHEEL));
+                     || (TheCarPart != RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_REAR_WHEEL));
             }
         }
         else
@@ -98,42 +98,42 @@ DWORD __fastcall ChoosePaintScreen_GetPaintBrandHashFromCarSlotId(DWORD* ChooseP
     {
         switch (CarSlotID)
         {
-        case CAR_SLOT_ID::BASE_PAINT:
-        case CAR_SLOT_ID::PAINT_SPOILER:
-        case CAR_SLOT_ID::PAINT_ROOF:
-        case CAR_SLOT_ID::PAINT_MIRROR:
-        case CAR_SLOT_ID::PAINT_AUDIO:
+        case CARSLOTID_BASE_PAINT:
+        case CARSLOTID_PAINT_SPOILER:
+        case CARSLOTID_PAINT_ROOF:
+        case CARSLOTID_PAINT_MIRROR:
+        case CARSLOTID_PAINT_AUDIO:
             if (PaintGroups[i].AvailableForBody) FirstAvailableType = PaintGroups[i].BrandNameHash;
             break;
-        case CAR_SLOT_ID::PAINT_ENGINE:
+        case CARSLOTID_PAINT_ENGINE:
             if (PaintGroups[i].AvailableForHoses) FirstAvailableType = PaintGroups[i].BrandNameHash;
             break;
-        case CAR_SLOT_ID::PAINT_BRAKE:
+        case CARSLOTID_PAINT_BRAKE:
             if (PaintGroups[i].AvailableForBrakes) FirstAvailableType = PaintGroups[i].BrandNameHash;
             break;
-        case CAR_SLOT_ID::PAINT_EXHAUST:
+        case CARSLOTID_PAINT_EXHAUST:
             if (PaintGroups[i].AvailableForMuffler) FirstAvailableType = PaintGroups[i].BrandNameHash;
             break;
-        case CAR_SLOT_ID::PAINT_RIM:
-        case CAR_SLOT_ID::PAINT_SPINNER:
+        case CARSLOTID_PAINT_RIM:
+        case CARSLOTID_PAINT_SPINNER:
             if (PaintGroups[i].AvailableForRims) FirstAvailableType = PaintGroups[i].BrandNameHash;
             break;
-        case CAR_SLOT_ID::VINYL_COLOUR0_0:
-        case CAR_SLOT_ID::VINYL_COLOUR0_1:
-        case CAR_SLOT_ID::VINYL_COLOUR0_2:
-        case CAR_SLOT_ID::VINYL_COLOUR0_3:
-        case CAR_SLOT_ID::VINYL_COLOUR1_0:
-        case CAR_SLOT_ID::VINYL_COLOUR1_1:
-        case CAR_SLOT_ID::VINYL_COLOUR1_2:
-        case CAR_SLOT_ID::VINYL_COLOUR1_3:
-        case CAR_SLOT_ID::VINYL_COLOUR2_0:
-        case CAR_SLOT_ID::VINYL_COLOUR2_1:
-        case CAR_SLOT_ID::VINYL_COLOUR2_2:
-        case CAR_SLOT_ID::VINYL_COLOUR2_3:
-        case CAR_SLOT_ID::VINYL_COLOUR3_0:
-        case CAR_SLOT_ID::VINYL_COLOUR3_1:
-        case CAR_SLOT_ID::VINYL_COLOUR3_2:
-        case CAR_SLOT_ID::VINYL_COLOUR3_3:
+        case CARSLOTID_VINYL_COLOUR0_0:
+        case CARSLOTID_VINYL_COLOUR0_1:
+        case CARSLOTID_VINYL_COLOUR0_2:
+        case CARSLOTID_VINYL_COLOUR0_3:
+        case CARSLOTID_VINYL_COLOUR1_0:
+        case CARSLOTID_VINYL_COLOUR1_1:
+        case CARSLOTID_VINYL_COLOUR1_2:
+        case CARSLOTID_VINYL_COLOUR1_3:
+        case CARSLOTID_VINYL_COLOUR2_0:
+        case CARSLOTID_VINYL_COLOUR2_1:
+        case CARSLOTID_VINYL_COLOUR2_2:
+        case CARSLOTID_VINYL_COLOUR2_3:
+        case CARSLOTID_VINYL_COLOUR3_0:
+        case CARSLOTID_VINYL_COLOUR3_1:
+        case CARSLOTID_VINYL_COLOUR3_2:
+        case CARSLOTID_VINYL_COLOUR3_3:
             if (PaintGroups[i].AvailableForVinyl) FirstAvailableType = PaintGroups[i].BrandNameHash;
             else FirstAvailableType = 0x3E871F1; // VINYL
             break;
@@ -167,9 +167,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::BASE_PAINT);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_BASE_PAINT);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::BASE_PAINT,
+                    CARSLOTID_BASE_PAINT,
                     CarConfigs[CarTypeID].Icons.PaintBasePaint,
                     CarConfigs[CarTypeID].Names.PaintBasePaint,
                     0,
@@ -184,9 +184,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_SPOILER);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_SPOILER);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_SPOILER,
+                    CARSLOTID_PAINT_SPOILER,
                     CarConfigs[CarTypeID].Icons.PaintSpoilerPaint,
                     CarConfigs[CarTypeID].Names.PaintSpoilerPaint,
                     0,
@@ -201,9 +201,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_ROOF);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_ROOF);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_ROOF,
+                    CARSLOTID_PAINT_ROOF,
                     CarConfigs[CarTypeID].Icons.PaintRoofScoopPaint,
                     CarConfigs[CarTypeID].Names.PaintRoofScoopPaint,
                     0,
@@ -218,9 +218,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_MIRROR);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_MIRROR);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_MIRROR,
+                    CARSLOTID_PAINT_MIRROR,
                     CarConfigs[CarTypeID].Icons.PaintMirrorPaint,
                     CarConfigs[CarTypeID].Names.PaintMirrorPaint,
                     0,
@@ -235,9 +235,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_RIM);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_RIM);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_RIM,
+                    CARSLOTID_PAINT_RIM,
                     CarConfigs[CarTypeID].Icons.PaintRimPaint,
                     CarConfigs[CarTypeID].Names.PaintRimPaint,
                     0,
@@ -252,9 +252,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_SPINNER);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_SPINNER);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_SPINNER,
+                    CARSLOTID_PAINT_SPINNER,
                     CarConfigs[CarTypeID].Icons.PaintSpinnerPaint,
                     CarConfigs[CarTypeID].Names.PaintSpinnerPaint,
                     0,
@@ -269,9 +269,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_BRAKE);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_BRAKE);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_BRAKE,
+                    CARSLOTID_PAINT_BRAKE,
                     CarConfigs[CarTypeID].Icons.PaintBrakePaint,
                     CarConfigs[CarTypeID].Names.PaintBrakePaint,
                     0,
@@ -286,9 +286,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_ENGINE);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_ENGINE);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_ENGINE,
+                    CARSLOTID_PAINT_ENGINE,
                     CarConfigs[CarTypeID].Icons.PaintEnginePaint,
                     CarConfigs[CarTypeID].Names.PaintEnginePaint,
                     0,
@@ -303,9 +303,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = 0; //ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_AUDIO);
+                IsLocked = 0; //ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_AUDIO);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_AUDIO,
+                    CARSLOTID_PAINT_AUDIO,
                     CarConfigs[CarTypeID].Icons.PaintTrunkPaint,
                     CarConfigs[CarTypeID].Names.PaintTrunkPaint,
                     0,
@@ -320,9 +320,9 @@ void __fastcall ChoosePaintScreen_BuildPaintCategoryList(DWORD* ChoosePaintScree
             APaintSelectionThing = (DWORD*)j__malloc(0x4Cu);
             if (APaintSelectionThing)
             {
-                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CAR_SLOT_ID::PAINT_EXHAUST);
+                IsLocked = ChoosePaintScreen_IsPaintMenuLocked(ChoosePaintScreen, CARSLOTID_PAINT_EXHAUST);
                 PaintSelectionThing_Create(APaintSelectionThing,
-                    CAR_SLOT_ID::PAINT_EXHAUST,
+                    CARSLOTID_PAINT_EXHAUST,
                     CarConfigs[CarTypeID].Icons.PaintExhaustPaint,
                     CarConfigs[CarTypeID].Names.PaintExhaustPaint,
                     0,
@@ -408,42 +408,42 @@ int GetNumAvailablePaintIDFromType(int MinID, int CarSlotID)
         }
         else switch (CarSlotID)
         {
-        case CAR_SLOT_ID::BASE_PAINT:
-        case CAR_SLOT_ID::PAINT_SPOILER:
-        case CAR_SLOT_ID::PAINT_ROOF:
-        case CAR_SLOT_ID::PAINT_MIRROR:
-        case CAR_SLOT_ID::PAINT_AUDIO:
+        case CARSLOTID_BASE_PAINT:
+        case CARSLOTID_PAINT_SPOILER:
+        case CARSLOTID_PAINT_ROOF:
+        case CARSLOTID_PAINT_MIRROR:
+        case CARSLOTID_PAINT_AUDIO:
             if (PaintGroups[i].AvailableForBody) result++;
             break;
-        case CAR_SLOT_ID::PAINT_ENGINE:
+        case CARSLOTID_PAINT_ENGINE:
             if (PaintGroups[i].AvailableForHoses) result++;
             break;
-        case CAR_SLOT_ID::PAINT_BRAKE:
+        case CARSLOTID_PAINT_BRAKE:
             if (PaintGroups[i].AvailableForBrakes) result++;
             break;
-        case CAR_SLOT_ID::PAINT_EXHAUST:
+        case CARSLOTID_PAINT_EXHAUST:
             if (PaintGroups[i].AvailableForMuffler) result++;
             break;
-        case CAR_SLOT_ID::PAINT_RIM:
-        case CAR_SLOT_ID::PAINT_SPINNER:
+        case CARSLOTID_PAINT_RIM:
+        case CARSLOTID_PAINT_SPINNER:
             if (PaintGroups[i].AvailableForRims) result++;
             break;
-        case CAR_SLOT_ID::VINYL_COLOUR0_0:
-        case CAR_SLOT_ID::VINYL_COLOUR0_1:
-        case CAR_SLOT_ID::VINYL_COLOUR0_2:
-        case CAR_SLOT_ID::VINYL_COLOUR0_3:
-        case CAR_SLOT_ID::VINYL_COLOUR1_0:
-        case CAR_SLOT_ID::VINYL_COLOUR1_1:
-        case CAR_SLOT_ID::VINYL_COLOUR1_2:
-        case CAR_SLOT_ID::VINYL_COLOUR1_3:
-        case CAR_SLOT_ID::VINYL_COLOUR2_0:
-        case CAR_SLOT_ID::VINYL_COLOUR2_1:
-        case CAR_SLOT_ID::VINYL_COLOUR2_2:
-        case CAR_SLOT_ID::VINYL_COLOUR2_3:
-        case CAR_SLOT_ID::VINYL_COLOUR3_0:
-        case CAR_SLOT_ID::VINYL_COLOUR3_1:
-        case CAR_SLOT_ID::VINYL_COLOUR3_2:
-        case CAR_SLOT_ID::VINYL_COLOUR3_3:
+        case CARSLOTID_VINYL_COLOUR0_0:
+        case CARSLOTID_VINYL_COLOUR0_1:
+        case CARSLOTID_VINYL_COLOUR0_2:
+        case CARSLOTID_VINYL_COLOUR0_3:
+        case CARSLOTID_VINYL_COLOUR1_0:
+        case CARSLOTID_VINYL_COLOUR1_1:
+        case CARSLOTID_VINYL_COLOUR1_2:
+        case CARSLOTID_VINYL_COLOUR1_3:
+        case CARSLOTID_VINYL_COLOUR2_0:
+        case CARSLOTID_VINYL_COLOUR2_1:
+        case CARSLOTID_VINYL_COLOUR2_2:
+        case CARSLOTID_VINYL_COLOUR2_3:
+        case CARSLOTID_VINYL_COLOUR3_0:
+        case CARSLOTID_VINYL_COLOUR3_1:
+        case CARSLOTID_VINYL_COLOUR3_2:
+        case CARSLOTID_VINYL_COLOUR3_3:
             if (PaintGroups[i].AvailableForVinyl) result++;
             break;
         }
@@ -466,42 +466,42 @@ int GetNextAvailablePaintIDFromType(int CurrID, int MinID, int CarSlotID, int Di
         }
         else switch (CarSlotID)
         {
-        case CAR_SLOT_ID::BASE_PAINT:
-        case CAR_SLOT_ID::PAINT_SPOILER:
-        case CAR_SLOT_ID::PAINT_ROOF:
-        case CAR_SLOT_ID::PAINT_MIRROR:
-        case CAR_SLOT_ID::PAINT_AUDIO:
+        case CARSLOTID_BASE_PAINT:
+        case CARSLOTID_PAINT_SPOILER:
+        case CARSLOTID_PAINT_ROOF:
+        case CARSLOTID_PAINT_MIRROR:
+        case CARSLOTID_PAINT_AUDIO:
             if (PaintGroups[i].AvailableForBody) AvailableGroups[num++] = i;
             break;
-        case CAR_SLOT_ID::PAINT_ENGINE:
+        case CARSLOTID_PAINT_ENGINE:
             if (PaintGroups[i].AvailableForHoses) AvailableGroups[num++] = i;
             break;
-        case CAR_SLOT_ID::PAINT_BRAKE:
+        case CARSLOTID_PAINT_BRAKE:
             if (PaintGroups[i].AvailableForBrakes) AvailableGroups[num++] = i;
             break;
-        case CAR_SLOT_ID::PAINT_EXHAUST:
+        case CARSLOTID_PAINT_EXHAUST:
             if (PaintGroups[i].AvailableForMuffler) AvailableGroups[num++] = i;
             break;
-        case CAR_SLOT_ID::PAINT_RIM:
-        case CAR_SLOT_ID::PAINT_SPINNER:
+        case CARSLOTID_PAINT_RIM:
+        case CARSLOTID_PAINT_SPINNER:
             if (PaintGroups[i].AvailableForRims) AvailableGroups[num++] = i;
             break;
-        case CAR_SLOT_ID::VINYL_COLOUR0_0:
-        case CAR_SLOT_ID::VINYL_COLOUR0_1:
-        case CAR_SLOT_ID::VINYL_COLOUR0_2:
-        case CAR_SLOT_ID::VINYL_COLOUR0_3:
-        case CAR_SLOT_ID::VINYL_COLOUR1_0:
-        case CAR_SLOT_ID::VINYL_COLOUR1_1:
-        case CAR_SLOT_ID::VINYL_COLOUR1_2:
-        case CAR_SLOT_ID::VINYL_COLOUR1_3:
-        case CAR_SLOT_ID::VINYL_COLOUR2_0:
-        case CAR_SLOT_ID::VINYL_COLOUR2_1:
-        case CAR_SLOT_ID::VINYL_COLOUR2_2:
-        case CAR_SLOT_ID::VINYL_COLOUR2_3:
-        case CAR_SLOT_ID::VINYL_COLOUR3_0:
-        case CAR_SLOT_ID::VINYL_COLOUR3_1:
-        case CAR_SLOT_ID::VINYL_COLOUR3_2:
-        case CAR_SLOT_ID::VINYL_COLOUR3_3:
+        case CARSLOTID_VINYL_COLOUR0_0:
+        case CARSLOTID_VINYL_COLOUR0_1:
+        case CARSLOTID_VINYL_COLOUR0_2:
+        case CARSLOTID_VINYL_COLOUR0_3:
+        case CARSLOTID_VINYL_COLOUR1_0:
+        case CARSLOTID_VINYL_COLOUR1_1:
+        case CARSLOTID_VINYL_COLOUR1_2:
+        case CARSLOTID_VINYL_COLOUR1_3:
+        case CARSLOTID_VINYL_COLOUR2_0:
+        case CARSLOTID_VINYL_COLOUR2_1:
+        case CARSLOTID_VINYL_COLOUR2_2:
+        case CARSLOTID_VINYL_COLOUR2_3:
+        case CARSLOTID_VINYL_COLOUR3_0:
+        case CARSLOTID_VINYL_COLOUR3_1:
+        case CARSLOTID_VINYL_COLOUR3_2:
+        case CARSLOTID_VINYL_COLOUR3_3:
             if (PaintGroups[i].AvailableForVinyl) AvailableGroups[num++] = i;
             break;
         }
