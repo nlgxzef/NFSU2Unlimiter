@@ -1,0 +1,11 @@
+#     Required
+#          Index = Defines internal numeric ID of the vinyl group. Only accepts integers 0 through 31.
+#          String = Defines which string will be used in the menu. Only accepts labels.
+#          Texture = Defines which icon will be used in the menu. Only accepts texture names.
+#     Optional
+#          CameraInfo = Defines which camera info configuration will be used for this group. Doesn't include _Sedans/_SUVs or CARNAME prefixes. If not specified, original one will get used.
+
+[Group]
+Index = 0
+String = "VINYL_CATEGORY_TEAR"
+Texture = "VINYL_GROUP_TEAR"
