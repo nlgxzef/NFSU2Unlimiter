@@ -47,15 +47,20 @@
 // 8 sponsor, 0x10 online). One per preset group, so the presets can be split into as many
 // categories as there are bits: sponsor cars, boss cars, debug cars, whatever _PresetCars.ini
 // says. Group 0 keeps the old value so nothing that referenced it changes meaning.
-#define PARTLINK_MAX_PRESET_GROUPS 4
+#define PARTLINK_MAX_PRESET_GROUPS 6
 #define CUSTOM_IS_PRESET_CAR 0x20
 #define PRESET_GROUP_BIT(g) (CUSTOM_IS_PRESET_CAR << (g))
 #define PRESET_GROUP_MASK   (CUSTOM_IS_PRESET_CAR * ((1 << PARTLINK_MAX_PRESET_GROUPS) - 1))
 
 char PresetGroupNames[PARTLINK_MAX_PRESET_GROUPS][64] =
 {
-	"Sponsor cars", "Boss cars", "Debug cars", "Other cars"
+	"Sponsor Cars", "Boss Cars", "Debug Cars", "Other Cars", "Cop Cars", "Traffic Cars"
 };
+
+// The last two groups are not presets. They list car types by the usage byte at CarTypeInfo+0x844
+// that IsCop and IsTraffic already read, so the entries carry a car type instead of a CarPreset.
+#define PRESET_GROUP_COP     4
+#define PRESET_GROUP_TRAFFIC 5
 
 #define MENU_STATE_MAIN_MENU                       0x02
 #define MENU_STATE_2P_SPLITSCREEN                  0x04
@@ -162,6 +167,11 @@ struct PresetCarOverride
 // code works whether it is one of the game's own or one we add to the table later.
 bool PresetIsCodeEntered(const char* Code)
 {
+	// The setting is meant to make cheat-gated cars available without the cheats, and a preset
+	// gated by UnlockCondition = Code is exactly that. It was only wired to
+	// IsSponsorCarCheatTriggered, so with it on the presets stayed hidden anyway.
+	if (UnlockSponsorCarsWithoutCheats) return true;
+	
 	if (!Code || !Code[0]) return false;
 
 	BYTE* Cheats = gEasterEggs_Cheats;
@@ -192,6 +202,19 @@ PresetCarOverride* FindPresetCarOverride(DWORD NameHash)
 }
 
 std::vector<SponsorCarInfo> PresetCarsAsInventoryCars;
+
+// Kept alongside rather than inside SponsorCar: two of the code caves index the array with
+// imul 0x1C, and the game reads the struct itself, so its layout has to stay exactly as it is.
+// -1 means the entry is a preset; anything else is the car type a cop or traffic entry stands for.
+std::vector<int> PresetCarTypes;
+
+int PresetEntryCarType(DWORD SlotHash)
+{
+	if (SlotHash == 0 || SlotHash > PresetCarTypes.size()) return -1;
+
+	return PresetCarTypes[SlotHash - 1];
+}
+
 SponsorCarInfo* PresetCarsBase = nullptr;
 int NumPresetCars = 0;
 
@@ -204,7 +227,7 @@ void BuildPresetCarList()
 	ObjectLink* Sentinel = (ObjectLink*)_PresetCars;
 	if (!Sentinel->next) return; // list not loaded yet
 
-	struct Pending { DWORD Hash; int Group; };
+	struct Pending { DWORD Hash; int Group;  int CarType; };
 	std::vector<Pending> Entries;
 
 	// Order is the order of UnlimiterData\_PresetCars.ini. Listed presets first, in the order
@@ -223,7 +246,8 @@ void BuildPresetCarList()
 
 			Pending e;
 			e.Hash = ov.NameHash;
-			e.Group = (ov.Group >= 0 && ov.Group < PARTLINK_MAX_PRESET_GROUPS) ? ov.Group : 0;
+			e.CarType = -1;
+			e.Group = (ov.Group >= 0 && ov.Group < PRESET_GROUP_COP) ? ov.Group : 0;
 			Entries.push_back(e);
 			break;
 		}
@@ -239,30 +263,65 @@ void BuildPresetCarList()
 			Pending e;
 			e.Hash = Hash;
 			e.Group = 0;
+			e.CarType = -1;
+			Entries.push_back(e);
+		}
+	}
+
+	// Cop and traffic cars, appended as entries backed by a car type
+	for (int Pass = 0; Pass < 2; Pass++)
+	{
+		if (Pass == 0 && !CopCarsCategory) continue;
+		if (Pass == 1 && !TrafficCarsCategory) continue;
+
+		for (int t = 0; t < CarCount; t++)
+		{
+			if (Pass == 0 ? !IsCop((BYTE)t) : !IsTraffic((BYTE)t)) continue;
+
+			Pending e;
+			e.Hash = 0;
+			e.CarType = t;
+			e.Group = (Pass == 0) ? PRESET_GROUP_COP : PRESET_GROUP_TRAFFIC;
 			Entries.push_back(e);
 		}
 	}
 
 	if (Entries.empty()) return;
 
-
 	PresetCarsAsInventoryCars.clear();
 	PresetCarsAsInventoryCars.reserve(Entries.size());
+
+	PresetCarTypes.clear();
+	PresetCarTypes.reserve(Entries.size());
 
 	for (size_t n = 0; n < Entries.size(); n++)
 	{
 		SponsorCarInfo s;
 
 		s.Parent.vtable = (DWORD*)_sponsorCarVtable;
+		// FEStockCar and SponsorCar are the same 0x1C bytes with the same fields; only the vtable
+		// and the meaning of +0x18 differ, preset hash for one, car type for the other. A cop or
+		// traffic entry is a plain car type, so it gets the stock car vtable and its type, and
+		// the game resolves the model, the name and the paint through its own stock car path.
+		// With the sponsor vtable it was resolving a CarPreset that did not exist and faulting on
+		// the null that came back.
+		bool IsCarTypeEntry = Entries[n].CarType >= 0;
+
+		s.Parent.vtable = IsCarTypeEntry
+			? (DWORD*)FEPlayerCarDB_Player1->StockCars[0].vTable
+			: (DWORD*)_sponsorCarVtable;
+
 		s.Parent.field_4 = 0;
 		// +1 because entries with a slotHash of 0 get skipped by the car browser
 		s.Parent.slotHash = (DWORD)n + 1;
 		s.Parent.field_C = .0f;
-		s.Parent.field_10 = 0;
+		s.Parent.field_10 = IsCarTypeEntry ? 1 : 0; // unk2, the "slot is used" flag on a stock car
 		s.Parent.flags = PRESET_GROUP_BIT(Entries[n].Group);
-		s.PresetCarHash = Entries[n].Hash;
+		// +0x18: car type for a stock car entry, preset hash for a preset one
+		s.PresetCarHash = IsCarTypeEntry ? (DWORD)Entries[n].CarType : Entries[n].Hash;
 
 		PresetCarsAsInventoryCars.push_back(s);
+		PresetCarTypes.push_back(Entries[n].CarType);
 	}
 
 	// The vector never grows again after this point, so the base pointer stays valid
@@ -365,10 +424,20 @@ void __declspec(naked) UIQRCarSelect_ScrollListsCodeCave()
 	}
 }
 
-// 0x534850 FEPlayerCarDBWithPointers::CountAvailableCars
+// 0x534850 FEPlayerCarDB::CountAvailableCars
+
+// Cop and traffic cars are not sold, so no STOCK_<name> record exists to build a tuned car from.
+// CustomizeCar then runs with no car instance and reads through it at 0x552DD7. They belong in the
+// car select, where they render fine, and out of customize until such a record exists.
+#define PRESET_GROUPS_NOT_CUSTOMIZABLE \
+	(PRESET_GROUP_BIT(PRESET_GROUP_COP) | PRESET_GROUP_BIT(PRESET_GROUP_TRAFFIC))
+
 int PresetGroupCount(DWORD Flags)
 {
 	BuildPresetCarList();
+
+	if (profileMenuState & MENU_STATES_CUSTOMIZE) Flags &= ~PRESET_GROUPS_NOT_CUSTOMIZABLE;
+	if (!Flags) return 0;
 
 	int n = 0;
 
@@ -626,6 +695,26 @@ DWORD* __stdcall CreateTunedCarFromPresetCar(DWORD* FEPlayerCarDBFromEcx, DWORD 
 
 	SponsorCarInfo* sp = &PresetCarsBase[SlotNameHash - 1];
 
+	// A cop or traffic entry stands for a car type, so its stock car is named straight from the
+	// car type and there is no preset tuning to apply afterwards.
+	if (PresetEntryCarType(SlotNameHash) >= 0)
+	{
+		// The category is kept out of customize for this reason, so reaching here means something
+		// else got in. Refusing early is the same answer, one step sooner.
+		if (profileMenuState & MENU_STATES_CUSTOMIZE) return nullptr;
+
+		char const* TypeName = GetCarTypeName(PresetEntryCarType(SlotNameHash));
+		if (!TypeName || !TypeName[0]) return nullptr;
+
+		sprintf(Buf, "STOCK_%s", TypeName);
+
+		// Only works for a car the game actually sells. Building from another stock car and
+		// writing Type afterwards does not retype anything: the model comes from data copied at
+		// creation, so every cop car came out as the donor. Cop and traffic cars need a real
+		// STOCK_<name> record before they can be customized.
+		return FEPlayerCarDB_AddNewTunedCar(FEPlayerCarDB, bStringHash(Buf));
+	}
+
 	PresetCar* Preset = FindFEPresetCar(sp->PresetCarHash);
 	if (!Preset) return nullptr;
 
@@ -724,18 +813,23 @@ void __declspec(naked) FindPresetCarWhenTuningForIngameCarCodeCave()
 
 void __stdcall UIQRCarSelect_PostRefreshHeader(DWORD* UIQRCarSelect)
 {
-	if ((carSelectCategory & PRESET_GROUP_MASK) == 0)
+	bool OurCategory = (carSelectCategory & PRESET_GROUP_MASK) != 0;
+
+	if (!OurCategory && !ShowCarNamesEverywhere)
 	{
 		FEngSetInvisible_Pkg("UI_QRCarSelect.fng", hashof_OL_CarMode_Group);
 		return;
 	}
 
-	int CategoryGroup = 0;
+	if (OurCategory)
+	{
+		int CategoryGroup = 0;
 
-	for (int g = 0; g < PARTLINK_MAX_PRESET_GROUPS; g++)
-		if (carSelectCategory == PRESET_GROUP_BIT(g)) { CategoryGroup = g; break; }
+		for (int g = 0; g < PARTLINK_MAX_PRESET_GROUPS; g++)
+			if (carSelectCategory == PRESET_GROUP_BIT(g)) { CategoryGroup = g; break; }
 
-	FEPrintf("UI_QRCarSelect.fng", hashof_carselect_category_label, "%s", PresetGroupNames[CategoryGroup]);
+		FEPrintf("UI_QRCarSelect.fng", hashof_carselect_category_label, "%s", PresetGroupNames[CategoryGroup]);
+	}
 
 	// Reuse the online ranked-car "race mode" label group to show the preset name
 	DWORD* Group = (DWORD*)FEngFindObject("UI_QRCarSelect.fng", hashof_OL_CarMode_Group);
@@ -751,16 +845,60 @@ void __stdcall UIQRCarSelect_PostRefreshHeader(DWORD* UIQRCarSelect)
 	DWORD* SelectedEntry = (DWORD*)*(DWORD*)((BYTE*)UIQRCarSelect + OffsetOfCurrentSelectedCar);
 	if (!SelectedEntry) return;
 
-	DWORD SlotHash = *(DWORD*)((BYTE*)SelectedEntry + OffsetOfEntrySlotHash);
-	if (SlotHash == 0 || SlotHash > (DWORD)NumPresetCars || !PresetCarsBase) return;
+	// Outside our own categories the entry is one of the game's own, stock or tuned, and both
+	// derive from FEStockCar, so the car type sits at the same +0x18 the browser entry uses.
+	if (!OurCategory)
+	{
+		// The selected entry is a UI object, not an FEStockCar: the slot hash sits at 0x920, so
+		// nothing near +0x18 is the car type, and gTheRideInfo is the car being previewed rather
+		// than the one highlighted. Both gave the same name for every car. The slot hash of a
+		// stock car is bStringHash("STOCK_<name>"), so it names the car on its own.
+		DWORD Hash = *(DWORD*)((BYTE*)SelectedEntry + OffsetOfEntrySlotHash);
+		if (!Hash) return;
 
-	DWORD PresetHash = PresetCarsBase[SlotHash - 1].PresetCarHash;
+		for (int Type = 0; Type < CarCount; Type++)
+		{
+			char const* TypeName = GetCarTypeName(Type);
+			if (!TypeName || !TypeName[0]) continue;
 
-	PresetCar* Preset = FindFEPresetCar(PresetHash);
-	if (!Preset) return;
+			char Buf[64];
+			sprintf(Buf, "STOCK_%s", TypeName);
 
-	FEPrintf("UI_QRCarSelect.fng", hashof_racemode, "%s", Preset->Name);
+			if (bStringHash(Buf) != Hash) continue;
 
+			FEPrintf("UI_QRCarSelect.fng", hashof_racemode, "%s", TypeName);
+			break;
+		}
+	}
+	else
+	{
+		DWORD SlotHash = *(DWORD*)((BYTE*)SelectedEntry + OffsetOfEntrySlotHash);
+		if (SlotHash == 0 || SlotHash > (DWORD)NumPresetCars || !PresetCarsBase) return;
+
+		DWORD PresetHash = PresetCarsBase[SlotHash - 1].PresetCarHash;
+
+		if (PresetEntryCarType(SlotHash) >= 0)
+		{
+			int Type = PresetEntryCarType(SlotHash);
+			char const* TypeName = (Type >= 0 && Type < CarCount) ? GetCarTypeName(Type) : nullptr;
+
+			FEPrintf("UI_QRCarSelect.fng", hashof_racemode, "%s", TypeName ? TypeName : "");
+		}
+		else
+		{
+
+			PresetCar* Preset = FindFEPresetCar(PresetHash);
+			if (!Preset) return;
+
+			// DisplayName from _PresetCars.ini was being read into the override and never used here,
+			// so every preset showed the name the game gave it.
+			PresetCarOverride* Override = FindPresetCarOverride(PresetHash);
+
+			const char* Text = (Override && Override->DisplayName[0]) ? Override->DisplayName : Preset->Name;
+
+			FEPrintf("UI_QRCarSelect.fng", hashof_racemode, "%s", Text);
+		}
+	}
 
 	DWORD* Label = (DWORD*)FEngFindObject("UI_QRCarSelect.fng", hashof_racemode);
 	if (Label)

@@ -46,7 +46,7 @@ void PartSelectionScreen_AddCategoryChecked(DWORD* PSS, unsigned int CarSlotID, 
 
 void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, void* EDX_Unused)
 {
-    PartLink_Resolve((DWORD*)gTheRideInfo);
+    RideInfo_UpdatePartsEnabled((DWORD*)gTheRideInfo, nullptr);
     PartLinkTraceCategories();
 
     // Read Part Options for the car
@@ -399,6 +399,8 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
 
     int BogusCarSlotID = CarSlotID;
 
+    //if (PartLink_EnabledForRide((DWORD*)gTheRideInfo)) PartLink_Resolve((DWORD*)gTheRideInfo);
+
     DWORD* TheCarPart = CarPartDatabase_NewGetFirstCarPart((DWORD*)_CarPartDB, CarTypeID, CarSlotID, 0, -1);
 
     switch (CarSlotID)
@@ -439,8 +441,9 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
             if (*((char*)TheCarPart + 4) == CarPartID && PartAttribFilter == IsCF)
             {
                 if (UnlockSystem_IsCarPartUnlocked(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk)
-                    && (CarSlotID != 9 || (*((BYTE*)TheCarPart + 5) & 0x1F) != 5)
-                    && !PartLink_IsHiddenFromMenu(TheCarPart) && !PartLink_IsSlotHidden(CarSlotID))
+                    && (CarSlotID != CARSLOTID_HOOD || (*((BYTE*)TheCarPart + 5) & 0x1F) != 5)
+                    && !PartLink_IsHiddenFromMenu(TheCarPart) && !PartLink_IsSlotHidden(CarSlotID)
+                    && PartLink_IsPartFiltered(TheCarPart, CarTypeID, CarSlotID))
                 {
                     NewBNode = (DWORD*)j__malloc(0x10u);
                     if (NewBNode)

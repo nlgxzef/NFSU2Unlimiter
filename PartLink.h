@@ -12,9 +12,11 @@
 // RideInfo_UpdatePartsEnabled already does for a single hardcoded case. Everything is authored in
 // Binary's Car Parts Editor as Custom attributes on a part; there is no ini.
 //
-//   HIDESLOT_<SLOT>   Boolean   remove that slot while this part is installed
-//   SWAPSLOT_<SLOT>   Key       ValueKey = the part to put in that slot
-//   HIDE_MENU         Boolean   this part is never listed, it can only be pulled in
+//   HIDESLOT_<SLOT>			Boolean   remove that slot while this part is installed
+//   HIDE_MENU & HIDEMENU		Boolean   this part is never listed, it can only be pulled in
+//   SWAPSLOT_<SLOT>			Key       ValueKey = Filter for the part to put in that slot
+//   SWAPSLOT_FILTER			Key       ValueKey = Filter to match the one from the main part before applying the swap
+//   SWAPSLOT_FILTER_<num>		Key       ValueKey = same as above, but allows multiple filters to be listed. The part is swapped if any of them match.
 //
 // The target slot lives in the attribute NAME, matching CUSTOM_FRONT_BUMPER / CUSTOM_SKIRT /
 // CUSTOM_FENDER in the widebody block. Slot names are the game's own CAR_SLOT_ID names, not
@@ -33,6 +35,8 @@
 // Presence probe sentinel. What value a Boolean attribute carries is up to the authoring tool, so
 // ask for a default no real value collides with and treat anything else as present.
 #define PARTLINK_ABSENT 0xDEADBEEF
+#define PARTLINK_FILTER_MAX 9
+#define PARTLINK_FILTER_NUM PARTLINK_FILTER_MAX + 2 // To include numberless and 0
 
 bool PartLinkTrace = false;
 
@@ -58,6 +62,8 @@ void PartLinkTraceLine(const char* fmt, ...)
 
 DWORD PartLinkHideSlotHashes[CARSLOTID_NUM]; // "HIDESLOT_<slot>"
 DWORD PartLinkSwapSlotHashes[CARSLOTID_NUM]; // "SWAPSLOT_<slot>"
+
+DWORD PartLinkSwapSlotFilterHashes[PARTLINK_FILTER_NUM]; // "SWAPSLOT_FILTER" & "SWAPSLOT_FILTER_<num>"
 
 bool PartLinkSlotHidden[CARSLOTID_NUM];
 DWORD PartLinkSwapTarget[CARSLOTID_NUM];
@@ -89,6 +95,13 @@ void PartLink_BuildHashTables()
 		PartLinkSwapSlotHashes[i] = bStringHash(NameBuf);
 	}
 
+	for (int i = 0; i < PARTLINK_FILTER_NUM; i++)
+	{
+		if (i == 0) sprintf(NameBuf, "SWAPSLOT_FILTER");
+		else sprintf(NameBuf, "SWAPSLOT_FILTER_%d", i - 1);
+		PartLinkSwapSlotFilterHashes[i] = bStringHash(NameBuf);
+	}
+
 	PartLinkHashesReady = true;
 }
 
@@ -101,12 +114,25 @@ bool PartLink_ValidRideInfo(DWORD* RideInfo)
 	return v >= 0x00010000 && v <= 0xC0000000 && !(v & 3);
 }
 
+bool PartLink_EnabledForCarType(int CarType)
+{
+	if (CarType < 0 || CarType >= CarCount) return false;
+	return CarConfigs[CarType].PartLinking.Enabled;
+}
+
+bool PartLink_EnabledForRide(DWORD *RideInfo)
+{
+	if (!PartLink_ValidRideInfo(RideInfo)) return false;
+	int CarType = (int)*RideInfo;
+	return PartLink_EnabledForCarType(CarType);
+}
+
 DWORD PartLinkCachedSignature = 0;
 bool PartLinkCacheValid = false;
 
 void PartLink_Resolve(DWORD* RideInfo)
 {
-	if (!PartLink_ValidRideInfo(RideInfo))
+	if (!PartLink_ValidRideInfo(RideInfo) || !PartLink_EnabledForRide(RideInfo))
 	{
 		memset(PartLinkSlotHidden, 0, sizeof(PartLinkSlotHidden));
 		memset(PartLinkSwapTarget, 0, sizeof(PartLinkSwapTarget));
@@ -168,13 +194,13 @@ void PartLink_Resolve(DWORD* RideInfo)
 
 			// A part name hash is never a small number. Under 0x10000 means the attribute was
 			// typed Boolean or Integer, so what got stored is that field rather than ValueKey.
-			if (v < 0x10000)
-			{
-				PartLinkTraceLine("  slot %d %s: SWAPSLOT_%s = %u, not a part name hash."
-					" Set Type = Key in Binary.\n",
-					slot, GetCarSlotIDName(slot), GetCarSlotIDName(target), (unsigned int)v);
-				continue;
-			}
+			//if (v < 0x10000)
+			//{
+			//	PartLinkTraceLine("  slot %d %s: SWAPSLOT_%s = %u, not a part name hash."
+			//		" Set Type = Key in Binary.\n",
+			//		slot, GetCarSlotIDName(slot), GetCarSlotIDName(target), (unsigned int)v);
+			//	continue;
+			//}
 
 			PartLinkSwapTarget[target] = v;
 
@@ -190,6 +216,34 @@ void PartLink_Resolve(DWORD* RideInfo)
 		memset(PartLinkGoverned, 0, sizeof(PartLinkGoverned));
 	}
 
+	// Hiding a hood has to take the hood's own parts with it. The game groups them the same way:
+	// the ENGINE case in UpdatePartsEnabled sets HOOD, HOOD_UNDER and DECAL_HOOD visible in one
+	// go. Headlights have nothing hanging off them, which is why HIDESLOT looked like it worked
+	// there and not on a hood: the hood went, its underside and decal stayed, and what was left
+	// still read as a hood.
+	static const int Assembly[][3] =
+	{
+		{ CARSLOTID_HOOD,       CARSLOTID_HOOD_UNDER,        CARSLOTID_DECAL_HOOD },
+		{ CARSLOTID_TRUNK,      CARSLOTID_TRUNK_UNDER,       CARSLOTID_INVALID },
+		{ CARSLOTID_DOOR_LEFT,  CARSLOTID_DOOR_PANEL_LEFT,   CARSLOTID_DOOR_SILL_LEFT },
+		{ CARSLOTID_DOOR_RIGHT, CARSLOTID_DOOR_PANEL_RIGHT,  CARSLOTID_DOOR_SILL_RIGHT },
+	};
+
+	for (int a = 0; a < (int)(sizeof(Assembly) / sizeof(Assembly[0])); a++)
+	{
+		if (!PartLinkSlotHidden[Assembly[a][0]]) continue;
+
+		for (int k = 1; k < 3; k++)
+		{
+			int Slot = Assembly[a][k];
+
+			// A slot something else is already driving keeps its own answer
+			if (Slot < 0 || PartLinkSwapTarget[Slot]) continue;
+
+			PartLinkSlotHidden[Slot] = true;
+		}
+	}
+
 	for (int i = 0; i < CARSLOTID_NUM; i++)
 		if (PartLinkSlotHidden[i] || PartLinkSwapTarget[i]) PartLinkGoverned[i] = true;
 }
@@ -197,36 +251,42 @@ void PartLink_Resolve(DWORD* RideInfo)
 // Runs at the very end of RideInfo_UpdatePartsEnabled, after the widebody and showengine blocks,
 // which push some slots back to visible.
 bool PartLink_IsHiddenFromMenu(DWORD* CarPart); // defined below
+DWORD* PartLink_GetPartWithFilter(int CarTypeID, int CarSlotID, DWORD* CurrentPart, DWORD Filter);
 
 void PartLink_ApplyVisibility(DWORD* RideInfo)
 {
-	if (!PartLink_ValidRideInfo(RideInfo)) return;
+	if (!PartLink_ValidRideInfo(RideInfo) || !PartLink_EnabledForRide(RideInfo)) return;
 
 	int CarType = *RideInfo;
 
 	for (int i = 0; i < CARSLOTID_NUM; i++)
 	{
-		// HIDESLOT wins over SWAPSLOT when both name the same slot. Hiding is the stronger
-		// statement of the two, and a front swap that brings its own hood but also wants the
-		// hood gone on one particular kit would otherwise have no way to say so.
-		if (PartLinkSwapTarget[i] && !PartLinkSlotHidden[i])
-		{
-			DWORD* Wanted = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartLinkSwapTarget[i], 0, -1);
-			if (Wanted) RideInfo[356 + i] = (DWORD)Wanted;
-
-			continue;
-		}
-
+		// If PartLink hides the part
 		if (PartLinkSlotHidden[i])
 		{
-			// Enough for static geometry
+			// Runs after the whole slot loop, so this is the last word on the byte. The ENGINE
+			// case in UpdatePartsEnabled sets HOOD, HOOD_UNDER and DECAL_HOOD back to 1 whenever
+			// an engine part is fitted and the game flow is the front end, and would otherwise
+			// undo this every time the car is rebuilt.
 			*((BYTE*)RideInfo + 2104 + i) = 0;
 
 			// Animated parts ignore the byte, so take the part away as well
 			RideInfo[356 + i] = 0;
-			continue;
+			//continue;
+		}
+		else // Find and apply the first available part with the filter.
+		{
+			//DWORD* Wanted = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartLinkSwapTarget[i], 0, -1);
+			DWORD* Current = (DWORD*)(RideInfo[356 + i]);
+			DWORD* Wanted = PartLink_GetPartWithFilter(CarType, i, Current, PartLinkSwapTarget[i]);
+			if (Current != Wanted) RideInfo[356 + i] = (DWORD)Wanted;
+
+			//continue;
 		}
 
+		
+
+		/* // Unreachable code, todo: remove later.
 		if (!PartLinkGoverned[i]) continue;
 
 		// Nothing drives this slot any more. Two restores, both self limiting, so neither can run
@@ -247,6 +307,7 @@ void PartLink_ApplyVisibility(DWORD* RideInfo)
 		{
 			RideInfo[356 + i] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, 0, 0, -1);
 		}
+		*/
 	}
 }
 
@@ -258,10 +319,7 @@ bool PartLink_IsSlotHidden(int CarSlotID)
 {
 	if (CarSlotID < 0 || CarSlotID >= CARSLOTID_NUM) return false;
 
-	// A slot driven by SWAPSLOT is not browsable either: anything picked there would be
-	// overwritten on the next resolve. Widebody takes its slots out of the strip for the same
-	// reason.
-	return PartLinkSwapTarget[CarSlotID] != 0 || PartLinkSlotHidden[CarSlotID];
+	return PartLinkSlotHidden[CarSlotID];
 }
 
 // Called from SetupBodyShop right after the resolve, so the file shows what the menu is working
@@ -299,10 +357,10 @@ bool PartLink_IsHiddenFromMenu(DWORD* CarPart)
 
 	// Both spellings: HIDE_MENU is moses' name for the same idea, HIDEMENU matches the other
 	// attributes in this file. Reading one and not the other is a silent no-op on existing data.
-	if (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("HIDE_MENU"), PARTLINK_ABSENT) != PARTLINK_ABSENT)
+	if (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("HIDE_MENU"), 0) != 0)
 		return true;
 
-	return CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("HIDEMENU"), PARTLINK_ABSENT) != PARTLINK_ABSENT;
+	return CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("HIDEMENU"), 0) != 0;
 }
 
 // Checks if a part has a swapped or hidden slot.
@@ -319,6 +377,66 @@ bool PartLink_HasLink(DWORD* CarPart)
 	}
 
 	return false;
+}
+
+// Checks if a part matches the given swap filter
+bool PartLink_MatchesFilter(DWORD* CarPart, DWORD FilterKey)
+{
+	bool HasFilter = false;
+	
+	if (!CarPart) return false;
+
+	// SWAPSLOT_FILTER & SWAPSLOT_FILTER_<num>
+	for (int i = 0; i < PARTLINK_FILTER_NUM; i++)
+	{
+		// Continue if the part doesn't have this attribute
+		if (!CarPart_HasAppliedAttribute(CarPart, PartLinkSwapSlotFilterHashes[i])) continue;
+
+		HasFilter = true;
+
+		// If the part has this attribute, check if it matches the filter key
+		if (CarPart_GetAppliedAttributeUParam(CarPart, PartLinkSwapSlotFilterHashes[i], 0) == FilterKey)
+			return true;
+	}
+
+	// Vanilla/unlinked part has no SWAPSLOT_FILTER attributes and the filter key is 0, so it matches
+	if (!HasFilter && !FilterKey) return true;
+	
+	// No matching filter found
+	return false;
+}
+
+// Returns the current part if it matches the filter, otherwise returns the first part in the database that matches the filter
+DWORD *PartLink_GetPartWithFilter(int CarTypeID, int CarSlotID, DWORD *CurrentPart, DWORD Filter)
+{
+	// If there is no current part, it cannot have a filter, so return 0
+	if (!CurrentPart) return 0;
+
+	// Check if the current part matches the filter, if so return it
+	if (PartLink_MatchesFilter(CurrentPart, Filter)) return CurrentPart;
+
+	// Otherwise, find the first available part in the database that matches the filter
+	DWORD* Part;
+
+	// Loop through all parts in the database for the given car type and slot
+	for (Part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CarSlotID, 0, 0, -1);
+		Part;
+		Part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CarSlotID, 0, Part, -1))
+	{
+		if (PartLink_MatchesFilter(Part, Filter)) return Part;
+	}
+
+	// No matching part found, return 0
+	return 0;
+}
+
+bool PartLink_IsPartFiltered(DWORD* CarPart, int CarTypeID, int CarSlotID)
+{
+	if (!PartLink_EnabledForCarType(CarTypeID)) return true;
+
+	if (!CarPart) return false;
+	DWORD FilterKey = PartLinkSwapTarget[CarSlotID];
+	return PartLink_MatchesFilter(CarPart, FilterKey);
 }
 
 // Called from DoUnlimiterStuffCodeCave.

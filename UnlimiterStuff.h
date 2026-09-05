@@ -10,6 +10,8 @@ using namespace std;
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
 bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
+bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere;
+
 bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
@@ -101,11 +103,18 @@ int Init()
 	ExpandMemoryPools = mINI_ReadInteger(Settings, "Misc", "ExpandMemoryPools", 1) != 0;
 	AddOnOpponentsPartsFix = mINI_ReadInteger(Settings, "Misc", "ForceStockPartsOnAddOnOpponents", 0) != 0;
 	ExtendFeCarLimits = mINI_ReadInteger(Settings, "Misc", "ExtendFeCarLimits", 0) != 0;// Doubles the amount of stock and tuned cars a player can have in a profile.
+	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
+	SortStockCarsByStage = mINI_ReadInteger(Settings, "Misc", "SortStockCarsByStage", 0) != 0;
 
 	// Sponsor Cars
 	PresetCarsInCustomize = mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0) != 0;
 	PresetCarsInQuickRace = mINI_ReadInteger(Settings, "SponsorCars", "EnableInQuickRace", 0) != 0;
 	UnlockSponsorCarsWithoutCheats = mINI_ReadInteger(Settings, "SponsorCars", "UnlockWithoutCheats", 0) != 0;
+
+	// Car Categories
+	CopCarsCategory = mINI_ReadInteger(Settings, "CarCategories", "CopCars", 0) != 0;
+	TrafficCarsCategory = mINI_ReadInteger(Settings, "CarCategories", "TrafficCars", 0) != 0;
+	ShowCarNamesEverywhere = mINI_ReadInteger(Settings, "CarCategories", "ShowCarNames", 0) != 0;
 
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
@@ -113,7 +122,6 @@ int Init()
 	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
 	PartLinkTrace = mINI_ReadInteger(Settings, "Debug", "PartLinkTrace", 0) != 0;
-	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
 
 	// Count Cars Automatically

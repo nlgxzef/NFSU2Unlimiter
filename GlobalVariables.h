@@ -371,6 +371,11 @@ struct CarRenderInfoSection
 	bool HasSunroof;
 };
 
+struct PartLinkSection
+{
+	bool Enabled;
+};
+
 struct StatsSection
 {
 	float TimingKludgeFactor060;
@@ -984,6 +989,7 @@ struct CarConfig
 	MainSection Main;
 	TextureSection Textures;
 	CarRenderInfoSection RenderInfo;
+	PartLinkSection PartLinking;
 	StatsSection Stats;
 	StarGazerSection StarGazer;
 	CategorySection Category;
@@ -1028,6 +1034,7 @@ struct RimBrand
 	bool HideBrandName;
 	bool AvailableForRegularCars;
 	bool AvailableForSUVs;
+	char BrandName[32];
 };
 
 std::vector<RimBrand> RimBrands;
@@ -1076,6 +1083,7 @@ StarGazer TheStarGazer;
 // Camera Info Stuff is in CameraInfo.h
 bool UseCameraInfo = false;
 bool StaticCameraGenericFallback = true;
+bool SortStockCarsByStage = false;
 
 float CarSelectTireSteerAngle_Backup;
 

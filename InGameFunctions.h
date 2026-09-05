@@ -257,6 +257,7 @@ int(__thiscall* eView_GetPixelSize)(DWORD* view, bVector3* position, float radiu
 int(__thiscall* eView_GetVisibleState)(DWORD* view, bVector3* aabb_min, bVector3* aabb_max, bMatrix4* local_world) = (int(__thiscall*)(DWORD*, bVector3*, bVector3*, bMatrix4*))0x48AC60;
 DWORD* (__thiscall* RaceParameters_GetDriverInfoByPlayerNumber)(DWORD* RaceParameters, int player) = (DWORD * (__thiscall*)(DWORD*, int))0x5ED960;
 int(*GetTachStyle)(DWORD* EngineInfo) = (int(*)(DWORD*))0x60FE10;
+DWORD* (__cdecl* find_event_that_has_car_as_a_reward)(DWORD CarNameHash) = (DWORD * (__cdecl*)(DWORD))0x5023B0;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

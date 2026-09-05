@@ -191,6 +191,14 @@ bool IsMenuEmpty_Paint(int CarTypeID)
 	return 1;
 }
 
+void SetRimBrandName(RimBrand& Brand, const char* Name)
+{
+	Brand.BrandNameHash = bStringHash((char*)Name);
+
+	strncpy(Brand.BrandName, Name ? Name : "", sizeof(Brand.BrandName) - 1);
+	Brand.BrandName[sizeof(Brand.BrandName) - 1] = 0;
+}
+
 // mINI stuff
 
 int mINI_ReadInteger(mINI::INIStructure& ini, std::string Section, std::string Key, int DefaultValue = 0)

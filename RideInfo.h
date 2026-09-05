@@ -68,19 +68,35 @@ DWORD* FindPartWithLevel(int CarType, unsigned int slot_id, int upgrade_level); 
 // The Body Shop only exposes FRONT_BUMPER... only FRONT_BRAKE as a category, and with brakes
 // decoupled from the performance package nothing keeps REAR_BRAKE in step any more. Mirror the
 // front brake's upgrade level onto the rear, which is what the game's own sync does.
+// A slot holds a CarPart pointer, but on a RideInfo the game has not finished filling in it can
+// hold whatever was there before. A cop car preview handed this a slot containing 0x40800000,
+// which is the float 4.0, and reading byte 5 of it faulted at 0x40800005.
+bool IsPlausiblePartPointer(DWORD Value)
+{
+    return Value >= 0x00010000 && Value <= 0xC0000000 && !(Value & 3);
+}
+
 void MirrorFrontBrakeToRear(DWORD* RideInfo)
 {
     int CarType = *RideInfo;
 
+    // CarConfigs was being indexed with whatever the first dword happened to be. On a valid
+    // RideInfo that is the car type; on anything else it is a wild index into the array.
+    if (CarType < 0 || CarType >= CarCount) return;
+
     if (CarConfigs[CarType].Main.SyncBrakesWithPhysics) return;
     if (!CarConfigs[CarType].Main.MirrorBrakes) return;
 
-    DWORD* FrontBrake = (DWORD*)RideInfo[356 + CARSLOTID_FRONT_BRAKE];
-    if (!FrontBrake) return;
+    DWORD FrontValue = RideInfo[356 + CARSLOTID_FRONT_BRAKE];
+    if (!IsPlausiblePartPointer(FrontValue)) return;
+
+    DWORD* FrontBrake = (DWORD*)FrontValue;
 
     int Level = *((BYTE*)FrontBrake + 5) >> 5;
 
-    DWORD* RearBrake = (DWORD*)RideInfo[356 + CARSLOTID_REAR_BRAKE];
+    DWORD RearValue = RideInfo[356 + CARSLOTID_REAR_BRAKE];
+    DWORD* RearBrake = IsPlausiblePartPointer(RearValue) ? (DWORD*)RearValue : nullptr;
+
     if (RearBrake && (*((BYTE*)RearBrake + 5) >> 5) == Level) return;
 
     DWORD* NewRearBrake = FindPartWithLevel(CarType, CARSLOTID_REAR_BRAKE, Level);
@@ -111,6 +127,11 @@ bool __fastcall RideInfo_TrunkAudioSlotAvailable(DWORD* RideInfo, void* EDX_Unus
 
 void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
 {
+    // Everything below indexes CarConfigs and the slot array off this pointer, so one check here
+    // covers the lot. The car select builds a preview before the car is fully set up.
+    if (!RideInfo || ((uintptr_t)RideInfo & 3)) return;
+    if (*(int*)RideInfo < 0 || *(int*)RideInfo >= CarCount) return;
+    
     DWORD* TheCarPart; // eax
     DWORD* j; // ebx
     int CarPartIDName; // ebp
@@ -542,7 +563,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
 
 void __fastcall RideInfo_SetPart(DWORD* RideInfo, void* EDX_Unused, int CarSlotID, DWORD* CarPartToSet)
 {
-	if (RideInfo && CarSlotID != CARSLOTID_HOOD_UNDER)
+	if (RideInfo)
 	{
 		RideInfo[CarSlotID + 356] = (DWORD)CarPartToSet;
 		RideInfo_UpdatePartsEnabled(RideInfo, EDX_Unused);
@@ -585,7 +606,11 @@ DWORD* FindPartWithLevel(int CarType, unsigned int slot_id, int upgrade_level)
 
 void __fastcall RideInfo_SyncVisualPartsWithPhysics_Hook(DWORD* RideInfo, void* EDX_Unused, bool perf, bool random)
 {
+    if (!RideInfo || ((uintptr_t)RideInfo & 3)) return;
+
     int CarType = *RideInfo;
+    if (CarType < 0 || CarType >= CarCount) return;
+
     MainSection& M = CarConfigs[CarType].Main;
 
     if (!M.SyncVisualPartsWithPhysics && !M.SyncBrakesWithPhysics) return;

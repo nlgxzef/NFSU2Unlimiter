@@ -118,7 +118,21 @@ struct CombinedPointers
 	FEOnlineCar* pOnlineCars2[6];
 };
 
-//FEStockCar* CombinedCarPointers[182];
+int StockCarStage(FEStockCar* car)
+{
+	if (!car || !car->unk2) return 0x7FFFFFFF; // unassigned slot, park it at the end
+
+	char const* Name = GetCarTypeName(car->Type);
+	if (!Name || !Name[0]) return -1;
+
+	DWORD* Event = find_event_that_has_car_as_a_reward(bStringHash(Name));
+
+	// No event awards it, so it is available from the start. That covers the starter cars and
+	// any add-on nothing in the career unlocks, and both belong at the top of the list.
+	if (!Event) return -1;
+
+	return (int)Event[55];
+}
 
 std::vector<FEStockCar> ExtraStockCars;
 std::vector<FEStockCar*> AllCarPointers;
@@ -130,9 +144,23 @@ void InitCombinePointers()
 	AllCarPointers.clear();
 	AllCarPointers.reserve(182 + ExtraStockCars.size());
 
-	for (int i = 0; i < 48; i++) AllCarPointers.push_back(FEPlayerCarDB_Player1->pStockCars[i]);
-	for (int i = 0; i < 48; i++) AllCarPointers.push_back(FEPlayerCarDB_Player2->pStockCars[i]);
-	for (size_t i = 0; i < ExtraStockCars.size(); i++) AllCarPointers.push_back(&ExtraStockCars[i]);
+	std::vector<FEStockCar*> Stock;
+	Stock.reserve(96 + ExtraStockCars.size());
+
+	for (int i = 0; i < 48; i++) Stock.push_back(FEPlayerCarDB_Player1->pStockCars[i]);
+	for (int i = 0; i < 48; i++) Stock.push_back(FEPlayerCarDB_Player2->pStockCars[i]);
+
+	for (size_t i = 0; i < ExtraStockCars.size(); i++) Stock.push_back(&ExtraStockCars[i]);
+
+	if (SortStockCarsByStage)
+	{
+		std::stable_sort(Stock.begin(), Stock.end(), [](FEStockCar* a, FEStockCar* b)
+			{
+				return StockCarStage(a) < StockCarStage(b);
+			});
+	}
+	
+	for (size_t i = 0; i < Stock.size(); i++) AllCarPointers.push_back(Stock[i]);
 
 	for (int i = 0; i < 20; i++) AllCarPointers.push_back(FEPlayerCarDB_Player1->pTunedCars[i]);
 	for (int i = 0; i < 20; i++) AllCarPointers.push_back(FEPlayerCarDB_Player2->pTunedCars[i]);

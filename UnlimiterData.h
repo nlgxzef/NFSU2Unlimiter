@@ -43,6 +43,9 @@ void LoadCarConfigs()
 	DefaultCarConfig.RenderInfo.RemoveCentreBrakeWithCustomSpoiler = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", GetDefaultRemoveCentreBrakeWithCustomSpoiler(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.HasSunroof = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "HasSunroof", GetDefaultHasSunroof(ReplacementCar)) != 0;
 
+	// PartLink
+	DefaultCarConfig.PartLinking.Enabled = mINI_ReadInteger(GeneralINI, "PartLink", "Enabled", 0) != 0;
+
 	// Stats
 	DefaultCarConfig.Stats.TimingKludgeFactor060 = mINI_ReadFloat(GeneralINI, "Stats", "TimingKludgeFactor060");
 	DefaultCarConfig.Stats.TimingKludgeFactor0100 = mINI_ReadFloat(GeneralINI, "Stats", "TimingKludgeFactor0100");
@@ -629,6 +632,9 @@ void LoadCarConfigs()
 		ACarConfig.RenderInfo.ShowTrunkUnderInFE = mINI_ReadInteger(CarINI, "CarRenderInfo", "ShowTrunkUnderInFE", GetDefaultShowTrunkUnderInFE(i)) != 0;
 		ACarConfig.RenderInfo.RemoveCentreBrakeWithCustomSpoiler = mINI_ReadInteger(CarINI, "CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", GetDefaultRemoveCentreBrakeWithCustomSpoiler(i)) != 0;
 		ACarConfig.RenderInfo.HasSunroof = mINI_ReadInteger(CarINI, "CarRenderInfo", "HasSunroof", GetDefaultHasSunroof(i)) != 0;
+
+		// PartLink
+		ACarConfig.PartLinking.Enabled = mINI_ReadInteger(CarINI, "PartLink", "Enabled", DefaultCarConfig.PartLinking.Enabled) != 0;
 
 		// Stats
 		ACarConfig.Stats.TimingKludgeFactor060 = mINI_ReadFloat(CarINI, "Stats", "TimingKludgeFactor060", DefaultCarConfig.Stats.TimingKludgeFactor060);
@@ -1344,17 +1350,21 @@ void LoadRimBrands()
 
 	int NumRimBrands = mINI_ReadInteger(RimBrandsINI, "RimBrands", "NumberOfRimBrands", DefaultRimBrandCount);
 	RemoveRimSizeRestrictions = mINI_ReadInteger(RimBrandsINI, "RimBrands", "RemoveRimSizeRestrictions", 0) != 0;
+	bool SortAlphabetically = mINI_ReadInteger(RimBrandsINI, "RimBrands", "SortAlphabetically", 0) != 0;
 
 	for (int i = 0; i <= NumRimBrands; i++)
 	{
 		sprintf(RimBrandID, "Brand%d", i);
 
+		SetRimBrandName(ARimBrand, mINI_ReadString(RimBrandsINI, RimBrandID, "BrandName", GetDefaultRimBrandName(i)));
 		ARimBrand.BrandNameHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "BrandName", GetDefaultRimBrandName(i));
 		ARimBrand.StringHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "String", GetDefaultRimBrandString(i));
 		ARimBrand.TextureHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "Texture", GetDefaultRimBrandTexture(i));
 		ARimBrand.NoRimSize = mINI_ReadInteger(RimBrandsINI, RimBrandID, "NoRimSize", i ? 0 : 1) != 0;
-		ARimBrand.AvailableForRegularCars = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForRegularCars", GetDefaultRimBrandAvailableForRegularCars(i)) != 0;
-		ARimBrand.AvailableForSUVs = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForSUVs", GetDefaultRimBrandAvailableForSUVs(i)) != 0;
+		ARimBrand.AvailableForRegularCars = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForRegularCars", 
+			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Car", GetDefaultRimBrandAvailableForRegularCars(i))) != 0;
+		ARimBrand.AvailableForSUVs = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForSUVs", 
+			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Suv", GetDefaultRimBrandAvailableForSUVs(i))) != 0;
 
 		RimBrands_temp.push_back(ARimBrand); // Add to temp list
 	}
@@ -1376,12 +1386,15 @@ void LoadRimBrands()
 				mINI::INIStructure itINI;
 				itINIFile.read(itINI);
 
-				ARimBrand.BrandNameHash = mINI_ReadInteger(itINI, "Brand", "BrandName");
+				SetRimBrandName(ARimBrand, mINI_ReadString(itINI, "Brand", "BrandName", (char*)itINIPath.stem().c_str()));
+				ARimBrand.BrandNameHash = mINI_ReadHashS(itINI, "Brand", "BrandName");
 				ARimBrand.TextureHash = mINI_ReadHashS(itINI, "Brand", "Texture");
 				ARimBrand.StringHash = mINI_ReadHashS(itINI, "Brand", "String");
 				ARimBrand.NoRimSize = mINI_ReadInteger(itINI, "Brand", "NoRimSize", 0) != 0;
-				ARimBrand.AvailableForRegularCars = mINI_ReadInteger(itINI, "Brand", "AvailableForRegularCars", 1) != 0;
-				ARimBrand.AvailableForSUVs = mINI_ReadInteger(itINI, "Brand", "AvailableForSUVs", 0) != 0;
+				ARimBrand.AvailableForRegularCars = mINI_ReadInteger(itINI, "Brand", "AvailableForRegularCars", 
+					mINI_ReadInteger(itINI, "Brand", "Car", 1)) != 0;
+				ARimBrand.AvailableForSUVs = mINI_ReadInteger(itINI, "Brand", "AvailableForSUVs",
+					mINI_ReadInteger(itINI, "Brand", "Suv", 0)) != 0;
 
 				// If we already have a grup with the same hash, overwrite it
 				bool found = 0;
@@ -1408,6 +1421,15 @@ void LoadRimBrands()
 				}
 			}
 		}
+	}
+
+	if (SortAlphabetically && RimBrands_temp.size() > 2)
+	{
+		std::stable_sort(RimBrands_temp.begin() + 1, RimBrands_temp.end(),
+			[](const RimBrand& a, const RimBrand& b)
+			{
+				return _stricmp(a.BrandName, b.BrandName) < 0;
+			});
 	}
 
 	RimBrands = std::move(RimBrands_temp); // Replace global list with temp
