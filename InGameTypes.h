@@ -26,4 +26,5 @@
 #include "LoadedSkin.h"
 #include "ReplacementTextureEntry.h"
 #include "feDialogConfig.h"
+#include "SelectablePart.h"
 //#include "DialogInterface.h"

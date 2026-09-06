@@ -155,7 +155,7 @@ void(__thiscall* IceSelectionScreen_DoSpecialScroll_Game)(DWORD* IceSelectionScr
 void(__thiscall* IcePartsBrowser_RefreshHeader_Game)(DWORD* IcePartsBrowser) = (void(__thiscall*)(DWORD*))0x547250;
 void(__thiscall* NeonPartsBrowser_RefreshHeader_Game)(DWORD* NeonPartsBrowser) = (void(__thiscall*)(DWORD*))0x547F30;
 void(__thiscall* ChooseDecalScreen_RefreshHeader_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x546F40;
-void(__thiscall* ChooseDecalScreen_ToggleColors)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x568710;
+void(__thiscall* ChooseDecalScreen_ToggleColors_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x568710;
 void(__thiscall* ChooseSpinnerBrand_NotificationMessage_Game)(DWORD* ChooseSpinnerBrand, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x569670;
 void(__thiscall* ChooseSpinnerBrand_RefreshHeader_Game)(DWORD* ChooseSpinnerBrand) = (void(__thiscall*)(DWORD*))0x547330;
 void(__thiscall* RimsBrowser_NotificationMessage_Game)(DWORD* RimsBrowser, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x567A50;

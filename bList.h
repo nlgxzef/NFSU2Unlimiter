@@ -1,46 +1,44 @@
 #pragma once
 
+// Taken from dbalatoni13/nfsmw
+
 struct bNode
 {
 	bNode* Next;
 	bNode* Prev;
 
-	bNode* GetNext()
-	{
+	bNode* GetNext() {
 		return Next;
 	}
 
-	bNode* GetPrev()
-	{
+	bNode* GetPrev() {
 		return Prev;
 	}
 
-	void Remove()
-	{
-		Prev->Next = Next;
-		Next->Prev = Prev;
-	}
-
-	void AddAfter(bNode* insert_point)
-	{
-		if (!insert_point) return;
-
+	bNode* AddBefore(bNode* insert_point) {
+		bNode* new_prev = insert_point->Prev;
+		new_prev->Next = this;
 		insert_point->Prev = this;
-		insert_point->Next = Next;
-
-		Next->Prev = insert_point;
-		Next = insert_point;
+		this->Prev = new_prev;
+		this->Next = insert_point;
+		return this;
 	}
 
-	void AddBefore(bNode* insert_point)
-	{
-		if (!insert_point) return;
-
+	bNode* AddAfter(bNode* insert_point) {
+		bNode* new_next = insert_point->Next;
 		insert_point->Next = this;
-		insert_point->Prev = Prev;
+		new_next->Prev = this;
+		this->Prev = insert_point;
+		this->Next = new_next;
+		return this;
+	}
 
-		Prev->Next = insert_point;
-		Prev = insert_point;
+	bNode* Remove() {
+		bNode* next_node = this->Next;
+		bNode* prev_node = this->Prev;
+		prev_node->Next = next_node;
+		next_node->Prev = prev_node;
+		return this;
 	}
 };
 
@@ -56,21 +54,21 @@ struct bTNode : bNode
 	{
 		return (T*)bNode::GetPrev();
 	}
-	/*
-	void Remove()
+
+	T* AddBefore(T* insert_point)
 	{
-		bNode::Remove();
+		return (T*)bNode::AddBefore(insert_point);
 	}
 
-	void AddAfter(T *insert_point)
+	T* AddAfter(T* insert_point)
 	{
-		bNode::AddAfter(insert_point);
+		return (T*)bNode::AddAfter(insert_point);
 	}
 
-	void AddBefore(T *insert_point)
+	T* Remove()
 	{
-		bNode::AddBefore(insert_point);
-	}*/
+		return (T*)bNode::Remove();
+	}
 };
 
 struct bList
@@ -79,60 +77,72 @@ struct bList
 
 	void InitList()
 	{
-		HeadNode.Next = &HeadNode;
-		HeadNode.Prev = &HeadNode;
+		this->HeadNode.Next = &this->HeadNode;
+		this->HeadNode.Prev = &this->HeadNode;
 	}
 
-	bool IsEmpty()
+	int IsEmpty()
 	{
-		return HeadNode.Next == &HeadNode;
+		return static_cast<int>(this->HeadNode.GetNext() == &this->HeadNode);
+	}
+
+	bNode* EndOfList()
+	{
+		return &this->HeadNode;
 	}
 
 	bNode* GetHead()
 	{
-		return HeadNode.Next;
+		return this->HeadNode.GetNext();
 	}
 
 	bNode* GetTail()
 	{
-		return HeadNode.Prev;
+		return this->HeadNode.GetPrev();
 	}
 
-	void AddBefore(bNode* insert_point, bNode* node)
+	bNode* AddHead(bNode* node)
 	{
-		node->AddBefore(insert_point);
+		return node->AddAfter(&this->HeadNode);
 	}
 
-	void AddAfter(bNode* insert_point, bNode* node)
+	bNode* AddTail(bNode* node)
 	{
-		node->AddAfter(insert_point);
+		return node->AddBefore(&this->HeadNode);
 	}
 
-	void AddHead(bNode* node)
+	bNode* AddBefore(bNode* insert_point, bNode* node)
 	{
-		node->AddAfter(&HeadNode);
+		return node->AddBefore(insert_point);
 	}
 
-	void AddTail(bNode* node)
+	bNode* AddAfter(bNode* insert_point, bNode* node)
 	{
-		node->AddBefore(&HeadNode);
+		return node->AddAfter(insert_point);
 	}
 
-	void Remove(bNode* node)
+	bNode* Remove(bNode* node)
 	{
-		node->Remove();
+		return node->Remove();
 	}
 
-	void RemoveHead()
+	bNode* RemoveHead()
 	{
-		if (!IsEmpty())
-			Remove(GetHead());
+		return this->GetHead()->Remove();
+	}
+	bNode* RemoveTail()
+	{
+		return this->GetTail()->Remove();
 	}
 
-	void RemoveTail()
+	int IsInList(bNode* node)
 	{
-		if (!IsEmpty())
-			Remove(GetTail());
+		return this->TraversebList(node);
+	}
+
+	int CountElements()
+	{
+		return TraversebList(nullptr);
 	}
 
 	int TraversebList(bNode* match_node)
@@ -150,16 +160,6 @@ struct bList
 
 		if (match_node) return 0;
 		return result;
-	}
-
-	int IsInList(bNode* node)
-	{
-		return TraversebList(node);
-	}
-
-	int CountElements()
-	{
-		return TraversebList(nullptr);
 	}
 };
 

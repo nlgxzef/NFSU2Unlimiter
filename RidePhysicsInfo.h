@@ -27,27 +27,32 @@ void __fastcall RidePhysicsInfo_RebuildPhysicsInfo(float* RidePhysicsInfo, void*
 
         // get wheel offsets from rideinfo + custom attr
         DWORD* RideInfo = (DWORD*)RidePhysicsInfo - 4;
-        DWORD* FenderPart = (DWORD*)RideInfo[356 + 23]; // FENDER
-        DWORD* QuarterPart = (DWORD*)RideInfo[356 + 24]; // QUARTER
-        DWORD* WideBodyPart = (DWORD*)RideInfo[356 + 6]; // WIDE_BODY
+        DWORD* FenderPart = (DWORD*)RideInfo[356 + CARSLOTID_FENDER]; // FENDER
+        DWORD* QuarterPart = (DWORD*)RideInfo[356 + CARSLOTID_QUARTER]; // QUARTER
+        DWORD* WideBodyPart = (DWORD*)RideInfo[356 + CARSLOTID_WIDE_BODY]; // WIDE_BODY
 
         // Check our custom attributes for track width
         float FrontTireOffset = 0;
         float RearTireOffset = 0;
-        if (WideBodyPart && (*((BYTE*)RideInfo + 2104 + 6) == 1)) // check has WIDE_BODY and its visibility
+
+		bool HasWideBody = WideBodyPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_WIDE_BODY) == 1);
+
+        if (HasWideBody) // check has WIDE_BODY and its visibility
         {
             AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
             FrontTireOffset = *(float*)&AttrVal;
             AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
             RearTireOffset = *(float*)&AttrVal;
         }
+
+        bool TakeBodyOffsets = AccumulateTireOffsets || !HasWideBody;
         
-        if (FenderPart && (*((BYTE*)RideInfo + 2104 + 23) == 1)) // check has FENDER and its visibility
+        if (TakeBodyOffsets && FenderPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_FENDER) == 1)) // check has FENDER and its visibility
         {
             AttrVal = CarPart_GetAppliedAttributeUParam(FenderPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
             FrontTireOffset += *(float*)&AttrVal;
         }
-        if (QuarterPart && (*((BYTE*)RideInfo + 2104 + 24) == 1)) // check has QUARTER and its visibility
+        if (TakeBodyOffsets && QuarterPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_QUARTER) == 1)) // check has QUARTER and its visibility
         {
             AttrVal = CarPart_GetAppliedAttributeUParam(QuarterPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
             RearTireOffset += *(float*)&AttrVal;

@@ -1323,7 +1323,11 @@ void LoadPresetCarOverrides()
 		o.Group = mINI_ReadInteger(PresetCarsINI, Name, "Group", 0);
 
 		char* Cond = mINI_ReadString(PresetCarsINI, Name, "UnlockCondition", "None");
-		o.UnlockCondition = (_stricmp(Cond, "Code") == 0) ? PRESET_UNLOCK_CODE : PRESET_UNLOCK_NONE;
+		o.UnlockCondition = PRESET_UNLOCK_NONE;
+		if (_stricmp(Cond, "Code") == 0) o.UnlockCondition = PRESET_UNLOCK_CODE;
+		else if (_stricmp(Cond, "Event") == 0) o.UnlockCondition = PRESET_UNLOCK_EVENT;
+		else if (_stricmp(Cond, "Stage") == 0) o.UnlockCondition = PRESET_UNLOCK_STAGE;
+
 		char* Code = mINI_ReadString(PresetCarsINI, Name, "UnlockValue", "");
 		strncpy(o.UnlockValue, Code, sizeof(o.UnlockValue) - 1);
 		o.UnlockValue[sizeof(o.UnlockValue) - 1] = 0;

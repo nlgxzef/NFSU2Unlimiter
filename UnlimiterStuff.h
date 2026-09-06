@@ -10,7 +10,7 @@ using namespace std;
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
 bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
-bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere;
+bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, FilterDecalsByInitials;
 
 bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
@@ -105,6 +105,7 @@ int Init()
 	ExtendFeCarLimits = mINI_ReadInteger(Settings, "Misc", "ExtendFeCarLimits", 0) != 0;// Doubles the amount of stock and tuned cars a player can have in a profile.
 	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
 	SortStockCarsByStage = mINI_ReadInteger(Settings, "Misc", "SortStockCarsByStage", 0) != 0;
+	FilterDecalsByInitials = mINI_ReadInteger(Settings, "Misc", "FilterDecalsByInitials", 1) != 0;
 
 	// Sponsor Cars
 	PresetCarsInCustomize = mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0) != 0;
@@ -280,6 +281,12 @@ int Init()
 	injector::MakeCALL(0x56858B, ChooseDecalScreen_RefreshHeader, true); // ChooseDecalScreen::ChooseDecalScreen
 	injector::MakeCALL(0x56BCB8, ChooseDecalScreen_RefreshHeader, true); // ChooseDecalScreen::NotificationMessage
 
+	// Decal Initials
+	if (FilterDecalsByInitials)
+	{
+		injector::MakeCALL(0x56BE1D, ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::Setup
+	}
+	
 	// Fix double message while changing colors for Decals
 	injector::MakeJMP(0x56BE1D, DoubleMessageFixCodeCave_ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::NotificationMessage
 
@@ -358,6 +365,7 @@ int Init()
 	// Get Parts List (customized)
 	injector::MakeJMP(0x5449C0, GetPartsList, true); // 4 references
 	injector::MakeJMP(0x539960, GetIcePartsList, true); // 7 references
+	injector::MakeCALL(0x560323, GetDecalsList, true); // ChooseDecalScreen::Setup
 
 	// Camera Info Stuff
 	injector::MakeCALL(0x4A55F7, FindPartCameraInfo, true); // CarOrbiter::SetLookatPart

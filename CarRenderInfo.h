@@ -232,7 +232,7 @@ void __declspec(naked) ShowEngineAttrCodeCave()
 			RideInfo = (DWORD*)CarRenderInfo[1]; // RideInfo
 			if (RideInfo)
 			{
-				partPtr = (DWORD*)RideInfo[356 + 9]; // HOOD
+				partPtr = (DWORD*)RideInfo[356 + CARSLOTID_HOOD]; // HOOD
 				if (partPtr)
 				{
 					ShowEngine = CarPart_GetAppliedAttributeUParam(partPtr, CT_bStringHash("SHOWENGINE"), 0);
@@ -284,11 +284,11 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 		RideInfo = (DWORD*)CarRenderInfo[1];
 		if (RideInfo)
 		{
-			FrontWheelPart = (DWORD*)RideInfo[356 + 29]; // FRONT_WHEEL
-			RearWheelPart = (DWORD*)RideInfo[356 + 30]; // REAR_WHEEL
-			FenderPart = (DWORD*)RideInfo[356 + 23]; // FENDER
-			QuarterPart = (DWORD*)RideInfo[356 + 24]; // QUARTER
-			WideBodyPart = (DWORD*)RideInfo[356 + 6]; // WIDE_BODY
+			FrontWheelPart = (DWORD*)RideInfo[356 + CARSLOTID_FRONT_WHEEL]; // FRONT_WHEEL
+			RearWheelPart = (DWORD*)RideInfo[356 + CARSLOTID_REAR_WHEEL]; // REAR_WHEEL
+			FenderPart = (DWORD*)RideInfo[356 + CARSLOTID_FENDER]; // FENDER
+			QuarterPart = (DWORD*)RideInfo[356 + CARSLOTID_QUARTER]; // QUARTER
+			WideBodyPart = (DWORD*)RideInfo[356 + CARSLOTID_WIDE_BODY]; // WIDE_BODY
 		}
 		else
 		{
@@ -302,20 +302,25 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 		// Check our custom attributes for track width
 		FrontTireOffset = 0;
 		RearTireOffset = 0;
-		if (WideBodyPart && (*((BYTE*)RideInfo + 2104 + 6) == 1)) // check has WIDE_BODY and its visibility
+
+		bool HasWideBody = WideBodyPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_WIDE_BODY) == 1);
+
+		if (HasWideBody) // check has WIDE_BODY and its visibility
 		{
 			AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
 			FrontTireOffset = *(float*)&AttrVal;
 			AttrVal =  CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
 			RearTireOffset = *(float*)&AttrVal;
 		}
+
+		bool TakeBodyOffsets = AccumulateTireOffsets || !HasWideBody;
 		
-		if (FenderPart && (*((BYTE*)RideInfo + 2104 + 23) == 1)) // check has FENDER and its visibility
+		if (TakeBodyOffsets && FenderPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_FENDER) == 1)) // check has FENDER and its visibility
 		{
 			AttrVal = CarPart_GetAppliedAttributeUParam(FenderPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
 			FrontTireOffset += *(float*)&AttrVal;
 		}
-		if (QuarterPart && (*((BYTE*)RideInfo + 2104 + 24) == 1)) // check has QUARTER and its visibility
+		if (TakeBodyOffsets && QuarterPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_QUARTER) == 1)) // check has QUARTER and its visibility
 		{
 			AttrVal = CarPart_GetAppliedAttributeUParam(QuarterPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
 			RearTireOffset += *(float*)&AttrVal;
@@ -468,7 +473,7 @@ void __fastcall CarRenderInfo_RenderNeon(DWORD* CarRenderInfo, void* EDX_Unused,
 				AnimationTime = CarAnimManager_GetAnimationTime(*(DWORD*)(AnimationThing[2] + 208), 0, 0);
 
 			// Show engine neon if our custom attribute is present
-			HoodPart = (DWORD*)RideInfo[356 + 9];
+			HoodPart = (DWORD*)RideInfo[356 + CARSLOTID_HOOD];
 			if (HoodPart)
 			{
 				ShowEngineThruHood = CarPart_GetAppliedAttributeUParam(HoodPart, CT_bStringHash("SHOWENGINE"), 0);
@@ -527,7 +532,7 @@ void __fastcall CarRenderInfo_RenderNeon(DWORD* CarRenderInfo, void* EDX_Unused,
 				AnimationTime = CarAnimManager_GetAnimationTime(*(DWORD*)(AnimationThing[2] + 208), 1, 0);
 
 			// Show trunk neon if our custom attribute is present
-			TrunkPart = (DWORD*)RideInfo[356 + 10];
+			TrunkPart = (DWORD*)RideInfo[356 + CARSLOTID_TRUNK];
 			if (TrunkPart)
 			{
 				ShowAudioThruTrunk = CarPart_GetAppliedAttributeUParam(TrunkPart, CT_bStringHash("SHOWTRUNK"), 0);

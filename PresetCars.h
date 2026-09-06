@@ -156,6 +156,15 @@ struct PresetCarOverride
 
 #define PRESET_UNLOCK_NONE 0
 #define PRESET_UNLOCK_CODE 1
+#define PRESET_UNLOCK_EVENT 2
+#define PRESET_UNLOCK_STAGE 3
+
+// ThePlayerCareer, the same object the car lookups take as their this pointer.
+#define _ThePlayerCareer 0x0083AD90
+#define PlayerCareerState_CurrentStage *(int*)(_ThePlayerCareer + 0x71E4)
+
+bool(__thiscall* PlayerCareerState_HasCompletedEvent)(DWORD* This, DWORD EventHandle)
+= (bool(__thiscall*)(DWORD*, DWORD))0x500B80;
 
 // The game's cheat table: a pointer and a count it is happy for us to read.
 #define _gEasterEggs 0x865930
@@ -165,6 +174,8 @@ struct PresetCarOverride
 
 // A CheatData is name[32] at +0, hasBeenTriggered at +0x30. Comparing the typed name means a
 // code works whether it is one of the game's own or one we add to the table later.
+bool PresetUnlockSatisfied(int Condition, const char* Value);
+
 bool PresetIsCodeEntered(const char* Code)
 {
 	// The setting is meant to make cheat-gated cars available without the cheats, and a preset
@@ -188,6 +199,32 @@ bool PresetIsCodeEntered(const char* Code)
 	}
 
 	return false;
+}
+
+bool PresetUnlockSatisfied(int Condition, const char* Value)
+{
+	switch (Condition)
+	{
+	case PRESET_UNLOCK_CODE:
+		return PresetIsCodeEntered(Value);
+
+	case PRESET_UNLOCK_EVENT:
+		// UnlockValue is the event's own name, the same S5_CIRCUIT_36 form the career data uses.
+		if (UnlockSponsorCarsWithoutCheats) return true;
+		if (!Value || !Value[0]) return false;
+
+		return PlayerCareerState_HasCompletedEvent((DWORD*)_ThePlayerCareer, bStringHash((char*)Value));
+
+	case PRESET_UNLOCK_STAGE:
+		// UnlockValue is a stage number: the car appears once the player has reached past it.
+		if (UnlockSponsorCarsWithoutCheats) return true;
+		if (!Value || !Value[0]) return false;
+
+		return PlayerCareerState_CurrentStage > atoi(Value);
+
+	default:
+		return true;
+	}
 }
 
 std::vector<PresetCarOverride> PresetCarOverrides;
@@ -238,7 +275,7 @@ void BuildPresetCarList()
 		PresetCarOverride& ov = PresetCarOverrides[o];
 
 		if (!ov.Enabled) continue;
-		if (ov.UnlockCondition == PRESET_UNLOCK_CODE && !PresetIsCodeEntered(ov.UnlockValue)) continue;
+		if (!PresetUnlockSatisfied(ov.UnlockCondition, ov.UnlockValue)) continue;
 
 		for (ObjectLink* i = Sentinel->next; i && i != Sentinel; i = i->next)
 		{
