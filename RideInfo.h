@@ -77,19 +77,12 @@ bool IsAttachmentDrivenSlot(int CarType, int Slot)
 {
     if (CarType < 0 || CarType >= CarCount) return false;
 
-    static const int Slots[6] =
-    {
-        CARSLOTID_DOOR_PANEL_LEFT, CARSLOTID_DOOR_PANEL_RIGHT,
-        CARSLOTID_DOOR_SILL_LEFT,  CARSLOTID_DOOR_SILL_RIGHT,
-        CARSLOTID_HOOD_UNDER,      CARSLOTID_TRUNK_UNDER,
-    };
-
     BodyShopSection& B = CarConfigs[CarType].BodyShop;
 
     bool Enabled[6] = { B.Attachment5, B.Attachment6, B.Attachment7, B.Attachment8, B.Attachment9, B.Attachment10 };
 
     for (int i = 0; i < 6; i++)
-        if (Slots[i] == Slot) return B.Attachments > 5 + i && Enabled[i];
+        if (ExtraAttachmentSlots[i] == Slot) return B.Attachments > 5 + i && Enabled[i];
 
     return false;
 }
@@ -556,15 +549,6 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
             *((BYTE*)RideInfo + 2104 + CARSLOTID_DOOR_SILL_LEFT) = 1;
             *((BYTE*)RideInfo + 2104 + CARSLOTID_DOOR_SILL_RIGHT) = 1;
         }
-
-        // Attachment slots 5-10 are these same six. A slot offered as an attachment holds a part
-        // the player chose, so it has to stay drawn whatever the hood, trunk or doors are doing;
-        // enabling it as an attachment implies the always-show above.
-        static const int ExtraAttachmentSlots[6] = {
-            CARSLOTID_DOOR_PANEL_LEFT, CARSLOTID_DOOR_PANEL_RIGHT,
-            CARSLOTID_DOOR_SILL_LEFT,  CARSLOTID_DOOR_SILL_RIGHT,
-            CARSLOTID_HOOD_UNDER,      CARSLOTID_TRUNK_UNDER,
-        };
 
         BodyShopSection& B = CarConfigs[CarType].BodyShop;
 

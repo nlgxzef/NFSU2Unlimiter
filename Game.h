@@ -143,6 +143,7 @@ int LoaderCarInfo_Hook(bChunk* chunk)
 
 	int TypeBits = 1;
 	int PartBits = 1;
+	int CarPartCount = 0;
 
 	if (result)
 	{
@@ -182,28 +183,30 @@ int LoaderCarInfo_Hook(bChunk* chunk)
 
 				injector::WriteMemory<int>(0x89D2D4, TypeBits, true); // QuantCarType bit count
 
-				// Make them available as opponents
-				LoadCarConfigs();
-				FillCarPickerArrays();
+			}
 
-				// load configs into UnlimiterData structs
-				//LoadFNGFixes();
-				LoadPaintGroups();
-				LoadRimBrands();
-				LoadVinylGroups();
-				LoadStarGazer();
-				LoadCameraInfo();
-				LoadPartLinks();
-				LoadPresetCarOverrides();
+			// Make them available as opponents
+			LoadCarConfigs();
+			FillCarPickerArrays();
 
-				// Fix misc stats
-				FixComputeMiscStats();
+			// load configs into UnlimiterData structs
+			//LoadFNGFixes();
+			LoadPaintGroups();
+			LoadRimBrands();
+			LoadVinylGroups();
+			LoadStarGazer();
+			LoadCameraInfo();
+			LoadPartLinks();
+			LoadPresetCarOverrides();
 
-				break;
+			// Fix misc stats
+			FixComputeMiscStats();
+
+			break;
 
 		case BCHUNK_SPEED_CARPART_PACK_HEADER: // Unlimiter stuff Part 2
 			DBCarPart = (CarPartDatabase*)_CarPartDB;
-			int CarPartCount = DBCarPart->NumParts;
+			CarPartCount = DBCarPart->NumParts;
 
 			// Fix quantizers
 			PartBits = 1;
@@ -218,7 +221,12 @@ int LoaderCarInfo_Hook(bChunk* chunk)
 			injector::WriteMemory<int>(0x5F0675, CarPartCount + 1, true); // sub_5F04D0
 
 			break;
-			}
+
+		case BCHUNK_SPEED_CARPART_ANIMHOOKUP_TABLE:
+			CarSlotAnimHookupTable = *(CarSlotAnimHookup**)0x8A1CDC;
+
+			//CarSlotAnimHookup_InitForExtraAttachments();
+			break;
 		}
 	}
 

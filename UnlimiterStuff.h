@@ -576,6 +576,7 @@ int Init()
 	injector::MakeJMP(0x615817, RemoveCentreBrakeWithCustomSpoilerCodeCave, true); // RemoveCentreBrakeWithCustomSpoiler
 	//injector::MakeCALL(0x623155, HasSunroof, true);
 	injector::MakeJMP(0x60C854, HasSunroofCodeCave, true); // HasSunroof
+	injector::MakeJMP(0x623458, CarRenderInfo_Render_AnimLocationForExtraAttachmentCodeCave, true);
 	
 	// Expand Memory Pools (ty Berkay and Aero_)
 	if (ExpandMemoryPools)

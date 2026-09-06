@@ -8,6 +8,7 @@
 
 // Enums
 #include "CarSlotID.h"
+#include "CarSlotAnim.h"
 //#include "CarPartID.h"
 //#include "MenuID.h"
 

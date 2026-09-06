@@ -252,6 +252,66 @@ void __declspec(naked) ShowEngineAttrCodeCave()
 	}
 }
 
+int AnimLocationForExtraAttachment(int CarType, int CarSlotID, int orig)
+{
+	BodyShopSection& B = CarConfigs[CarType].BodyShop;
+
+	bool ExtraEnabled[6] = {
+		B.Attachment5, B.Attachment6, B.Attachment7,
+		B.Attachment8, B.Attachment9, B.Attachment10,
+	};
+
+	for (int i = 0; i < 6; i++)
+	{
+		if (ExtraAttachmentSlots[i] == CarSlotID)
+		{
+			if (B.Attachments > 5 + i && ExtraEnabled[i])
+				return -1;
+			else
+				return orig;
+		}
+	}
+
+	return orig;
+}
+
+// 0x623458
+void __declspec(naked) CarRenderInfo_Render_AnimLocationForExtraAttachmentCodeCave()
+{
+	DWORD* CarRenderInfo, *RideInfo;
+	int AnimLoc, CarSlotID_x2, esi_backup;
+
+	_asm
+	{
+		movsx ecx, byte ptr ds : [eax + edx]
+		mov AnimLoc, ecx
+		mov CarSlotID_x2, eax
+		mov esi_backup, esi
+		mov esi, dword ptr ds: [esp + 0x58]
+		mov CarRenderInfo, esi
+		pushad
+	}
+
+	if (CarRenderInfo)
+	{
+		RideInfo = (DWORD*)CarRenderInfo[1]; // RideInfo
+		if (RideInfo)
+		{
+			AnimLoc = AnimLocationForExtraAttachment(RideInfo[0], CarSlotID_x2 / 2, AnimLoc);
+		}
+	}
+
+	_asm
+	{
+		popad
+		mov esi, esi_backup
+		mov ecx, AnimLoc
+		mov eax, dword ptr ds : [esp + 0xC8]
+		push 0x623463
+		retn
+	}
+}
+
 void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, void* EDX_Unused)
 {
 	DWORD* RideInfo; // eax
