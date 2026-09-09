@@ -153,6 +153,8 @@ void LoadCarConfigs()
 	DefaultCarConfig.Specialties.WindowTint = mINI_ReadInteger(GeneralINI, "Specialties", "WindowTint", 1) != 0;
 	DefaultCarConfig.Specialties.HeadlightColor = mINI_ReadInteger(GeneralINI, "Specialties", "HeadlightColor", 1) != 0;
 	DefaultCarConfig.Specialties.NosPurge = mINI_ReadInteger(GeneralINI, "Specialties", "NosPurge", 1) != 0;
+	DefaultCarConfig.Specialties.ExhaustFlame = mINI_ReadInteger(GeneralINI, "Specialties", "ExhaustFlame", 1) != 0;
+	DefaultCarConfig.Specialties.TireSmoke = mINI_ReadInteger(GeneralINI, "Specialties", "TireSmoke", 1) != 0;
 	DefaultCarConfig.Specialties.Hydrualics = mINI_ReadInteger(GeneralINI, "Specialties", "Hydrualics", 1) != 0;
 	DefaultCarConfig.Specialties.TrunkAudio = mINI_ReadInteger(GeneralINI, "Specialties", "TrunkAudio", 1) != 0;
 	DefaultCarConfig.Specialties.Spinners = mINI_ReadInteger(GeneralINI, "Specialties", "Spinners", 1) != 0;
@@ -342,6 +344,8 @@ void LoadCarConfigs()
 	DefaultCarConfig.Icons.SpecialtiesWindowTint = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesWindowTint", "VISUAL_PART_WINDOW_TINTING");
 	DefaultCarConfig.Icons.SpecialtiesHeadlightColor = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesHeadlightColor", "VISUAL_PART_HEAD_LIGHT_COLOR");
 	DefaultCarConfig.Icons.SpecialtiesNosPurge = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesNosPurge", "VISUAL_PART_NOS_PURGE");
+	DefaultCarConfig.Icons.SpecialtiesExhaustFlame = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesExhaustFlame", "VISUAL_PART_EXHAUST_FLAME");
+	DefaultCarConfig.Icons.SpecialtiesTireSmoke = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTireSmoke", "VISUAL_PART_TIRE_SMOKE");
 	DefaultCarConfig.Icons.SpecialtiesHydraulics = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesHydraulics", "VISUAL_PART_HYDRAULICS");
 	DefaultCarConfig.Icons.SpecialtiesTrunkAudio = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudio", "VISUAL_PART_TRUNK_AUDIO");
 	DefaultCarConfig.Icons.SpecialtiesTrunkAudioLayout = mINI_ReadHashS(GeneralINI, "Icons", "SpecialtiesTrunkAudioLayout", "AUDIO_ICON_CONFIGURE_TRUNK_LAYOUT");
@@ -486,6 +490,8 @@ void LoadCarConfigs()
 	DefaultCarConfig.Names.SpecialtiesWindowTint = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesWindowTint", "UI_ICE_TINT");
 	DefaultCarConfig.Names.SpecialtiesHeadlightColor = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesHeadlightColor", "UI_ICE_HEADLIGHTS");
 	DefaultCarConfig.Names.SpecialtiesNosPurge = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesNosPurge", "UI_ICE_NOS_PURGE");
+	DefaultCarConfig.Names.SpecialtiesExhaustFlame = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesExhaustFlame", "UI_ICE_EXHAUST_FLAME");
+	DefaultCarConfig.Names.SpecialtiesTireSmoke = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTireSmoke", "UI_ICE_TIRE_SMOKE");
 	DefaultCarConfig.Names.SpecialtiesHydraulics = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesHydraulics", "UI_ICE_HYDRAULICS");
 	DefaultCarConfig.Names.SpecialtiesTrunkAudio = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudio", "UI_ICE_TRUNK_AUDIO");
 	DefaultCarConfig.Names.SpecialtiesTrunkAudioLayout = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkAudioLayout", "UI_ICE_TRUNK_AUDIO_LAYOUT_SELECTION");
@@ -590,6 +596,8 @@ void LoadCarConfigs()
 	DefaultCarConfig.Animations.AnimationType[CARSLOTID_WINDOW_TINT] = mINI_ReadInteger(GeneralINI, "Animations", "WindowTint", -1);
 	DefaultCarConfig.Animations.AnimationType[CARSLOTID_HEADLIGHT_BULB] = mINI_ReadInteger(GeneralINI, "Animations", "HeadlightColor", -1);
 	DefaultCarConfig.Animations.AnimationType[CARSLOTID_NOS_PURGE] = mINI_ReadInteger(GeneralINI, "Animations", "NosPurge", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_MISC] = mINI_ReadInteger(GeneralINI, "Animations", "ExhaustFlame", -1);
+	DefaultCarConfig.Animations.AnimationType[CARSLOTID_WHEEL_MANUFACTURER] = mINI_ReadInteger(GeneralINI, "Animations", "TireSmoke", -1);
 	DefaultCarConfig.Animations.AnimationType[CARSLOTID_HYDRAULICS] = mINI_ReadInteger(GeneralINI, "Animations", "Hydraulics", -1);
 	DefaultCarConfig.Animations.AnimationType[CARSLOTID_TRUNK_AUDIO] = mINI_ReadInteger(GeneralINI, "Animations", "TrunkAudio", 1);
 	DefaultCarConfig.Animations.AnimationType[CARSLOTID_DOOR_STYLE] = mINI_ReadInteger(GeneralINI, "Animations", "Doors", 5);
@@ -743,6 +751,8 @@ void LoadCarConfigs()
 		ACarConfig.Specialties.WindowTint = mINI_ReadInteger(CarINI, "Specialties", "WindowTint", DefaultCarConfig.Specialties.WindowTint) != 0;
 		ACarConfig.Specialties.HeadlightColor = mINI_ReadInteger(CarINI, "Specialties", "HeadlightColor", DefaultCarConfig.Specialties.HeadlightColor) != 0;
 		ACarConfig.Specialties.NosPurge = mINI_ReadInteger(CarINI, "Specialties", "NosPurge", DefaultCarConfig.Specialties.NosPurge) != 0;
+		ACarConfig.Specialties.ExhaustFlame = mINI_ReadInteger(CarINI, "Specialties", "NosPurge", DefaultCarConfig.Specialties.ExhaustFlame) != 0;
+		ACarConfig.Specialties.TireSmoke = mINI_ReadInteger(CarINI, "Specialties", "NosPurge", DefaultCarConfig.Specialties.TireSmoke) != 0;
 		ACarConfig.Specialties.Hydrualics = mINI_ReadInteger(CarINI, "Specialties", "Hydrualics", DefaultCarConfig.Specialties.Hydrualics) != 0;
 		ACarConfig.Specialties.TrunkAudio = mINI_ReadInteger(CarINI, "Specialties", "TrunkAudio", DefaultCarConfig.Specialties.TrunkAudio) != 0;
 		ACarConfig.Specialties.Spinners = mINI_ReadInteger(CarINI, "Specialties", "Spinners", DefaultCarConfig.Specialties.Spinners) != 0;
@@ -932,6 +942,8 @@ void LoadCarConfigs()
 		ACarConfig.Icons.SpecialtiesWindowTint = mINI_ReadHash(CarINI, "Icons", "SpecialtiesWindowTint", DefaultCarConfig.Icons.SpecialtiesWindowTint);
 		ACarConfig.Icons.SpecialtiesHeadlightColor = mINI_ReadHash(CarINI, "Icons", "SpecialtiesHeadlightColor", DefaultCarConfig.Icons.SpecialtiesHeadlightColor);
 		ACarConfig.Icons.SpecialtiesNosPurge = mINI_ReadHash(CarINI, "Icons", "SpecialtiesNosPurge", DefaultCarConfig.Icons.SpecialtiesNosPurge);
+		ACarConfig.Icons.SpecialtiesExhaustFlame = mINI_ReadHash(CarINI, "Icons", "SpecialtiesExhaustFlame", DefaultCarConfig.Icons.SpecialtiesExhaustFlame);
+		ACarConfig.Icons.SpecialtiesTireSmoke = mINI_ReadHash(CarINI, "Icons", "SpecialtiesTireSmoke", DefaultCarConfig.Icons.SpecialtiesTireSmoke);
 		ACarConfig.Icons.SpecialtiesHydraulics = mINI_ReadHash(CarINI, "Icons", "SpecialtiesHydraulics", DefaultCarConfig.Icons.SpecialtiesHydraulics);
 		ACarConfig.Icons.SpecialtiesTrunkAudio = mINI_ReadHash(CarINI, "Icons", "SpecialtiesTrunkAudio", DefaultCarConfig.Icons.SpecialtiesTrunkAudio);
 		ACarConfig.Icons.SpecialtiesTrunkAudioLayout = mINI_ReadHash(CarINI, "Icons", "SpecialtiesTrunkAudioLayout", DefaultCarConfig.Icons.SpecialtiesTrunkAudioLayout);
@@ -1169,6 +1181,8 @@ void LoadCarConfigs()
 		ACarConfig.Names.SpecialtiesWindowTint = mINI_ReadHash(CarINI, "Names", "SpecialtiesWindowTint", DefaultCarConfig.Names.SpecialtiesWindowTint);
 		ACarConfig.Names.SpecialtiesHeadlightColor = mINI_ReadHash(CarINI, "Names", "SpecialtiesHeadlightColor", DefaultCarConfig.Names.SpecialtiesHeadlightColor);
 		ACarConfig.Names.SpecialtiesNosPurge = mINI_ReadHash(CarINI, "Names", "SpecialtiesNosPurge", DefaultCarConfig.Names.SpecialtiesNosPurge);
+		ACarConfig.Names.SpecialtiesExhaustFlame = mINI_ReadHash(CarINI, "Names", "SpecialtiesExhaustFlame", DefaultCarConfig.Names.SpecialtiesExhaustFlame);
+		ACarConfig.Names.SpecialtiesTireSmoke = mINI_ReadHash(CarINI, "Names", "SpecialtiesTireSmoke", DefaultCarConfig.Names.SpecialtiesTireSmoke);
 		ACarConfig.Names.SpecialtiesHydraulics = mINI_ReadHash(CarINI, "Names", "SpecialtiesHydraulics", DefaultCarConfig.Names.SpecialtiesHydraulics);
 		ACarConfig.Names.SpecialtiesTrunkAudio = mINI_ReadHash(CarINI, "Names", "SpecialtiesTrunkAudio", DefaultCarConfig.Names.SpecialtiesTrunkAudio);
 		ACarConfig.Names.SpecialtiesTrunkAudioLayout = mINI_ReadHash(CarINI, "Names", "SpecialtiesTrunkAudioLayout", DefaultCarConfig.Names.SpecialtiesTrunkAudioLayout);

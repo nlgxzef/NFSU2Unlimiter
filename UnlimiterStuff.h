@@ -12,7 +12,7 @@ BYTE CarCountByte; // CarCount clamped to a byte
 bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
 bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, FilterDecalsByInitials;
 
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -120,6 +120,7 @@ int Init()
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
 	DisableLightFlareColors = mINI_ReadInteger(Settings, "Debug", "DisableLightFlareColors", 0) != 0;
+	DisableExhaustFlameAndTireSmoke = mINI_ReadInteger(Settings, "Debug", "DisableExhaustFlameAndTireSmoke", 0) != 0;
 	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
 	PartLinkTrace = mINI_ReadInteger(Settings, "Debug", "PartLinkTrace", 0) != 0;
@@ -263,6 +264,9 @@ int Init()
 	// Custom part icons
 	injector::MakeCALL(0x55EE65, PartSelectionScreen_BuildPartsList, true); // PartSelectionScreen::StartBrowsingParts
 
+	// Custom part color
+	injector::MakeCALL(0x56C069, IcePartsBrowser_BuildPartsList, true); // IcePartsBrowser::IcePartsBrowser
+
 	// New NotificationMessage (Rear Rims + CF Doors)
 	injector::WriteMemory(0x79D760, &PartSelectionScreen_NotificationMessage, true); // PartSelectionScreen::vtable
 
@@ -342,6 +346,9 @@ int Init()
 	// Hook RideInfo_UpdatePartsEnabled (31 references)
 	injector::MakeJMP(0x61BCD0, RideInfo_UpdatePartsEnabled, true);
 
+	// Hook RideInfo_SetStockParts (8 references)
+	injector::MakeJMP(0x637040, RideInfo_SetStockParts, true);
+
 	// Hook FindPartWithLevel and make it recursive
 	injector::MakeCALL(0x637077, FindPartWithLevel, true); // RideInfo::SetStockParts
 	injector::MakeCALL(0x639C5B, FindPartWithLevel, true); // RideInfo::SyncVisualPartsWithPhysics
@@ -388,6 +395,14 @@ int Init()
 	injector::MakeCALL(0x61B26E, CarRenderInfo_RenderNeon, true); // RenderCarNeon
 	//injector::MakeJMP(0x61548A, CarRenderInfoAttributesCodeCave, true); // CarRenderInfo::UpdateCarReplacementTextures
 	injector::MakeJMP(0x6304C4, ShowEngineAttrCodeCave, true); // CarRenderInfo::Render
+
+	// CarRenderInfoExtra
+	hb_CarRenderInfo_ctor.fun = injector::MakeCALL(0x63A5DE, CarRenderInfo_ctor_Hook, true).get(); // Car::InitRenderInfo
+	injector::MakeCALL(0x63A6BC, CarRenderInfo_ctor_Hook, true); // FrontEndRenderingCar::ReInit
+
+	hb_CarRenderInfo_dtor.fun = injector::MakeCALL(0x638114, CarRenderInfo_dtor_Hook, true).get(); // FrontEndRenderingCar::dtor
+	injector::MakeCALL(0x63A62C, CarRenderInfo_dtor_Hook, true); // Car::CloseRenderInfo
+	injector::MakeCALL(0x63A672, CarRenderInfo_dtor_Hook, true); // FrontEndRenderingCar::ReInit
 
 	// Game Type Hooks
 	//injector::MakeCALL(0x61B67C, IsUG1_Hash, true); // CarPartDatabase::GetCarPartDirect
@@ -567,7 +582,7 @@ int Init()
 		injector::WriteMemory<BYTE>(0x53355B, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
 		injector::WriteMemory<BYTE>(0x53362B, 0x7F, true); // PlayerCareerState::RecalcUnlockedZones
 	}
-	
+
 	// Check CarRenderInfo::Render data
 	injector::MakeJMP(0x6253ED, LinkLicensePlateToTrunkCodeCave, true); // LinkLicensePlateToTrunk
 	injector::MakeCALL(0x62331B, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE

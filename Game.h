@@ -135,6 +135,12 @@ void FixComputeMiscStats()
 	injector::WriteMemory(0x005B08D6, TimingStatsKludgeFactor0100, true);
 }
 
+void MapPartSlots()
+{
+	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_WHEEL_MANUFACTURER);
+	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_MISC);
+}
+
 int(*LoaderCarInfo_Game)(bChunk*) = (int(*)(bChunk*))0x636BE0;
 
 int LoaderCarInfo_Hook(bChunk* chunk)
@@ -201,6 +207,9 @@ int LoaderCarInfo_Hook(bChunk* chunk)
 
 			// Fix misc stats
 			FixComputeMiscStats();
+
+			// Map new part slots for some extra customization parts
+			MapPartSlots();
 
 			break;
 

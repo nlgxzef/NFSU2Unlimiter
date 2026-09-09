@@ -258,6 +258,12 @@ int(__thiscall* eView_GetVisibleState)(DWORD* view, bVector3* aabb_min, bVector3
 DWORD* (__thiscall* RaceParameters_GetDriverInfoByPlayerNumber)(DWORD* RaceParameters, int player) = (DWORD * (__thiscall*)(DWORD*, int))0x5ED960;
 int(*GetTachStyle)(DWORD* EngineInfo) = (int(*)(DWORD*))0x60FE10;
 DWORD* (__cdecl* find_event_that_has_car_as_a_reward)(DWORD CarNameHash) = (DWORD * (__cdecl*)(DWORD))0x5023B0;
+DWORD* (__thiscall* CarRenderInfo_ctor)(DWORD* CarRenderInfo, DWORD* RideInfo, DWORD* Car) = (DWORD * (__thiscall*)(DWORD*, DWORD*, DWORD*))0x638190;
+void(__thiscall* CarRenderInfo_UpdateCarParts)(DWORD* CarRenderInfo) = (void(__thiscall*)(DWORD*))0x634800;
+void(*aFxGetEmitters)(DWORD* bTList_AcidEmitter, DWORD EmitterGroup) = (void(*)(DWORD*, DWORD))0x48B8B0;
+void(*afxShiftEmitterColours)(DWORD* bTList_AcidEmitter, bMatrix4* matrix, float hue, float sat, float lum) = (void(*)(DWORD*, bMatrix4*, float, float, float))0x48B920;
+void(*ConvertRGBtoHSL)(float r, float g, float b, float* hue, float* sat, float* lum) = (void(*)(float, float, float, float*, float*, float*))0x488270;
+
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

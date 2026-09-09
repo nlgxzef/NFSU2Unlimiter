@@ -485,6 +485,8 @@ struct SpecialtiesSection
 	bool WindowTint;
 	bool HeadlightColor;
 	bool NosPurge;
+	bool ExhaustFlame;
+	bool TireSmoke;
 	bool Hydrualics;
 	bool TrunkAudio;
 	bool Spinners;
@@ -676,6 +678,8 @@ struct IconsSection
 	DWORD SpecialtiesWindowTint;
 	DWORD SpecialtiesHeadlightColor;
 	DWORD SpecialtiesNosPurge;
+	DWORD SpecialtiesExhaustFlame;
+	DWORD SpecialtiesTireSmoke;
 	DWORD SpecialtiesHydraulics;
 	DWORD SpecialtiesTrunkAudio;
 	DWORD SpecialtiesTrunkAudioLayout;
@@ -915,6 +919,8 @@ struct NamesSection
 	DWORD SpecialtiesWindowTint;
 	DWORD SpecialtiesHeadlightColor;
 	DWORD SpecialtiesNosPurge;
+	DWORD SpecialtiesExhaustFlame;
+	DWORD SpecialtiesTireSmoke;
 	DWORD SpecialtiesHydraulics;
 	DWORD SpecialtiesTrunkAudio;
 	DWORD SpecialtiesTrunkAudioLayout;

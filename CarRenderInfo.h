@@ -1,8 +1,9 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
 
-// CarRenderInfo::Render
+#include "CarRenderInfoExtra.h"
 
+// CarRenderInfo::Render
 DWORD DoLinkLPToTrunk = 0x625401;
 DWORD DontLinkLPToTrunk = 0x6259FE;
 
@@ -628,30 +629,30 @@ void __fastcall CarRenderInfo_RenderNeon(DWORD* CarRenderInfo, void* EDX_Unused,
 	}
 }
 
-#define CRI_Loc_OnLights 7 // CarRenderInfo + 0x1C (Padding)
-#define CRI_Loc_BrokenLights 11 // CarRenderInfo + 0x2C (Padding)
-#define CRI_Loc_TimeBaseStart 15 // CarRenderInfo + 0x3C (Padding)
-
 void CarRenderInfo_SetLightState(DWORD* CarRenderInfo, int LightID, bool on)
 {
 	DWORD* TheCar = (DWORD*)CarRenderInfo[0];
+	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
 
-	if (LightID == -1 && TheCar)
+	if (extra)
 	{
-		// Headlights
-		if (((BYTE*)TheCar)[2365]) CarRenderInfo[CRI_Loc_OnLights] |= 7;
-		else CarRenderInfo[CRI_Loc_OnLights] &= 7;
+		if (LightID == -1 && TheCar)
+		{
+			// Headlights
+			if (((BYTE*)TheCar)[2365]) extra->OnLights |= 7;
+			else extra->OnLights &= 7;
 
-		// Brakelights
-		if (((BYTE*)TheCar)[2372]) CarRenderInfo[CRI_Loc_OnLights] |= 56;
-		else CarRenderInfo[CRI_Loc_OnLights] &= 56;
-	}
-	else
-	{
-		if (on)
-			CarRenderInfo[CRI_Loc_OnLights] |= LightID;
+			// Brakelights
+			if (((BYTE*)TheCar)[2372]) extra->OnLights |= 56;
+			else extra->OnLights &= 56;
+		}
 		else
-			CarRenderInfo[CRI_Loc_OnLights] &= LightID;
+		{
+			if (on)
+				extra->OnLights |= LightID;
+			else
+				extra->OnLights &= LightID;
+		}
 	}
 }
 
@@ -661,20 +662,25 @@ int CarRenderInfo_GetLightState(DWORD* CarRenderInfo, int LightID)
 	bool LightsOn = false;
 	bool DamageLights = false;
 
-	CarRenderInfo_SetLightState(CarRenderInfo, -1, true); // Read all (HL + BL) from Car struct and write into CRI first
+	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
 
-	DWORD* RideInfo = (DWORD*)CarRenderInfo[1];
-	if (RideInfo)
+	if (extra)
 	{
-		LightsOn = CarConfigs[RideInfo[0]].Textures.HeadlightOn;
-		DamageLights = CarConfigs[RideInfo[0]].Textures.DamageLights;
+		CarRenderInfo_SetLightState(CarRenderInfo, -1, true); // Read all (HL + BL) from Car struct and write into CRI first
+
+		DWORD* RideInfo = (DWORD*)CarRenderInfo[1];
+		if (RideInfo)
+		{
+			LightsOn = CarConfigs[RideInfo[0]].Textures.HeadlightOn;
+			DamageLights = CarConfigs[RideInfo[0]].Textures.DamageLights;
+		}
+
+		int OnLights = extra->OnLights;
+		int BrokenLights = extra->BrokenLights;
+
+		if (OnLights & LightID) result = 1; // ON
+		if (BrokenLights & LightID) result = DamageLights ? 2 : 0; // DAMAGE0 or OFF
 	}
-
-	int OnLights = CarRenderInfo[CRI_Loc_OnLights];
-	int BrokenLights = CarRenderInfo[CRI_Loc_BrokenLights];
-
-	if (OnLights & LightID) result = 1; // ON
-	if (BrokenLights & LightID) result = DamageLights ? 2 : 0; // DAMAGE0 or OFF
 
 	return result;
 }
@@ -1825,7 +1831,9 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 	eLightFlare* Flare;
 	int FlareType = 0;
 
-	*(float*)(CarRenderInfo + CRI_Loc_TimeBaseStart) = bRandomF(1.0f); // Random start time offset
+	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+
+	extra->TimeBaseStart = bRandomF(1.0f); // Random start time offset
 
 	if (CarRenderInfo[2]) // CarTypeInfo
 	{
@@ -1973,7 +1981,9 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 
 void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_Unused, DWORD* view, bVector3* position, bMatrix4* body_matrix, int force_light_state, int reflection, float scale)
 {
-	float time = *(float*)(CarRenderInfo + CRI_Loc_TimeBaseStart) + *(float*)0x7FB718; //WorldTimeSeconds + this->CarTimebaseStart
+	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+
+	float time = extra->TimeBaseStart + *(float*)0x7FB718; //WorldTimeSeconds + this->CarTimebaseStart
 	bMatrix4* LocalWorld = eFrameMallocMatrix(1);
 
 	DWORD* TheCar = (DWORD*)CarRenderInfo[0]; // this
@@ -1991,7 +2001,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 		CarRenderInfo_SetLightState(CarRenderInfo, ForceLightFlaresOn, true);
 
 		DWORD* RideInfo = (DWORD*)CarRenderInfo[1]; // this->pRideInfo
-		if (IsCop(RideInfo[0]) && (CarRenderInfo[CRI_Loc_OnLights] & 0x1000) != 0)// UsageType = Cop && mOnLights = Cop Lights
+		if (IsCop(RideInfo[0]) && (extra->OnLights & 0x1000) != 0)// UsageType = Cop && mOnLights = Cop Lights
 			++view[21];
 
 		// Check for US parking lights
@@ -2082,9 +2092,9 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			CarRenderInfo_SetLightState(CarRenderInfo, -1, true); // Read all (HL + BL) from Car struct and write into CRI first
 
 			// evaluate on and broken lights
-			DWORD OnLights = CarRenderInfo[CRI_Loc_OnLights];
+			DWORD OnLights = extra->OnLights;
 			//if (ForceSignalsOn) OnLights += 0xF00;
-			DWORD BrokenLights = CarRenderInfo[CRI_Loc_BrokenLights];
+			DWORD BrokenLights = extra->BrokenLights;
 
 			
 			// LIGHT_LHEAD
@@ -2332,4 +2342,32 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			*/
 		}
 	}
+}
+
+static injector::hook_back<DWORD*(__fastcall*)(DWORD*, void*, DWORD*, DWORD*)> hb_CarRenderInfo_ctor;
+DWORD * __fastcall CarRenderInfo_ctor_Hook(DWORD *CarRenderInfo, void* EDX_Unused, DWORD* RideInfo, DWORD* Car)
+{
+	// Allocate extra data for CarRenderInfo
+	CarRenderInfoExtra* extra = new CarRenderInfoExtra(CarRenderInfo, RideInfo, Car);
+	CarRenderInfo[CRI_Loc_Extra] = (DWORD)extra;
+	
+	// Call the original constructor
+	DWORD *result = hb_CarRenderInfo_ctor.fun(CarRenderInfo, EDX_Unused ,RideInfo, Car);
+
+	// Initialize CarRenderInfoExtra
+	extra->Init();
+
+	return result;
+}
+
+static injector::hook_back<void (__fastcall*)(DWORD*, void*)> hb_CarRenderInfo_dtor;
+void __fastcall CarRenderInfo_dtor_Hook(DWORD* CarRenderInfo, void* EDX_Unused)
+{
+	// Free CarRenderInfoExtra
+	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	if (extra) delete extra;
+	CarRenderInfo[CRI_Loc_Extra] = 0;
+
+	// Call the original destructor
+	hb_CarRenderInfo_dtor.fun(CarRenderInfo, EDX_Unused);
 }

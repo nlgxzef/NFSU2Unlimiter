@@ -294,6 +294,43 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
+		if (CarConfigs[CarTypeID].Specialties.ExhaustFlame)
+		{
+			AMenuOption = (DWORD*)j__malloc(0x5C);
+			if (AMenuOption)
+			{
+				IceSelectionThing_Create(AMenuOption,
+					CARSLOTID_MISC,
+					CarConfigs[CarTypeID].Icons.SpecialtiesExhaustFlame,
+					CarConfigs[CarTypeID].Names.SpecialtiesExhaustFlame,
+					0,
+					0,
+					*(char const**)gIceSideBarOverlayName);
+				AMenuOption[21] = -1;
+				(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
+			}
+			else AMenuOption = 0;
+		}
+
+		/*
+		if (CarConfigs[CarTypeID].Specialties.TireSmoke)
+		{
+			AMenuOption = (DWORD*)j__malloc(0x5C);
+			if (AMenuOption)
+			{
+				IceSelectionThing_Create(AMenuOption,
+					CARSLOTID_WHEEL_MANUFACTURER,
+					CarConfigs[CarTypeID].Icons.SpecialtiesTireSmoke,
+					CarConfigs[CarTypeID].Names.SpecialtiesTireSmoke,
+					0,
+					0,
+					*(char const**)gIceSideBarOverlayName);
+				AMenuOption[21] = -1;
+				(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
+			}
+			else AMenuOption = 0;
+		}*/
+
 		if (CarConfigs[CarTypeID].Specialties.Hydrualics)
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);

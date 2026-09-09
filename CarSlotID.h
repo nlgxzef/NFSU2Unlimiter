@@ -248,6 +248,11 @@ int GetCarSlotIDFromPart(int CarPartID)
 	return CARSLOTID_INVALID;
 }
 
+void MapPartToSlot(int part, int slot)
+{
+	CarPartSlotMap[slot] = part;
+}
+
 int ExtraAttachmentSlots[6] = {
 			CARSLOTID_DOOR_PANEL_LEFT, CARSLOTID_DOOR_PANEL_RIGHT,
 			CARSLOTID_DOOR_SILL_LEFT,  CARSLOTID_DOOR_SILL_RIGHT,

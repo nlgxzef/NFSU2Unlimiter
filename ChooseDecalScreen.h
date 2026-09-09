@@ -78,10 +78,8 @@ int GetDecalsList(int CarSlotID, bTList<SelectablePart> *DecalsList, DWORD IsWhi
 			
 		}
 	}
-	else
-	{
-		return result;
-	}
+	
+	return result;
 }
 
 void(__thiscall* ChooseDecalScreen_Setup)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x560250;

@@ -637,17 +637,113 @@ void __fastcall RideInfo_SyncVisualPartsWithPhysics_Hook(DWORD* RideInfo, void* 
     }
 }
 
-/*
 DWORD __fastcall RideInfo_GetStockPartNameHash(DWORD* RideInfo, void* EDX_Unused, int CarSlotID)
 {
-    return CarConfigs[RideInfo[0]].StockParts.CustomStockParts
+    /*return CarConfigs[RideInfo[0]].StockParts.CustomStockParts
         ? CarConfigs[RideInfo[0]].StockParts.Parts[CarSlotID]
-        : -1;
+        : -1;*/
+	return -1; // TODO: Implement custom stock parts in ini files
 }
 
+void __fastcall RideInfo_SetStockParts(DWORD* RideInfo, void* EDX_Unused, int use_paint_2)
+{
+    if (!RideInfo) return;
 
+    int CarType = *RideInfo;
+    if (CarType < 0 || CarType >= CarCount) return;
 
-*/
+	DWORD* cti = GetCarTypeInfo(CarType);
+
+    DWORD DefaultVinylColorHashes[] = {
+        CT_bStringHash("VINYL_L1_COLOR09"),
+        CT_bStringHash("VINYL_L1_COLOR02"),
+        CT_bStringHash("VINYL_L2_COLOR11"),
+        CT_bStringHash("VINYL_L1_COLOR01")
+	};
+
+    DWORD* part = 0;
+    DWORD PartNameHash = 0;
+
+    for (int i = CARSLOTID_MODEL_FIRST; i < CARSLOTID_WHEEL_MANUFACTURER; ++i)
+    {
+        if ((i < CARSLOTID_VINYL_LAYER0 || i > CARSLOTID_VINYL_LAYER3) 
+            && (i < CARSLOTID_DECAL_HOOD_TEX0 || i > CARSLOTID_DECAL_RIGHT_QUARTER_TEX7))
+        {
+            switch (i)
+            {
+            case CARSLOTID_BASE_PAINT:
+				PartNameHash = use_paint_2 ? cti[0x850 / 4] : cti[0x84C / 4];
+                part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
+                if (part) RideInfo[356 + i] = (DWORD)part;
+                else // If the paint is invalid
+                {
+                    PartNameHash = CT_bStringHash("GLOSS_L1_COLOR01");
+                    part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
+                    if (part) RideInfo[356 + i] = (DWORD)part;
+                }
+                break;
+
+            case CARSLOTID_ROOF:
+                PartNameHash = CT_bStringHash("ROOF_STYLE00");
+                goto ApplyPart;
+                break;
+
+            case CARSLOTID_NEON:
+            case CARSLOTID_NEON_CABIN:
+            case CARSLOTID_NEON_ENGINE:
+            case CARSLOTID_NEON_TRUNK:
+                PartNameHash = CT_bStringHash("NEON_NONE");
+                goto ApplyPart;
+                break;
+
+            case CARSLOTID_HUD_BACKING_COLOUR:
+            case CARSLOTID_HUD_NEEDLE_COLOUR:
+            case CARSLOTID_HUD_CHARACTER_COLOUR:
+                PartNameHash = CT_bStringHash("WHITE");
+
+            ApplyPart:
+                part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
+                if (part) RideInfo[356 + i] = (DWORD)part;
+                RideInfo_UpdatePartsEnabled(RideInfo, EDX_Unused);
+                break;
+
+            default:
+				part = FindPartWithLevel(CarType, i, 0);
+                if (part) RideInfo[356 + i] = (DWORD)part;
+                RideInfo_UpdatePartsEnabled(RideInfo, EDX_Unused);
+                break;
+
+            
+            }
+        }
+
+        // else: No need to assign, RideInfo inits them with 0
+
+        // Check if ini has a custom stock part
+        PartNameHash = RideInfo_GetStockPartNameHash(RideInfo, EDX_Unused, i);
+        if (PartNameHash != -1) // apply the part
+        {
+            part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
+            if (part) RideInfo_SetPart(RideInfo, EDX_Unused, i, part);
+            else RideInfo_SetPart(RideInfo, EDX_Unused, i, FindPartWithLevel(CarType, i, 0));
+        }
+    }
+
+    int CurrentVinylColor = 0;
+
+    for (int i = CARSLOTID_VINYL_COLOUR0_0; i < CARSLOTID_VINYL_COLOUR3_3; ++i)
+    {
+		PartNameHash = DefaultVinylColorHashes[CurrentVinylColor];
+		RideInfo[356 + i] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
+        RideInfo_UpdatePartsEnabled(RideInfo, EDX_Unused);
+
+		CurrentVinylColor = (CurrentVinylColor + 1) % 4;
+    }
+
+    //RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_WHEEL_MANUFACTURER, 0);
+    //RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_MISC, 0);
+    
+}
 
 DWORD g_displayHUDprefix = CT_bStringHash("3RDPERSON_");
 DWORD* g_displayHUDattributes = (DWORD*)0x839BF0;
