@@ -99,6 +99,7 @@ int(*bRandom)(int Max) = (int(*)(int))0x43C1C0;
 float(*bRandomF)(float Max) = (float(*)(float))0x43C1F0;
 int(__thiscall* CarCustomizeManager_GetNumDecalsForInstalledLayoutPart)(DWORD* CarCustomizeManager, int CarSlotID) = (int(__thiscall*)(DWORD*, int))0x5218B0;
 int(__thiscall* CarCustomizeManager_GetLayoutPart_Game)(DWORD* CarCustomizeManager, int CarSlotID, int LayoutID) = (int(__thiscall*)(DWORD*, int, int))0x521940;
+void(__thiscall* CarCustomizeManager_PreviewPart)(DWORD* CarCustomizeManager, int CarSlotID, DWORD* Part) = (void(__thiscall*)(DWORD*, int, DWORD*))0x55C170;
 void(__thiscall* CarCustomizeManager_PreviewPaintPart)(DWORD* CarCustomizeManager, int CarSlotID, DWORD* PartToPaint) = (void(__thiscall*)(DWORD*, int, DWORD*))0x55C1F0;
 int(__stdcall* CarCustomizeManager_TranslateToWidebodyLayoutSlotIfNecessary)(int CarSlotID) = (int(__stdcall*)(int))0x50F060;
 void(__thiscall* CompleatCarPhysicsInfo_BuildCarPhysicsInfo)(float* CompleatCarPhysicsInfo, float* CarPhysicsInfo, float* PhysicsUpgradeSpecification, float a4) = (void(__thiscall*)(float*, float*, float*, float))0x5AC4F0;
@@ -120,13 +121,14 @@ void(__cdecl* FEngSetScript_Obj)(DWORD* FEObject, char const* ScriptName, bool U
 void(__cdecl* FEngSetScript_Pkg)(char const* PackageName, DWORD ObjectHash, char const* ScriptName, bool Unk) = (void(__cdecl*)(char const*, DWORD, char const*, bool))0x537C00;
 void(__cdecl* FEngSetScript_Pkg_Hsh)(char const* PackageName, DWORD ObjectHash, DWORD ScriptHash, bool Unk) = (void(__cdecl*)(char const*, DWORD, DWORD, bool))0x537C60;
 bool(__cdecl* FEngIsScriptRunning_Pkg)(char const* PackageName, DWORD ObjectHash, DWORD ScriptHash) = (bool(__cdecl*)(char const*, DWORD, DWORD))0x537D40;
+bool(__cdecl* FEngIsPackagePushed)(char const* PackageName) = (bool(__cdecl*)(char const*))0x52CF60;
 void(__thiscall* ChoosePaintScreen_BuildPaintList_Game)(DWORD* ChoosePaintScreen) = (void(__thiscall*)(DWORD*))0x548630;
 int(__thiscall* PlayerCareerState_GetCarPartCost_Game)(DWORD* PlayerCareerState, int CarSlotID, DWORD* TheCarPart) = (int(__thiscall*)(DWORD*, int, DWORD*))0x514280;
 int(__thiscall* ThumbnailScroller_GetCurrenNodeIndex)(DWORD* ThumbnailScroller) = (int(__thiscall*)(DWORD*))0x51F7E0;
 int(__thiscall* ThumbnailScroller_FindNode)(DWORD* ThumbnailScroller, DWORD NodeID) = (int(__thiscall*)(DWORD*, DWORD))0x51F7A0;
 int(__thiscall* ThumbnailScroller_SnapToNode)(DWORD* ThumbnailScroller, DWORD* ThumbnailNode) = (int(__thiscall*)(DWORD*, DWORD*))0x5386A0;
 int(__thiscall* ThumbnailScroller_SetVisibility)(DWORD* ThumbnailScroller, bool visible) = (int(__thiscall*)(DWORD*, bool))0x52EB90;
-DWORD* (__thiscall* ThumbnailScroller_AddNode)(DWORD* ThumbnailScroller, DWORD* ThumbnailNode, bool, DWORD) = (DWORD * (__thiscall*)(DWORD*, DWORD*, bool, DWORD))0x52ED80;
+DWORD* (__thiscall* ThumbnailScroller_AddNode)(DWORD* ThumbnailScroller, DWORD* ThumbnailNode, bool use_color, DWORD color) = (DWORD * (__thiscall*)(DWORD*, DWORD*, bool, DWORD))0x52ED80;
 int(__thiscall* FEScrollBar_Update)(DWORD* FEScrollBar, int a1, int a2, int a3) = (int(__thiscall*)(DWORD*, int, int, int))0x538080;
 char const* (__thiscall* CarPart_GetName)(DWORD* CarPart) = (char const* (__thiscall*)(DWORD*))0x610000;
 char const* (__thiscall* CarCustomizeManager_GetBrandNameFromHash)(DWORD* CarCustomizeManager, int BrandNameHash) = (char const* (__thiscall*)(DWORD*, int))0x50E960;
@@ -152,6 +154,7 @@ void(__thiscall* IceSelectionScreen_RefreshHeader_Game)(DWORD* IceSelectionScree
 void(__thiscall* IceSelectionScreen_StartBrowsingParts_Game)(DWORD* IceSelectionScreen) = (void(__thiscall*)(DWORD*))0x556930;
 void(__thiscall* IceSelectionScreen_StopBrowsingParts_Game)(DWORD* IceSelectionScreen) = (void(__thiscall*)(DWORD*))0x5605B0;
 void(__thiscall* IceSelectionScreen_DoSpecialScroll_Game)(DWORD* IceSelectionScreen, DWORD* CategoryNode, bool on) = (void(__thiscall*)(DWORD*, DWORD*, bool))0x54FB70;
+void(__thiscall* IcePartsBrowser_NotificationMessage_Game)(DWORD* IcePartsBrowser, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x568D30;
 void(__thiscall* IcePartsBrowser_RefreshHeader_Game)(DWORD* IcePartsBrowser) = (void(__thiscall*)(DWORD*))0x547250;
 void(__thiscall* NeonPartsBrowser_RefreshHeader_Game)(DWORD* NeonPartsBrowser) = (void(__thiscall*)(DWORD*))0x547F30;
 void(__thiscall* ChooseDecalScreen_RefreshHeader_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x546F40;
@@ -200,6 +203,7 @@ void(__thiscall* CarCustomizeManager_ResetPreviewToPaintSetup)(DWORD* CarCustomi
 DWORD* (*CustomizationScreenManager_Instance)() = (DWORD * (*)())0x54F980;
 void(__thiscall* CustomizationScreenManager_ChangeToNextScreen)(DWORD* CustomizationScreenManager) = (void(__thiscall*)(DWORD*))0x55BD60;
 void(__thiscall* CustomizationScreenManager_ChangeToPrevScreen)(DWORD* CustomizationScreenManager) = (void(__thiscall*)(DWORD*))0x55BDF0;
+void(* CarViewer_SetLookAtPart)(int slot, DWORD *part, int which_car, bool) = (void(*)(int, DWORD*, int, bool))0x4C2100;
 void(*CarViewer_StopLookingAtParts)(int which_car, bool) = (void(*)(int, bool))0x4C2140;
 DWORD*(*CarViewer_GetRideInfo)(int which_car) = (DWORD*(*)(int))0x4A7890;
 void(__thiscall* cFrontendDatabase_AllocBackupDB)(DWORD* cFrontendDatabase, bool) = (void(__thiscall*)(DWORD*, bool))0x52A460;
@@ -211,6 +215,7 @@ int(*FEngMapJoyParamToJoyport)(int param) = (int(*)(int))0x50D2A0;
 void(*FEngSendMessageToPackage)(DWORD msg, char const* pkg) = (void(*)(DWORD, char const*))0x55DDA0;
 void(*ExitToRoamHelper)(char const* pkg) = (void(*)(char const*))0x552C80;
 void(__thiscall* sub_538130)(DWORD* MenuScreen) = (void(__thiscall*)(DWORD*))0x538130;
+void(__thiscall* sub_54E6E0)(DWORD* MenuScreen, int, char const*) = (void(__thiscall*)(DWORD*, int, char const*))0x54E6E0;
 void(__thiscall* sub_4DEF30)(DWORD* bList) = (void(__thiscall*)(DWORD*))0x4DEF30;
 bool(*sub_52D090)(float) = (bool(*)(float))0x52D090;
 int(*UsedCarTextureAddToTable)(DWORD* UsedCarTextureInfo, int NumTextures, int MaxTextures, int TextureHash) = (int(*)(DWORD*, int, int, int))0x610530;
@@ -263,6 +268,7 @@ void(__thiscall* CarRenderInfo_UpdateCarParts)(DWORD* CarRenderInfo) = (void(__t
 void(*aFxGetEmitters)(DWORD* bTList_AcidEmitter, DWORD EmitterGroup) = (void(*)(DWORD*, DWORD))0x48B8B0;
 void(*afxShiftEmitterColours)(DWORD* bTList_AcidEmitter, bMatrix4* matrix, float hue, float sat, float lum) = (void(*)(DWORD*, bMatrix4*, float, float, float))0x48B920;
 void(*ConvertRGBtoHSL)(float r, float g, float b, float* hue, float* sat, float* lum) = (void(*)(float, float, float, float*, float*, float*))0x488270;
+void(*FETriggerCarEffect)(int effect, float amount, int unk) = (void(*)(int, float, int))0x4C1920;
 
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)

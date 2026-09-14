@@ -28,4 +28,5 @@
 #include "ReplacementTextureEntry.h"
 #include "feDialogConfig.h"
 #include "SelectablePart.h"
+#include "PartNode.h"
 //#include "DialogInterface.h"

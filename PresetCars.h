@@ -461,7 +461,7 @@ void __declspec(naked) UIQRCarSelect_ScrollListsCodeCave()
 	}
 }
 
-// 0x534850 FEPlayerCarDB::CountAvailableCars
+// 0x534850 FEPlayerCarDB::GetNumCarsForFilter
 
 // Cop and traffic cars are not sold, so no STOCK_<name> record exists to build a tuned car from.
 // CustomizeCar then runs with no car instance and reads through it at 0x552DD7. They belong in the
@@ -484,7 +484,7 @@ int PresetGroupCount(DWORD Flags)
 	return n;
 }
 
-// 0x534850 FEPlayerCarDBWithPointers::CountAvailableCars
+// 0x534850 FEPlayerCarDB::GetNumCarsForFilter
 int __stdcall CountAvailablePresetCars(DWORD Flags)
 {
 	// Outside the customize menu the category must not stick around unless quick race support is
@@ -504,7 +504,7 @@ int __stdcall CountAvailablePresetCars(DWORD Flags)
 	return PresetGroupCount(Flags);
 }
 
-void __declspec(naked) FEPlayerCarDB_CountAvailableCarsCodeCave()
+void __declspec(naked) FEPlayerCarDB_GetNumCarsForFilterCodeCave()
 {
 	_asm
 	{
@@ -525,7 +525,7 @@ void __declspec(naked) FEPlayerCarDB_CountAvailableCarsCodeCave()
 	}
 }
 
-// 0x5162D0 FEPlayerCarDBWithPointers::FindCarWithFlagAfterGivenCar
+// 0x5162D0 FEPlayerCarDB::GetCarFiltered
 InventoryCar* __stdcall FindPresetCarAfterGivenCar(DWORD FlagsToCheck, InventoryCar* GivenCar)
 {
 	BuildPresetCarList();
@@ -552,7 +552,9 @@ InventoryCar* __stdcall FindPresetCarAfterGivenCar(DWORD FlagsToCheck, Inventory
 	return nullptr;
 }
 
-void __declspec(naked) FEPlayerCarDB_FindCarWithFlagAfterGivenCarCodeCave()
+FECARLIMITS_KEEP_ECX_2(FindPresetCarAfterGivenCar_KeepEcx, FindPresetCarAfterGivenCar)
+
+void __declspec(naked) FEPlayerCarDB_GetCarFilteredCodeCave()
 {
 	_asm
 	{
@@ -571,15 +573,15 @@ void __declspec(naked) FEPlayerCarDB_FindCarWithFlagAfterGivenCarCodeCave()
 		jmp eax
 
 		ChainFe :
-		jmp GetCarFiltered
+		jmp GetCarFiltered_KeepEcx
 
 			ItsPreset :
-		jmp FindPresetCarAfterGivenCar
+		jmp FindPresetCarAfterGivenCar_KeepEcx
 	}
 }
 
-// 0x503510 FEPlayerCarDBWithPointers::GetCarForSlot
-void __declspec(naked) FEPlayerCarDB_GetCarForSlotCodeCave()
+// 0x503510 FEPlayerCarDB::GetCarRecordByHandle
+void __declspec(naked) FEPlayerCarDB_GetCarRecordByHandleCodeCave()
 {
 	_asm
 	{
@@ -614,7 +616,7 @@ void __declspec(naked) FEPlayerCarDB_GetCarForSlotCodeCave()
 
 			ChainFe :
 		// __fastcall(this in ecx, unused edx, hash on the stack) matches this entry state
-		jmp GetCarRecordByHandle
+		jmp GetCarRecordByHandle_KeepEcx
 	}
 }
 
@@ -808,7 +810,7 @@ void __declspec(naked) FindPresetCarWhenTuningForIngameCarCodeCave()
 {
 	_asm
 	{
-		// Same lower bound problem as GetCarForSlot above
+		// Same lower bound problem as GetCarRecordByHandle above
 		test edi, edi
 		jz NotPreset
 		cmp edi, [NumPresetCars]
@@ -893,6 +895,8 @@ void __stdcall UIQRCarSelect_PostRefreshHeader(DWORD* UIQRCarSelect)
 		DWORD Hash = *(DWORD*)((BYTE*)SelectedEntry + OffsetOfEntrySlotHash);
 		if (!Hash) return;
 
+		bool HasName = false;
+
 		for (int Type = 0; Type < CarCount; Type++)
 		{
 			char const* TypeName = GetCarTypeName(Type);
@@ -904,8 +908,26 @@ void __stdcall UIQRCarSelect_PostRefreshHeader(DWORD* UIQRCarSelect)
 			if (bStringHash(Buf) != Hash) continue;
 
 			FEPrintf("UI_QRCarSelect.fng", hashof_racemode, "%s", TypeName);
+			HasName = true;
 			break;
 		}
+
+		if (!HasName) // If not stock
+		{
+			for (int Tuned = 0; Tuned < 20; Tuned++)
+			{
+				char Buf[64];
+				sprintf(Buf, "TUNED_CAR_%d", Tuned);
+
+				if (bStringHash(Buf) != Hash) continue;
+
+				FEPrintf("UI_QRCarSelect.fng", hashof_racemode, "%s", Buf);
+				HasName = true;
+				break;
+			}
+		}
+
+		if (!HasName) FEPrintf("UI_QRCarSelect.fng", hashof_racemode, ""); // If we couldn't find the name, leave it empty
 	}
 	else
 	{
@@ -975,10 +997,10 @@ void InitPresetCars()
 	if (!PresetCarsInCustomize && !PresetCarsInQuickRace) return;
 
 	injector::MakeJMP(0x4EED10, UIQRCarSelect_ScrollListsCodeCave, true);              // UIQRCarSelect::ChangeCategory
-	injector::MakeJMP(0x4B2855, UIQRCarSelect_RefreshHeaderCodeCave, true);                    // UIQRCarSelect::UpdateUI (tail)
-	injector::MakeJMP(0x534850, FEPlayerCarDB_CountAvailableCarsCodeCave, true);               // FEPlayerCarDBWithPointers::CountAvailableCars
-	injector::MakeJMP(0x5162D0, FEPlayerCarDB_FindCarWithFlagAfterGivenCarCodeCave, true);     // FEPlayerCarDBWithPointers::FindCarWithFlagAfterGivenCar
-	injector::MakeJMP(0x503510, FEPlayerCarDB_GetCarForSlotCodeCave, true);                    // FEPlayerCarDBWithPointers::GetCarForSlot
+	injector::MakeJMP(0x4B2855, UIQRCarSelect_RefreshHeaderCodeCave, true);            // UIQRCarSelect::UpdateUI (tail)
+	injector::MakeJMP(0x534850, FEPlayerCarDB_GetNumCarsForFilterCodeCave, true);      // FEPlayerCarDB::GetNumCarsForFilter
+	injector::MakeJMP(0x5162D0, FEPlayerCarDB_GetCarFilteredCodeCave, true);		   // FEPlayerCarDB::GetCarFiltered
+	injector::MakeJMP(0x503510, FEPlayerCarDB_GetCarRecordByHandleCodeCave, true);     // FEPlayerCarDB::GetCarRecordByHandle
 
 	if (PresetCarsInCustomize)
 	{

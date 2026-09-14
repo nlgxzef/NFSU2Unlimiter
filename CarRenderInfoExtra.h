@@ -2,6 +2,8 @@
 
 #define CRI_Loc_Extra 0x3C/4 // ModelOffset.pad, normally unused
 
+bool UseUnlimiterEmitter = 1;
+
 struct CarRenderInfoExtra
 {
 	DWORD /*CarRenderInfo*/* pCarRenderInfo;
@@ -34,7 +36,7 @@ struct CarRenderInfoExtra
 		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_MISC);
 		float hue, lum, sat;
 
-		if (Part)
+		if (Part && Part[0] != CT_bStringHash("VINYL_L1_COLOR01")) // First color is unused as it's 5, 5, 5 and barely visible.
 		{
 			int r = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("RED"), 0);
 			int g = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("GREEN"), 0);
@@ -42,7 +44,7 @@ struct CarRenderInfoExtra
 			ConvertRGBtoHSL((float)r, (float)g, (float)b, &hue, &sat, &lum);
 
 			// CARFX_NITRO
-			aFxGetEmitters(pCarRenderInfo + (0x4A8 / 4), CT_bStringHash("CARFX_NITRO"));
+			aFxGetEmitters(pCarRenderInfo + (0x4A8 / 4), UseUnlimiterEmitter ? CT_bStringHash("CARFX_NITRO_UL") : CT_bStringHash("CARFX_NITRO"));
 			afxShiftEmitterColours(pCarRenderInfo + (0x4A8 / 4), &ExhaustFlameColorMatrix, hue, sat, lum);
 
 			ExhaustFlameColorMatrix.v3.x = (float)r;

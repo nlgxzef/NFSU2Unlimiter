@@ -122,6 +122,8 @@ void SetOtherIcons(DWORD* CarPart)
 	DetailsGroup.NumSlots = 0; // Color or trunk audio slots
 	DetailsGroup.FilterIcon = 0;
 
+	if (!CarPart) return;
+
 	// Choose other icons based on the part type
 	int CarSlotID = GetCarSlotIDFromPart(*((BYTE*)CarPart + 4));
 	int CurrentIconID = 1;
@@ -321,10 +323,10 @@ void UpdateDetailsPane(DWORD *CarPart)
 		UpdateDetailsPaneIcon(i, EmptyIconHash, false);
 	}
 
-	if (!CarPart) return; // Failsafe
-
 	// First icon is always the upgrade level icon
-	DetailsGroup.UpgradeLevel = (*((BYTE*)CarPart + 5) >> 5);
+	if (CarPart) DetailsGroup.UpgradeLevel = (*((BYTE*)CarPart + 5) >> 5);
+	else DetailsGroup.UpgradeLevel = 0;
+	
 	SetUpgradeGroupIcon(DetailsGroup.UpgradeLevel);
 	
 	// Set other icons

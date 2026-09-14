@@ -17,6 +17,29 @@ void __fastcall IceSelectionScreen_DoSpecialScroll(DWORD* IceSelectionScreen, vo
 	}
 }
 
+void __fastcall IceSelectionScreen_StartBrowsingParts(DWORD* IceSelectionScreen, void* EDX_Unused)
+{
+	/*
+	DWORD* CategoryNode = (DWORD*)IceSelectionScreen[22];
+
+	if (CategoryNode)
+	{
+		int CarSlotID = CategoryNode[18];
+
+		switch (CarSlotID)
+		{
+		case CARSLOTID_HEADLIGHT_BULB:
+		case CARSLOTID_HYDRAULICS:
+		case CARSLOTID_MISC: // Exhaust Flame
+		case CARSLOTID_WHEEL_MANUFACTURER: // Tire Smoke
+			IceSelectionScreen_DoSpecialScroll(IceSelectionScreen, EDX_Unused, CategoryNode, 1);
+			break;
+		}
+	}
+	*/
+	IceSelectionScreen_StartBrowsingParts_Game(IceSelectionScreen);
+}
+
 int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 {
 	DWORD* NewBNode; // eax MAPDST
@@ -471,7 +494,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 				*(char const**)gIceSideBarOverlayName);
 			AMenuOption[21] = -1;
 			(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
-			IceSelectionScreen_StartBrowsingParts_Game(IceSelectionScreen);
+			IceSelectionScreen_StartBrowsingParts(IceSelectionScreen, EDX_Unused);
 		}
 		else AMenuOption = 0;
 		break;

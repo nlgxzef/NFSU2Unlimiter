@@ -13,6 +13,8 @@ int __fastcall PlayerCareerState_GetCarPartCost(DWORD *PlayerCareerState, void *
     int v6; // eax
     int result = 0; // eax
 
+    if (!part) return 0;
+
     unlockable = MapCarPartToUnlockable(slot, part);
     UpgradeLevel = *((BYTE*)part + 5) >> 5;
 

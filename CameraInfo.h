@@ -278,6 +278,14 @@ CameraInfo* GetPartCameraInfo(int CarTypeID, int CarSlotID)
 	case CARSLOTID_TOP:
 		CarSlotID = CARSLOTID_ROOF;
 		break;
+
+	case CARSLOTID_WHEEL_MANUFACTURER: // Tire Smoke
+		CarSlotID = CARSLOTID_DECAL_LEFT_QUARTER;
+		break;
+
+	case CARSLOTID_MISC: // Exhaust Flame
+		CarSlotID = CARSLOTID_EXHAUST;
+		break;
 	}
 
 
@@ -383,34 +391,61 @@ CameraInfo* __cdecl FindPartCameraInfo(int CarSlotID, int IsSUV, int IsHummer, D
 	int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
 
 	// Get camera info from config files
-	CameraInfo* result = (CarSlotID >= 64 && CarSlotID <= 67) ? GetVinylCameraInfo(CarTypeID, TheCarPart) : GetPartCameraInfo(CarTypeID, CarSlotID);
+	CameraInfo* result = (CarSlotID >= CARSLOTID_VINYL_LAYER0 && CarSlotID <= CARSLOTID_VINYL_LAYER3) 
+		? GetVinylCameraInfo(CarTypeID, TheCarPart) 
+		: GetPartCameraInfo(CarTypeID, CarSlotID);
 	if (result) return result;
 
 	// If not found, use vanilla implementation:
-	if (IsSUV && IsHummer && (CarSlotID == 13 || CarSlotID == 155 || CarSlotID == 68))// ENGINE, NEON_ENGINE, PAINT_ENGINE
+	if (IsSUV && IsHummer && (CarSlotID == CARSLOTID_ENGINE || CarSlotID == CARSLOTID_NEON_ENGINE || CarSlotID == CARSLOTID_PAINT_ENGINE))
 		return HummerEngineCameraInfo;
-	if (CarSlotID < 34 || CarSlotID > 46) // Not TRUNK_AUDIO(_COMP_x)
+	if (CarSlotID < CARSLOTID_TRUNK_AUDIO || CarSlotID > CARSLOTID_TRUNK_AUDIO_COMP_11) // Not TRUNK_AUDIO(_COMP_x)
 	{
-		if (CarSlotID >= 64 && CarSlotID <= 67)   // VINYL_LAYER0-3
+		if (CarSlotID >= CARSLOTID_VINYL_LAYER0 && CarSlotID <= CARSLOTID_VINYL_LAYER3)
 		{
 			if ((*((BYTE*)TheCarPart + 5) & 0x1F) == 20)
 				return &VinylCameraInfo[7 * IsSUV];
 			if ((*((BYTE*)TheCarPart + 5) & 0x1Fu) >= 0x16 && (*((BYTE*)TheCarPart + 5) & 0x1Fu) <= 0x1B)
 				return &VinylCameraInfo[7 * IsSUV - 21 + (*((BYTE*)TheCarPart + 5) & 0x1F)];
-			CarSlotID = 64;
+			CarSlotID = CARSLOTID_VINYL_LAYER0;
 		}
 	}
 	else
 	{
-		CarSlotID = 34;                             // TRUNK_AUDIO
+		CarSlotID = CARSLOTID_TRUNK_AUDIO;
 	}
 
-	if (CarSlotID == 10 || CarSlotID == 72) CarSlotID = 34; // TRUNK, PAINT_AUDIO
-	if (CarSlotID == 23) CarSlotID = 55; // FENDER
-	if (CarSlotID == 24) CarSlotID = 58; // QUARTER
-	if (CarSlotID == 33) CarSlotID = 15; // LICENSE_PLATE
-	if (CarSlotID == 8) CarSlotID = 7; // TOP
-	//if (CarSlotID == 0) CarSlotID = 53; // BASE
+	switch (CarSlotID)
+	{
+	case CARSLOTID_TRUNK:
+	case CARSLOTID_PAINT_AUDIO:
+		CarSlotID = CARSLOTID_TRUNK_AUDIO;
+		break;
+
+	case CARSLOTID_FENDER:
+		CarSlotID = CARSLOTID_DECAL_LEFT_DOOR;
+		break;
+
+	case CARSLOTID_QUARTER:
+		CarSlotID = CARSLOTID_DECAL_RIGHT_QUARTER;
+		break;
+
+	case CARSLOTID_LICENSE_PLATE:
+		CarSlotID = CARSLOTID_BRAKELIGHT;
+		break;
+
+	case CARSLOTID_TOP:
+		CarSlotID = CARSLOTID_ROOF;
+		break;
+
+	case CARSLOTID_WHEEL_MANUFACTURER: // Tire Smoke
+		CarSlotID = CARSLOTID_DECAL_LEFT_QUARTER;
+		break;
+
+	case CARSLOTID_MISC: // Exhaust Flame
+		CarSlotID = CARSLOTID_EXHAUST;
+		break;
+	}
 
 	CameraInfoID = 0;
 	for (i = (int)&PartCameraInfoTable[49 * IsSUV].CarSlotID; *(DWORD*)i != CarSlotID; i += 60)

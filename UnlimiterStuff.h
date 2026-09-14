@@ -98,6 +98,7 @@ int Init()
 	RaceEngageDialogFix = mINI_ReadInteger(Settings, "Fixes", "RaceEngageDialogFix", 1) != 0;
 	EnableFNGFixes = mINI_ReadInteger(Settings, "Fixes", "FNGFix", 0) != 0;
 	StreamingTrafficCarManagerFix = mINI_ReadInteger(Settings, "Fixes", "StreamingTrafficCarManagerFix", 0) != 0;
+	AccumulateTireOffsets = mINI_ReadInteger(Settings, "Fixes", "AccumulateTireOffsets", 1) != 0;
 
 	// Misc
 	ExpandMemoryPools = mINI_ReadInteger(Settings, "Misc", "ExpandMemoryPools", 1) != 0;
@@ -121,6 +122,7 @@ int Init()
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
 	DisableLightFlareColors = mINI_ReadInteger(Settings, "Debug", "DisableLightFlareColors", 0) != 0;
 	DisableExhaustFlameAndTireSmoke = mINI_ReadInteger(Settings, "Debug", "DisableExhaustFlameAndTireSmoke", 0) != 0;
+	UseUnlimiterEmitter = mINI_ReadInteger(Settings, "Debug", "DisableUnlimiterEmitter", 0) == 0;
 	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
 	PartLinkTrace = mINI_ReadInteger(Settings, "Debug", "PartLinkTrace", 0) != 0;
@@ -253,10 +255,13 @@ int Init()
 	injector::MakeCALL(0x566854, PartSelectionScreen_StartBrowsingParts, true); // PartSelectionScreen::NotificationMessage
 	injector::MakeCALL(0x56659A, PartSelectionScreen_StopBrowsingParts, true); // PartSelectionScreen::NotificationMessage
 
-	// Add animations for Specialties
+	// Add animations for Specialties & other stuff
 	injector::MakeCALL(0x556A87, IceSelectionScreen_DoSpecialScroll, true); // IceSelectionScreen::StartBrowsingParts
 	injector::MakeCALL(0x568B7B, IceSelectionScreen_DoSpecialScroll, true); // IceSelectionScreen::NotificationMessage
+	injector::MakeCALL(0x56892C, IceSelectionScreen_StartBrowsingParts, true); // IceSelectionScreen::NotificationMessage
+	injector::MakeCALL(0x5594DF, IceSelectionScreen_StartBrowsingParts, true); // IceSelectionScreen::Setup
 	injector::MakeCALL(0x56945B, IcePartsBrowser_DoTheAnimation, true); // IcePartsBrowser::NotificationMessage
+	//injector::MakeCALL(0x54E8C9, sub_52D330, true); // sub_54E6E0 (80 references, PC exclusive??)
 
 	// Add animations for Neon
 	injector::MakeJMP(0x50F290, CustomizeNeonMenu_DoSpecialScroll, true); // 4 references
@@ -267,8 +272,9 @@ int Init()
 	// Custom part color
 	injector::MakeCALL(0x56C069, IcePartsBrowser_BuildPartsList, true); // IcePartsBrowser::IcePartsBrowser
 
-	// New NotificationMessage (Rear Rims + CF Doors)
-	injector::WriteMemory(0x79D760, &PartSelectionScreen_NotificationMessage, true); // PartSelectionScreen::vtable
+	// New NotificationMessages
+	injector::WriteMemory(0x79D760, &PartSelectionScreen_NotificationMessage, true); // PartSelectionScreen::vtable - Rear Rims, CF Doors
+	injector::WriteMemory(0x79BA1C, &IcePartsBrowser_NotificationMessage, true); // IcePartsBrowser::vtable - Exhaust Flame, Tire Smoke
 
 	// Add details pane for ICE
 	//injector::MakeCALL(0x55C09E, IceSelectionScreen_RefreshHeader, true); // IceSelectionScreen::IceSelectionScreen
@@ -519,6 +525,8 @@ int Init()
 		injector::MakeCALL(0x633608, GetUsedCarTextureInfo, true); // LoadedSkin::ctor
 		injector::MakeCALL(0x636855, GetUsedCarTextureInfo, true); // CarRenderInfo::SwitchSkin
 		injector::MakeCALL(0x638472, GetUsedCarTextureInfo, true); // CarRenderInfo::ctor
+		injector::MakeCALL(0x6340F2, GetDoorlineHash, true); // GetTempCarSkinTextures
+		injector::MakeCALL(0x6340FA, GetDoorlineMaskHash, true); // GetTempCarSkinTextures
 		injector::MakeCALL(0x61DAD5, GetDoorlineHash, true); // CompositeSkin
 
 		injector::MakeRangedNOP(0x61FF70, 0x620023, true); // Free up texture replacement slots #47-72 instead of assigning unused leftover decal stuff, CarRenderInfo::UpdateDecalTextures

@@ -531,24 +531,67 @@ __declspec(naked) void StartQuickRaceHook3()
 	}
 }
 
+#define FECARLIMITS_KEEP_ECX_0(name, target) \
+	void __declspec(naked) name()             \
+	{                                         \
+		__asm push ecx                          \
+		__asm call target                       \
+		__asm pop  ecx                          \
+		__asm ret                               \
+	}
+
+#define FECARLIMITS_KEEP_ECX_1(name, target) \
+	void __declspec(naked) name()             \
+	{                                         \
+		__asm push ecx                          \
+		__asm push dword ptr [esp+8]            \
+		__asm call target                       \
+		__asm pop  ecx                          \
+		__asm ret  4                            \
+	}
+
+#define FECARLIMITS_KEEP_ECX_2(name, target) \
+	void __declspec(naked) name()             \
+	{                                         \
+		__asm push ecx                          \
+		__asm push dword ptr [esp+12]           \
+		__asm push dword ptr [esp+12]           \
+		__asm call target                       \
+		__asm pop  ecx                          \
+		__asm ret  8                            \
+	}
+
+FECARLIMITS_KEEP_ECX_1(DefaultStockCars_KeepEcx, DefaultStockCars)
+FECARLIMITS_KEEP_ECX_2(GetCarFiltered_KeepEcx, GetCarFiltered)
+FECARLIMITS_KEEP_ECX_1(GetCarRecordByHandle_KeepEcx, GetCarRecordByHandle)
+FECARLIMITS_KEEP_ECX_1(IsCarStock_KeepEcx, IsCarStock)
+FECARLIMITS_KEEP_ECX_1(GetStockCarByCarType_KeepEcx, GetStockCarByCarType)
+FECARLIMITS_KEEP_ECX_1(GetStockCarByHash_KeepEcx, GetStockCarByHash)
+FECARLIMITS_KEEP_ECX_0(GetFreeTunedCar_KeepEcx, GetFreeTunedCar)
+FECARLIMITS_KEEP_ECX_0(HasFreeTunedCar_KeepEcx, HasFreeTunedCar)
+FECARLIMITS_KEEP_ECX_1(GetCurrentCareerCar_KeepEcx, GetCurrentCareerCar)
+FECARLIMITS_KEEP_ECX_1(GetTunedCarByHandle_KeepEcx, GetTunedCarByHandle)
+FECARLIMITS_KEEP_ECX_2(CreateCareerCar_KeepEcx, CreateCareerCar)
+FECARLIMITS_KEEP_ECX_2(BuyCar_KeepEcx, BuyCar)
+
 void InitFeCarLimits()
 {
-	injector::MakeCALL(0x0052A8A8, DefaultStockCars); // FEPlayerCarDB::Default
+	injector::MakeCALL(0x0052A8A8, DefaultStockCars_KeepEcx); // FEPlayerCarDB::Default
 	injector::MakeNOP(0x0053471A, 12); // cFrontendDatabase::Default
-	injector::MakeJMP(0x005162D0, GetCarFiltered); // FEPlayerCarDB::GetCarFiltered (23 references)
-	injector::MakeJMP(0x00503510, GetCarRecordByHandle); // FEPlayerCarDB::GetCarRecordByHandle (23 references)
-	injector::MakeJMP(0x00516360, IsCarStock); // FEPlayerCarDB::IsCarStock (4 references)
+	injector::MakeJMP(0x005162D0, GetCarFiltered_KeepEcx); // FEPlayerCarDB::GetCarFiltered (23 references)
+	injector::MakeJMP(0x00503510, GetCarRecordByHandle_KeepEcx); // FEPlayerCarDB::GetCarRecordByHandle (23 references)
+	injector::MakeJMP(0x00516360, IsCarStock_KeepEcx); // FEPlayerCarDB::IsCarStock (4 references)
 	injector::MakeJMP(0x00552D60, IsCarStockHook); // BeginCarCustomize
-	injector::MakeJMP(0x005034C0, GetStockCarByCarType); // FEPlayerCarDB::GetStockCarByCarType
-	injector::MakeJMP(0x00503550, GetStockCarByHash); // FEPlayerCarDB::GetStockCarByHandle
-	injector::MakeJMP(0x005036C0, GetFreeTunedCar); // FEPlayerCarDB::FindEmptyTunedCarSlot
-	injector::MakeJMP(0x005165E0, HasFreeTunedCar); // FEPlayerCarDB::AbleToAddNewTunedCar
-	injector::MakeJMP(0x005035C0, GetTunedCarByHandle); // FEPlayerCarDB::GetTunedCarByHandle
+	injector::MakeJMP(0x005034C0, GetStockCarByCarType_KeepEcx); // FEPlayerCarDB::GetStockCarByCarType
+	injector::MakeJMP(0x00503550, GetStockCarByHash_KeepEcx); // FEPlayerCarDB::GetStockCarByHandle
+	injector::MakeJMP(0x005036C0, GetFreeTunedCar_KeepEcx); // FEPlayerCarDB::FindEmptyTunedCarSlot
+	injector::MakeJMP(0x005165E0, HasFreeTunedCar_KeepEcx); // FEPlayerCarDB::AbleToAddNewTunedCar
+	injector::MakeJMP(0x005035C0, GetTunedCarByHandle_KeepEcx); // FEPlayerCarDB::GetTunedCarByHandle
 	injector::MakeCALL(0x0052A75D, TunedCarHash); // FEPlayerCarDB::AddNewTunedCar
 	injector::MakeCALL(0x0052A7D2, TunedCarHash); // FEPlayerCarDB::AddNewTunedCar
-	injector::MakeJMP(0x00503680, GetCurrentCareerCar); // PlayerCareerState::GetCurrentCareerCar
-	injector::MakeJMP(0x005348E0, CreateCareerCar); // FEPlayerCarDB::CareerCarChosen
-	injector::MakeJMP(0x00496050, BuyCar); // UICareerCarLot::CommitTrade??
+	injector::MakeJMP(0x00503680, GetCurrentCareerCar_KeepEcx); // PlayerCareerState::GetCurrentCareerCar
+	injector::MakeJMP(0x005348E0, CreateCareerCar_KeepEcx); // FEPlayerCarDB::CareerCarChosen
+	injector::MakeJMP(0x00496050, BuyCar_KeepEcx); // UICareerCarLot::CommitTrade??
 	injector::MakeJMP(0x00525FBB, StartQuickRaceHook1); // RaceStarter::SetupPlayerCarsAndStuff
 	injector::MakeJMP(0x00525FCD, StartQuickRaceHook2);
 	injector::MakeJMP(0x00525FDB, StartQuickRaceHook3);

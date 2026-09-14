@@ -979,17 +979,17 @@ DWORD GetDoorlineHash(DWORD* _RideInfo)
 	// Look for body parts to check if any of them have a custom doorline
 	for (int i = 0; i < 5; i++)
 	{
-		DWORD* part = (DWORD*)_RideInfo[356 + BodyPartsToLookForDoorline[i]];
+		CarPart* part = (CarPart*)_RideInfo[356 + BodyPartsToLookForDoorline[i]];
 
 		if (part) 
 		{
-			if (*(BYTE*)(part + 5) >> 5) // non-stock
+			if (part->GroupNumber_UpgradeLevel >> 5) // non-stock
 				return i == 0
-				? CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE"), resultWide)
-				: CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE"), resultKit);
+				? CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("DOORLINE"), resultWide)
+				: CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("DOORLINE"), resultKit);
 
 			else if (i < 4) continue;
-			else return CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE"), result); // stock
+			else return CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("DOORLINE"), result); // stock
 		}
 	}
 
@@ -1007,16 +1007,16 @@ DWORD GetDoorlineMaskHash(DWORD* _RideInfo)
 	// Look for body parts to check if any of them have a custom doorline mask
 	for (int i = 0; i < 5; i++)
 	{
-		DWORD* part = (DWORD*)_RideInfo[356 + BodyPartsToLookForDoorline[i]];
+		CarPart* part = (CarPart*)_RideInfo[356 + BodyPartsToLookForDoorline[i]];
 
 		if (part)
 		{
-			if (*(BYTE*)(part + 5) >> 5) // non-stock
+			if (part->GroupNumber_UpgradeLevel >> 5) // non-stock
 				return i == 0
-				? CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE_MASK"), resultWide)
-				: CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE_MASK"), resultKit);
+				? CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("DOORLINE_MASK"), resultWide)
+				: CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("DOORLINE_MASK"), resultKit);
 			else if (i < 4) continue;
-			else return CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("DOORLINE_MASK"), result); // stock
+			else return CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("DOORLINE_MASK"), result); // stock
 		}
 	}
 
@@ -1794,18 +1794,18 @@ float coplightflicker2(float time, int whichcolor, int flarecount)
 	{
 		*(float*)&whichcolor = dword_903544;
 	}
-	a1a = 6.2831855 / flt_9B3504 * time + 1.5707964f;
+	a1a = 6.2831855f / flt_9B3504 * time + 1.5707964f;
 	v4 = bSin(a1a);
 	v9 = v4 * v4;
 	if (v3 == 2)
 	{
-		v7 = ((float)flarecount * copt + time) * copm + 1.5707964;
+		v7 = ((float)flarecount * copt + time) * copm + 1.5707964f;
 		counter_32323 = (counter_32323 + 1) % copModulo;
 		return bSin(v7) * v9;
 	}
 	else
 	{
-		v8 = 6.2831855 / flt_9B0BD0 * time + *(float*)&whichcolor + 1.5707964;
+		v8 = 6.2831855f / flt_9B0BD0 * time + *(float*)&whichcolor + 1.5707964f;
 		if (bSin(v8) <= 0.2)
 			return 0.0;
 		else
