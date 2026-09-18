@@ -191,12 +191,72 @@ bool IsMenuEmpty_Paint(int CarTypeID)
 	return 1;
 }
 
+bool IsCustomizingFromGarage()
+{
+	return *(int*)0x83898C == 1;
+}
+
+bool AreSpecialtiesHiddenInGarage()
+{
+	return HideSpecialtiesInGarage && IsCustomizingFromGarage();
+}
+
+bool IsMenuEmpty_Specialties(int CarTypeID)
+{
+	if (AreSpecialtiesHiddenInGarage()) return 1;
+
+	// The game's own garage exclusion, at 0x559727
+	if (!IsCustomizingFromGarage() && CarConfigs[CarTypeID].Specialties.CustomGauges != 0) return 0;
+
+	if (CarConfigs[CarTypeID].Specialties.Neon != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.WindowTint != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.HeadlightColor != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.NosPurge != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.ExhaustFlame != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.TireSmoke != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.Hydrualics != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.TrunkAudio != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.Spinners != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.SplitHoods != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.Doors != 0) return 0;
+	if (CarConfigs[CarTypeID].Specialties.LicensePlate != 0) return 0;
+
+	return 1;
+}
+
 void SetRimBrandName(RimBrand& Brand, const char* Name)
 {
 	Brand.BrandNameHash = bStringHash((char*)Name);
 
 	strncpy(Brand.BrandName, Name ? Name : "", sizeof(Brand.BrandName) - 1);
 	Brand.BrandName[sizeof(Brand.BrandName) - 1] = 0;
+}
+
+void SetFileName(char *File, const char* Name, size_t size = 64)
+{
+	const char* src = Name ? Name : "";
+	size_t len = strlen(src);
+
+	// Find first dot
+	const char* dot = strchr(src, '.');
+
+	// If dot exists, trim everything after it
+	if (dot && dot != src)
+	{
+		len = (size_t)(dot - src);
+	}
+
+	// Copy trimmed name safely
+	if (len >= size)
+		len = size - 1;
+
+	memcpy(File, src, len);
+	File[len] = '\0';
+}
+
+void SetExitGameFlag()
+{
+	injector::WriteMemory<int>(0x864F4C, 1, true); // ExitTheGameFlag
 }
 
 // mINI stuff

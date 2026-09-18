@@ -10,7 +10,7 @@ using namespace std;
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
 bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
-bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, FilterDecalsByInitials;
+bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, FilterDecalsByInitials, ShowDebugCarCustomize, HideSpecialtiesInGarage;
 
 bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
@@ -70,6 +70,7 @@ char AttachmentNameBuf[64];
 #include "FeCarLimits.h"
 #include "PresetCars.h"
 #include "Helpers.h"
+#include "CarSoundTuner.h"
 #include "UnlimiterData.h"
 #include "CodeCaves.h"
 #include "Game.h"
@@ -99,6 +100,13 @@ int Init()
 	EnableFNGFixes = mINI_ReadInteger(Settings, "Fixes", "FNGFix", 0) != 0;
 	StreamingTrafficCarManagerFix = mINI_ReadInteger(Settings, "Fixes", "StreamingTrafficCarManagerFix", 0) != 0;
 	AccumulateTireOffsets = mINI_ReadInteger(Settings, "Fixes", "AccumulateTireOffsets", 1) != 0;
+	HideSpecialtiesInGarage = mINI_ReadInteger(Settings, "Fixes", "HideSpecialtiesInGarage", 1) != 0;
+
+	// Sound
+	CarSoundTunerEnabled = mINI_ReadInteger(Settings, "Sound", "CarSoundTuner", 1) != 0;
+	BigFileVFSHandlePoolSize = mINI_ReadInteger(Settings, "Sound", "BigFileVFSHandlePoolSize", 64);
+	SkipLegacyCSTCheck = mINI_ReadInteger(Settings, "Sound", "SkipLegacyCheck", 0) != 0;
+	ExportCarSoundData = mINI_ReadInteger(Settings, "Sound", "ExportCarSoundData", 0) != 0;
 
 	// Misc
 	ExpandMemoryPools = mINI_ReadInteger(Settings, "Misc", "ExpandMemoryPools", 1) != 0;
@@ -107,6 +115,17 @@ int Init()
 	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
 	SortStockCarsByStage = mINI_ReadInteger(Settings, "Misc", "SortStockCarsByStage", 0) != 0;
 	FilterDecalsByInitials = mINI_ReadInteger(Settings, "Misc", "FilterDecalsByInitials", 1) != 0;
+	ShowDebugCarCustomize = mINI_ReadInteger(Settings, "Misc", "ShowDebugCarCustomize", 0) != 0;
+
+	if (!ShowDebugCarCustomize && GetModuleHandleA("NFSU2ExtraOptions.asi")) // Also check ExOpts
+	{
+		auto ExtraOptionsSettings = CurrentWorkingDirectory / "NFSU2ExtraOptionsSettings.ini";
+		mINI::INIFile NFSU2ExtraOptionsSettingsINIFile(ExtraOptionsSettings.string());
+		mINI::INIStructure ExtraOptions;
+		NFSU2ExtraOptionsSettingsINIFile.read(ExtraOptions);
+
+		ShowDebugCarCustomize = mINI_ReadInteger(ExtraOptions, "Menu", "ShowDebugCarCustomize", 0) != 0;
+	}
 
 	// Sponsor Cars
 	PresetCarsInCustomize = mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0) != 0;
@@ -664,6 +683,22 @@ int Init()
 	}
 
 	InitPresetCars();
+	
+	if (BigFileVFSHandlePoolSize > 127) BigFileVFSHandlePoolSize = 64;
+	injector::WriteMemory<BYTE>(0x486531, BigFileVFSHandlePoolSize, true);
+	injector::WriteMemory<BYTE>(0x486541, BigFileVFSHandlePoolSize, true);
+
+	if (CarSoundTunerEnabled)
+	{
+		injector::MakeCALL(0x57EDA3, InitCarSoundTuner, true); // InitializeEverything
+		if (!SkipLegacyCSTCheck) CheckAndConvertLegacyData();
+
+		if (ExportCarSoundData)
+		{
+			Settings["Sound"]["ExportCarSoundData"] = std::to_string(0); // Disable after export
+			NFSU2UnlimiterSettingsINIFile.write(Settings, true);
+		}
+	}
 
 	if (ExportCameraInfoIni)
 	{

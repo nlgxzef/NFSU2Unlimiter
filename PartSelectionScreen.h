@@ -1204,7 +1204,8 @@ void __fastcall PartSelectionScreen_NotificationMessage(DWORD* PartSelectionScre
     DWORD* v5 = nullptr;
     DWORD* v7 = (DWORD*)PartSelectionScreen[22];
 
-    if ((message == 0xC407210 || message == 0x406415E3) && v7[3] == 29)
+    if ((message == 0xC407210 || message == 0x406415E3) && 
+        (dword_838990 == 0 && v7[3] == 29))
     {
         DialogInterface_ShowThreeButtons((char const*)PartSelectionScreen[1], "GenericDialog_ThreeButton.fng",
             CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),

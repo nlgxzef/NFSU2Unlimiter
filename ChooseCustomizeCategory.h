@@ -17,8 +17,8 @@ void __fastcall ChooseCustomizeCategory_Setup(DWORD* ChooseCustomizeCategory, vo
         if (CCT)
             CustomizeCategoryThing_IconOption(CCT,
                 5,
-                0x8244F164, // SHOP_ICON_CAR_LOT
-                0x7EDC9715, // CAREER_CAR_LOT_TITLE
+                CT_bStringHash("SHOP_ICON_CAR_LOT"),
+                CT_bStringHash("CAREER_CAR_LOT_TITLE"),
                 0);
         else
             CCT = 0;
@@ -70,7 +70,7 @@ void __fastcall ChooseCustomizeCategory_Setup(DWORD* ChooseCustomizeCategory, vo
         (*(void(__thiscall**)(DWORD*, DWORD*))(*ChooseCustomizeCategory + 24))(ChooseCustomizeCategory, CCT);
     }
 
-    if (CarConfigs[CarTypeID].Category.Specialties)
+    if (CarConfigs[CarTypeID].Category.Specialties && !IsMenuEmpty_Specialties(CarTypeID))
     {
         CCT = (DWORD*)j__malloc(0x4Cu);
         if (CCT)
@@ -101,18 +101,22 @@ void __fastcall ChooseCustomizeCategory_Setup(DWORD* ChooseCustomizeCategory, vo
     }
     
     // Debug Car Customize
-    CCT = (DWORD*)j__malloc(0x4Cu);
-    if (CCT)
-        CustomizeCategoryThing_IconOption(
-            CCT,
-            4,
-            0x74CE8C0B, // UI_ICON_DEBUG
-            0xE79A53F8, // OPT_DEBUG
-            0);
-    else
-        CCT = 0;
-    (*(void(__thiscall**)(DWORD*, DWORD*))(*ChooseCustomizeCategory + 24))(ChooseCustomizeCategory, CCT);
+    if (ShowDebugCarCustomize)
+    {
+        CCT = (DWORD*)j__malloc(0x4Cu);
+        if (CCT)
+            CustomizeCategoryThing_IconOption(
+                CCT,
+                4,
+                CT_bStringHash("UI_ICON_DEBUG"),
+                CT_bStringHash("OPT_DEBUG"),
+                0);
+        else
+            CCT = 0;
+        (*(void(__thiscall**)(DWORD*, DWORD*))(*ChooseCustomizeCategory + 24))(ChooseCustomizeCategory, CCT);
 
+    }
+    
     unsigned int LastButton = FEngGetLastButton((char const*)ChooseCustomizeCategory[1]);
 
     (*(void(__thiscall**)(DWORD*, int))(ChooseCustomizeCategory[19] + 32))(ChooseCustomizeCategory + 19, LastButton); // IconScroller::SetInitialPos

@@ -1404,7 +1404,7 @@ void LoadRimBrands()
 				mINI::INIStructure itINI;
 				itINIFile.read(itINI);
 
-				SetRimBrandName(ARimBrand, mINI_ReadString(itINI, "Brand", "BrandName", (char*)itINIPath.stem().c_str()));
+				SetRimBrandName(ARimBrand, mINI_ReadString(itINI, "Brand", "BrandName", itINIPath.stem().string().c_str()));
 				ARimBrand.BrandNameHash = mINI_ReadHashS(itINI, "Brand", "BrandName");
 				ARimBrand.TextureHash = mINI_ReadHashS(itINI, "Brand", "Texture");
 				ARimBrand.StringHash = mINI_ReadHashS(itINI, "Brand", "String");

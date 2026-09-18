@@ -269,7 +269,7 @@ void(*aFxGetEmitters)(DWORD* bTList_AcidEmitter, DWORD EmitterGroup) = (void(*)(
 void(*afxShiftEmitterColours)(DWORD* bTList_AcidEmitter, bMatrix4* matrix, float hue, float sat, float lum) = (void(*)(DWORD*, bMatrix4*, float, float, float))0x48B920;
 void(*ConvertRGBtoHSL)(float r, float g, float b, float* hue, float* sat, float* lum) = (void(*)(float, float, float, float*, float*, float*))0x488270;
 void(*FETriggerCarEffect)(int effect, float amount, int unk) = (void(*)(int, float, int))0x4C1920;
-
+int(*GetCarTypeMapping_Game)(int) = (int(*)(int))0x459240;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;
