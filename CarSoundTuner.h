@@ -211,6 +211,14 @@ char* GetNameFromIndex(int index, std::vector<FileName>& FileList)
 	return FileList[index]._n;
 }
 
+// If CST and Unlimiter are loaded at the same time, we have to restore GetCarTypeMapping function to its original state.
+// Or else, the game will crash in Unlimiter code.
+void RestoreVanillaGetCarTypeMapping()
+{
+	static BYTE GetCarTypeMappingBytes[] = { 0x8B, 0x44, 0x24, 0x04, 0x83}; // first 5 bytes of vanilla func
+	for (int i = 0; i < 5; i++) injector::WriteMemory(0x459240 + i, GetCarTypeMappingBytes[i], true);
+}
+
 void SnapshotVanillaCarTypeMapping()
 {
 	for (int i = 0; i < VanillaCarTypeMappingCount; i++)
@@ -892,7 +900,7 @@ bool LoadCarSoundData()
 		mINI::INIStructure ctmINI;
 		ctmINIFile.read(ctmINI);
 
-		CarTypeMapping[i] = FindMatchingCarSoundFileName(ctmDefINI, "CarTypeMapping", "CarDataMapping", CarDataFileNames);
+		CarTypeMapping[i] = FindMatchingCarSoundFileName(ctmINI, "CarTypeMapping", "CarDataMapping", CarDataFileNames);
 		if (CarTypeMapping[i] == -1) CarTypeMapping[i] = GetVanillaCarTypeMapping(i);
 	}
 
@@ -1226,12 +1234,12 @@ void DisableLegacyCarSoundTuner()
 
 	cstINIFile.write(cstINI, true);
 
-	// Rename asi
-	auto LegacyCSTASIPath = CurrentWorkingDirectory / "NFSU2CarSoundTuner.asi";
-	auto LegacyCSTASIPathNew = CurrentWorkingDirectory / "NFSU2CarSoundTuner.asi_disabled";
-	if (std::filesystem::exists(LegacyCSTASIPath) && !std::filesystem::exists(LegacyCSTASIPathNew))
+	// Rename CarSoundData folder
+	auto LegacyCSTDataPath = CurrentWorkingDirectory / "CarSoundData";
+	auto LegacyCSTDataPathNew = CurrentWorkingDirectory / "CarSoundData_disabled";
+	if (std::filesystem::exists(LegacyCSTDataPath) && !std::filesystem::exists(LegacyCSTDataPathNew))
 	{
-		std::filesystem::rename(LegacyCSTASIPath, LegacyCSTASIPathNew);
+		std::filesystem::rename(LegacyCSTDataPath, LegacyCSTDataPathNew);
 	}
 }
 
@@ -1264,6 +1272,7 @@ void CheckAndConvertLegacyData()
 
 void InitCarSoundTuner()
 {
+	RestoreVanillaGetCarTypeMapping();
 	SnapshotVanillaCarTypeMapping();
 	SnapshotCarTypeMapping();
 
