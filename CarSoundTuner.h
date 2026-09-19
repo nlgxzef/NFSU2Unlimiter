@@ -1,6 +1,6 @@
 #pragma once
 
-bool CarSoundTunerEnabled, SkipLegacyCSTCheck, ConvertFromLegacyCST, ExportCarSoundData;
+bool CarSoundTunerEnabled, SkipLegacyCSTCheck, ConvertFromLegacyCST, ForceUpgradeFromLegacyCST, ExportCarSoundData;
 int BigFileVFSHandlePoolSize = 64;
 
 #define MAX_FILES 128
@@ -1237,18 +1237,28 @@ void DisableLegacyCarSoundTuner()
 
 void CheckAndConvertLegacyData()
 {
-	// Legacy CST
-	if (GetModuleHandleA("NFSU2CarSoundTuner.asi") 
-		&& IsLegacyCarSoundTunerEnabledFromConfig() 
-		&& std::filesystem::exists(CurrentWorkingDirectory / "CarSoundData"))
+	// Force upgrade without checking if legacy CST is present and active
+	if (ForceUpgradeFromLegacyCST)
 	{
-		int btn = MessageBoxA(NULL,
-			"Legacy Car Sound Tuner detected.\n"
-			"Do you want to convert legacy data to Unlimiter data?",
-			"NFSU2 Unlimiter",
-			MB_ICONQUESTION | MB_YESNO);
+		ConvertFromLegacyCST = 1;
+		return;
+	}
 
-		if (btn == IDYES) ConvertFromLegacyCST = 1;
+	if (!SkipLegacyCSTCheck)
+	{
+		// Legacy CST
+		if (GetModuleHandleA("NFSU2CarSoundTuner.asi")
+			&& IsLegacyCarSoundTunerEnabledFromConfig()
+			&& std::filesystem::exists(CurrentWorkingDirectory / "CarSoundData"))
+		{
+			int btn = MessageBoxA(NULL,
+				"Legacy Car Sound Tuner detected.\n"
+				"Do you want to convert legacy data to Unlimiter data?",
+				"NFSU2 Unlimiter",
+				MB_ICONQUESTION | MB_YESNO);
+
+			if (btn == IDYES) ConvertFromLegacyCST = 1;
+		}
 	}
 }
 

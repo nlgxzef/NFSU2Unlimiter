@@ -105,7 +105,8 @@ int Init()
 	// Sound
 	CarSoundTunerEnabled = mINI_ReadInteger(Settings, "Sound", "CarSoundTuner", 1) != 0;
 	BigFileVFSHandlePoolSize = mINI_ReadInteger(Settings, "Sound", "BigFileVFSHandlePoolSize", 64);
-	SkipLegacyCSTCheck = mINI_ReadInteger(Settings, "Sound", "SkipLegacyCheck", 0) != 0;
+	SkipLegacyCSTCheck = mINI_ReadInteger(Settings, "Sound", "SkipLegacyCSTCheck", 0) != 0;
+	ForceUpgradeFromLegacyCST = mINI_ReadInteger(Settings, "Sound", "UpgradeFromLegacyCST", 0) != 0;
 	ExportCarSoundData = mINI_ReadInteger(Settings, "Sound", "ExportCarSoundData", 0) != 0;
 
 	// Misc
@@ -691,11 +692,17 @@ int Init()
 	if (CarSoundTunerEnabled)
 	{
 		injector::MakeCALL(0x57EDA3, InitCarSoundTuner, true); // InitializeEverything
-		if (!SkipLegacyCSTCheck) CheckAndConvertLegacyData();
+		CheckAndConvertLegacyData();
 
 		if (ExportCarSoundData)
 		{
 			Settings["Sound"]["ExportCarSoundData"] = std::to_string(0); // Disable after export
+			NFSU2UnlimiterSettingsINIFile.write(Settings, true);
+		}
+
+		if (ForceUpgradeFromLegacyCST)
+		{
+			Settings["Sound"]["UpgradeFromLegacyCST"] = std::to_string(0); // Disable after upgrade
 			NFSU2UnlimiterSettingsINIFile.write(Settings, true);
 		}
 	}
