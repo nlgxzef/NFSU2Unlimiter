@@ -313,6 +313,71 @@ void __declspec(naked) CarRenderInfo_Render_AnimLocationForExtraAttachmentCodeCa
 	}
 }
 
+bTList<AcidEmitter>* CRI_TSE_tmp;
+int CRI_TSE_LoadingFromExtra = 0;
+
+// 0x615D0E
+void __declspec(naked) CarRenderInfo_TriggerEffect_TireSmokeCodeCave()
+{
+	_asm
+	{
+		cmp eax, 5
+		jg LoadAcidEmitterListFromCRI
+
+		//cmp eax, 3 // Tire Smoke
+		//jne LoadAcidEmitterListFromTerrain
+
+		// Load from extra instead
+		LoadFromExtra:
+		mov ecx, CRI_TSE_LoadingFromExtra
+		test ecx, ecx
+		jz LoadAcidEmitterListFromTerrain
+		mov edi, CRI_TSE_tmp
+		jmp LoadAcidEmitterListFromCRI
+
+		LoadAcidEmitterListFromTerrain:
+			push 0x615D13
+			retn
+
+		LoadAcidEmitterListFromCRI:
+			push 0x615D32
+			retn
+	}
+}
+
+void __fastcall CarRenderInfo_TriggerEffect(DWORD* CarRenderInfo, void* EDX_Unused, int CarEffect, float power, unsigned __int16 terrain_type, int position, bVector3* bV3, bMatrix4* bM4, bVector3* bV3_2)
+{
+	CRI_TSE_LoadingFromExtra = 0;
+	
+	// Get tire smoke emitter
+	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	if (extra)
+	{
+		if (extra->pRideInfo)
+		{
+			DWORD* Part = RideInfo_GetPart(extra->pRideInfo, CARSLOTID_WHEEL_MANUFACTURER);
+
+			if ((CarEffect == CARFX_SKID_SMOKE || CarEffect == CARFX_TIRE_SPEW)
+				&& Part && Part[0] != CT_bStringHash("VINYL_L1_COLOR01"))
+			{
+				switch (CarEffect)
+				{
+				case CARFX_SKID_SMOKE:
+					CRI_TSE_tmp = &extra->TireSmokeEmitters[terrain_type];
+					CRI_TSE_LoadingFromExtra = 1;
+					break;
+				case CARFX_TIRE_SPEW:
+					CRI_TSE_tmp = &extra->TireSpewEmitters[terrain_type];
+					CRI_TSE_LoadingFromExtra = 1;
+					break;
+				}
+			}
+		}
+	}
+
+	CarRenderInfo_TriggerEffect_Game(CarRenderInfo, CarEffect, power, terrain_type, position, bV3, bM4, bV3_2);
+}
+
 void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, void* EDX_Unused)
 {
 	DWORD* RideInfo; // eax

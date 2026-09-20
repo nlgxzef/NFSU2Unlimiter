@@ -10,13 +10,13 @@ using namespace std;
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
 bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
-bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, FilterDecalsByInitials, ShowDebugCarCustomize, HideSpecialtiesInGarage;
+bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, ShowDebugCarCustomize;
 
 bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
-int RandomCarCount, RandomSUVCount, CarTypeID_Temp, CarTypeHash_Temp, CarOriginResultTemp, LinkLicensePlateToTrunk_Temp, ForceLightFlaresOn;
+int RandomCarCount, RandomSUVCount, CarTypeID_Temp, CarTypeHash_Temp, CarOriginResultTemp, LinkLicensePlateToTrunk_Temp, ForceLightFlaresOn, FilterDecalsByInitials;
 
 char AttachmentNameBuf[64];
 
@@ -71,6 +71,10 @@ char AttachmentNameBuf[64];
 #include "PresetCars.h"
 #include "Helpers.h"
 #include "CarSoundTuner.h"
+#include "BigFileVFS.h"
+#include "EngineSFXGuard.h"
+#include "EngineBankTrace.h"
+#include "AIEngineBank.h"
 #include "UnlimiterData.h"
 #include "CodeCaves.h"
 #include "Game.h"
@@ -100,11 +104,14 @@ int Init()
 	EnableFNGFixes = mINI_ReadInteger(Settings, "Fixes", "FNGFix", 0) != 0;
 	StreamingTrafficCarManagerFix = mINI_ReadInteger(Settings, "Fixes", "StreamingTrafficCarManagerFix", 0) != 0;
 	AccumulateTireOffsets = mINI_ReadInteger(Settings, "Fixes", "AccumulateTireOffsets", 1) != 0;
-	HideSpecialtiesInGarage = mINI_ReadInteger(Settings, "Fixes", "HideSpecialtiesInGarage", 1) != 0;
+	HiddenSpecialtiesInGarage = ParseHiddenSpecialties(mINI_ReadString(Settings, "Fixes", "HideSpecialtiesInGarage", "LicensePlate"));
+	EngineSFXGuard = mINI_ReadInteger(Settings, "Fixes", "EngineSFXGuard", 1) != 0;
+	AIEngineBankFix = mINI_ReadInteger(Settings, "Fixes", "AIEngineBankFix", 1) != 0;
 
 	// Sound
 	CarSoundTunerEnabled = mINI_ReadInteger(Settings, "Sound", "CarSoundTuner", 1) != 0;
 	BigFileVFSHandlePoolSize = mINI_ReadInteger(Settings, "Sound", "BigFileVFSHandlePoolSize", 64);
+	SerializeBigFileVFS = mINI_ReadInteger(Settings, "Sound", "SerializeBigFileVFS", 1) != 0;
 	SkipLegacyCSTCheck = mINI_ReadInteger(Settings, "Sound", "SkipLegacyCSTCheck", 0) != 0;
 	ForceUpgradeFromLegacyCST = mINI_ReadInteger(Settings, "Sound", "UpgradeFromLegacyCST", 0) != 0;
 	ExportCarSoundData = mINI_ReadInteger(Settings, "Sound", "ExportCarSoundData", 0) != 0;
@@ -115,8 +122,12 @@ int Init()
 	ExtendFeCarLimits = mINI_ReadInteger(Settings, "Misc", "ExtendFeCarLimits", 0) != 0;// Doubles the amount of stock and tuned cars a player can have in a profile.
 	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
 	SortStockCarsByStage = mINI_ReadInteger(Settings, "Misc", "SortStockCarsByStage", 0) != 0;
-	FilterDecalsByInitials = mINI_ReadInteger(Settings, "Misc", "FilterDecalsByInitials", 1) != 0;
+	FilterDecalsByInitials = Clamp(mINI_ReadInteger(Settings, "Misc", "FilterDecalsByInitials", 1), 0, 2);
+	AllowExcludedDecals = mINI_ReadInteger(Settings, "Misc", "AllowExcludedDecals", 0) != 0;
+	KeepHoodDecals = mINI_ReadInteger(Settings, "Misc", "KeepHoodDecals", 1) != 0;
+	GarageShowsOwnedPartsOnly = mINI_ReadInteger(Settings, "Misc", "GarageShowsOwnedPartsOnly", 0) != 0;
 	ShowDebugCarCustomize = mINI_ReadInteger(Settings, "Misc", "ShowDebugCarCustomize", 0) != 0;
+	ChargeForGauges = mINI_ReadInteger(Settings, "Misc", "ChargeForGauges", 1) != 0;
 
 	if (!ShowDebugCarCustomize && GetModuleHandleA("NFSU2ExtraOptions.asi")) // Also check ExOpts
 	{
@@ -145,8 +156,12 @@ int Init()
 	UseUnlimiterEmitter = mINI_ReadInteger(Settings, "Debug", "DisableUnlimiterEmitter", 0) == 0;
 	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
-	PartLinkTrace = mINI_ReadInteger(Settings, "Debug", "PartLinkTrace", 0) != 0;
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
+
+	// Trace
+	PartLinkTrace = mINI_ReadInteger(Settings, "Trace", "PartLinkTrace", 0) != 0;
+	EngineBankTrace = mINI_ReadInteger(Settings, "Trace", "EngineBankTrace", 0) != 0;
+	GarageFilterTrace = mINI_ReadInteger(Settings, "Trace", "GarageFilterTrace", 0) != 0;
 
 	// Count Cars Automatically
 	injector::WriteMemory(0x7FA898, &LoaderCarInfo_Hook, true); // LoaderTable
@@ -315,6 +330,7 @@ int Init()
 	if (FilterDecalsByInitials)
 	{
 		injector::MakeCALL(0x56BE1D, ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::Setup
+		//injector::WriteMemory(0x79D898, &ChooseDecalScreen_NotificationMessage, true); // ChooseDecalScreen::vtable
 	}
 	
 	// Fix double message while changing colors for Decals
@@ -503,6 +519,11 @@ int Init()
 		// TODO: Also check ChooseSpinnerBrand or find a smarter way to do this shit
 	}
 
+	if (KeepHoodDecals)
+	{
+		injector::WriteMemory<BYTE>(0x55C2B0, 0xEB, true); // CarCustomizeManager::InstallPart
+	}
+		
 	// Allow custom prefixes for custom HUDs
 	injector::MakeCALL(0x4F571F, ChooseLoadableTextures, true); // Tachometer::Tachometer
 	injector::MakeCALL(0x4F68DF, ChooseLoadableTextures, true); // DragTachometer::DragTachometer
@@ -586,6 +607,17 @@ int Init()
 		injector::MakeCALL(0x61B1A2, CarRenderInfo_RenderFlaresOnCar, true); // RenderFlares
 
 		hb_eRenderLightFlare.fun = injector::MakeJMP(0x6159DE, RenderLightFlareCodeCave, true).get(); // CarRenderInfo::RenderFlaresOnCar
+	}
+
+	if (!DisableExhaustFlameAndTireSmoke)
+	{
+		// Read tire smoke emitters from CarRenderInfo instead of TerrainEffectEmitters
+		injector::MakeJMP(0x615D0E, CarRenderInfo_TriggerEffect_TireSmokeCodeCave, true); // CarRenderInfo::TriggerEffect
+		injector::MakeCALL(0x61FB92, CarRenderInfo_TriggerEffect, true); // Car::TriggerEffect
+		injector::MakeCALL(0x61FC09, CarRenderInfo_TriggerEffect, true); // GarageMainScreen::TriggerEffect
+
+		// FE Preview stuff
+		injector::MakeCALL(0x4C1956, GarageMainScreen_TriggerCarEffect, true); // FETriggerCarEffect
 	}
 
 	// Fix Cabin Neon
@@ -684,10 +716,14 @@ int Init()
 	}
 
 	InitPresetCars();
+	InitEngineSFXGuard();
+	InitEngineBankTrace();
+	InitAIEngineBank();
 	
 	if (BigFileVFSHandlePoolSize > 127) BigFileVFSHandlePoolSize = 64;
 	injector::WriteMemory<BYTE>(0x486531, BigFileVFSHandlePoolSize, true);
 	injector::WriteMemory<BYTE>(0x486541, BigFileVFSHandlePoolSize, true);
+	InitBigFileVFS();
 
 	if (CarSoundTunerEnabled)
 	{

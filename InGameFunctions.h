@@ -157,6 +157,7 @@ void(__thiscall* IceSelectionScreen_DoSpecialScroll_Game)(DWORD* IceSelectionScr
 void(__thiscall* IcePartsBrowser_NotificationMessage_Game)(DWORD* IcePartsBrowser, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x568D30;
 void(__thiscall* IcePartsBrowser_RefreshHeader_Game)(DWORD* IcePartsBrowser) = (void(__thiscall*)(DWORD*))0x547250;
 void(__thiscall* NeonPartsBrowser_RefreshHeader_Game)(DWORD* NeonPartsBrowser) = (void(__thiscall*)(DWORD*))0x547F30;
+void(__thiscall* ChooseDecalScreen_NotificationMessage_Game)(DWORD* ChooseDecalScreen, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x56B960;
 void(__thiscall* ChooseDecalScreen_RefreshHeader_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x546F40;
 void(__thiscall* ChooseDecalScreen_ToggleColors_Game)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x568710;
 void(__thiscall* ChooseSpinnerBrand_NotificationMessage_Game)(DWORD* ChooseSpinnerBrand, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x569670;
@@ -265,11 +266,11 @@ int(*GetTachStyle)(DWORD* EngineInfo) = (int(*)(DWORD*))0x60FE10;
 DWORD* (__cdecl* find_event_that_has_car_as_a_reward)(DWORD CarNameHash) = (DWORD * (__cdecl*)(DWORD))0x5023B0;
 DWORD* (__thiscall* CarRenderInfo_ctor)(DWORD* CarRenderInfo, DWORD* RideInfo, DWORD* Car) = (DWORD * (__thiscall*)(DWORD*, DWORD*, DWORD*))0x638190;
 void(__thiscall* CarRenderInfo_UpdateCarParts)(DWORD* CarRenderInfo) = (void(__thiscall*)(DWORD*))0x634800;
-void(*aFxGetEmitters)(DWORD* bTList_AcidEmitter, DWORD EmitterGroup) = (void(*)(DWORD*, DWORD))0x48B8B0;
-void(*afxShiftEmitterColours)(DWORD* bTList_AcidEmitter, bMatrix4* matrix, float hue, float sat, float lum) = (void(*)(DWORD*, bMatrix4*, float, float, float))0x48B920;
+void(__thiscall* CarRenderInfo_TriggerEffect_Game)(DWORD* CarRenderInfo, int CarEffect, float power, unsigned __int16 terrain_type, int position, bVector3* bV3, bMatrix4* bM4, bVector3* bV3_2) = (void(__thiscall*)(DWORD*, int, float, unsigned __int16, int, bVector3*, bMatrix4*, bVector3*))0x615CC0;
 void(*ConvertRGBtoHSL)(float r, float g, float b, float* hue, float* sat, float* lum) = (void(*)(float, float, float, float*, float*, float*))0x488270;
-void(*FETriggerCarEffect)(int effect, float amount, int unk) = (void(*)(int, float, int))0x4C1920;
+void(*FETriggerCarEffect)(int effect, float amount, int terrain_type) = (void(*)(int, float, int))0x4C1920;
 int(*GetCarTypeMapping_Game)(int) = (int(*)(int))0x459240;
+void(__thiscall* sub_4367C0)(bList* lst) = (void(__thiscall*)(bList*))0x4367C0;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

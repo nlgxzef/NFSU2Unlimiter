@@ -10,6 +10,7 @@
 #include "CarSlotID.h"
 #include "CarSlotAnim.h"
 #include "CarPartID.h"
+#include "CarEffect.h"
 //#include "MenuID.h"
 
 // Helpers
@@ -29,4 +30,6 @@
 #include "feDialogConfig.h"
 #include "SelectablePart.h"
 #include "PartNode.h"
+#include "TerrainTypeInfo.h"
+#include "AcidEmitter.h"
 //#include "DialogInterface.h"

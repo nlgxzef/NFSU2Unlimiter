@@ -3,22 +3,29 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
 
+#define DECAL_INITIAL_ALL '?'
 #define DECAL_INITIAL_START '@'
 #define DECAL_INITIAL_END 'Z'
 
 BYTE DecalInitial = DECAL_INITIAL_START;
 
-void ScrollDecalInitial()
+void ScrollDecalInitial(int direction)
 {
-	DecalInitial++;
+	DecalInitial += direction;
 	if (DecalInitial > DECAL_INITIAL_END)
 	{
-		DecalInitial = DECAL_INITIAL_START;
+		DecalInitial = FilterDecalsByInitials == 2 ? DECAL_INITIAL_ALL : DECAL_INITIAL_START;
+	}
+	if (DecalInitial < (FilterDecalsByInitials == 2 ? DECAL_INITIAL_ALL : DECAL_INITIAL_START))
+	{
+		DecalInitial = DECAL_INITIAL_END;
 	}
 }
 
 bool IsDecalInitial(DWORD* part)
 {
+	if (DecalInitial == DECAL_INITIAL_ALL) return true;
+	
 	char const* name = CarPart_GetName(part);
 	if (DecalInitial == DECAL_INITIAL_START)
 	{
@@ -33,7 +40,11 @@ void __fastcall ChooseDecalScreen_RefreshHeader(DWORD* ChooseDecalScreen, void* 
 
 	RefreshDetailsPane((char const*)ChooseDecalScreen[1], ChooseDecalScreen + 21, ChooseDecalScreen + 20, (DWORD*)ChooseDecalScreen[23]);
 
-	if (FilterDecalsByInitials) FEPrintf((char const*)ChooseDecalScreen[1], 0xD28B9316, "%c", DecalInitial);
+	int Cur = ThumbnailScroller_GetCurrenNodeIndex(ChooseDecalScreen + 20);
+	if (FilterDecalsByInitials && (Cur == 0 || Cur == 1))
+	{
+		if (DecalInitial != DECAL_INITIAL_ALL) FEPrintf((char const*)ChooseDecalScreen[1], 0xD28B9316, "%c", DecalInitial);
+	}
 }
 
 bool IsDecalWhite(DWORD* part)
@@ -42,6 +53,13 @@ bool IsDecalWhite(DWORD* part)
 	DWORD brand_name = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("BRAND_NAME"), 0);
 
 	return name != brand_name;
+}
+
+bool IsDecalAvailable(DWORD* Part, DWORD IsWhite)
+{
+	if (FilterDecalsByInitials) return IsDecalInitial(Part);
+
+	return IsWhite != IsDecalWhite(Part);
 }
 
 int GetDecalsList(int CarSlotID, bTList<SelectablePart> *DecalsList, DWORD IsWhite)
@@ -58,11 +76,8 @@ int GetDecalsList(int CarSlotID, bTList<SelectablePart> *DecalsList, DWORD IsWhi
 			Part;
 			Part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CarSlotID, 0, Part, -1))
 		{
-			DWORD name = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("NAME"), 0);
-			DWORD brand_name = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("BRAND_NAME"), 0);
 
-			//if (IsWhite != IsDecalWhite(Part))
-			if (IsDecalInitial(Part))
+			if (IsDecalAvailable(Part, IsWhite))
 			{
 				SelectablePart* newPart = (SelectablePart*)j__malloc(sizeof(SelectablePart));
 				if (newPart)
@@ -84,16 +99,37 @@ int GetDecalsList(int CarSlotID, bTList<SelectablePart> *DecalsList, DWORD IsWhi
 
 void(__thiscall* ChooseDecalScreen_Setup)(DWORD* ChooseDecalScreen) = (void(__thiscall*)(DWORD*))0x560250;
 
-void __fastcall ChooseDecalScreen_ToggleColors(DWORD* ChooseDecalScreen, void* EDX_Unused)
+void __fastcall ChooseDecalScreen_ScrollInitials(DWORD* ChooseDecalScreen, void* EDX_Unused, int direction)
 {
-	//DWORD v1 = ChooseDecalScreen[23];
-	//((BYTE*)ChooseDecalScreen)[274] ^= 1u;
-	//ChooseDecalScreen[69] = ((DWORD*)v1)[44];
-
-	ScrollDecalInitial();
+	ScrollDecalInitial(direction);
 	
 	ChooseDecalScreen_Setup(ChooseDecalScreen);
 	ChooseDecalScreen_RefreshHeader(ChooseDecalScreen, EDX_Unused);
+}
+
+void __fastcall ChooseDecalScreen_ToggleColors(DWORD* ChooseDecalScreen, void* EDX_Unused)
+{
+	ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, 1);
+}
+
+void __fastcall ChooseDecalScreen_NotificationMessage(DWORD* ChooseDecalScreen, void* EDX_Unused, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2)
+{
+	switch (message)
+	{
+		// TODO: Add message responses to FNGs
+	case CT_bStringHash("PAD_LTRIGGER"):
+		ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, -1);
+		break;
+	case CT_bStringHash("PAD_RTRIGGER"):
+		ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, 1);
+		break;
+	case CT_bStringHash("PAD_BUTTON1"):
+		ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, 1);
+		break;
+	default:
+		ChooseDecalScreen_NotificationMessage_Game(ChooseDecalScreen, message, fe_obj, param1, param2);
+		break;
+	}
 }
 
 // 0x56BE1D

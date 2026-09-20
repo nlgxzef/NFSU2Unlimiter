@@ -1311,6 +1311,7 @@ void InitCarSoundTuner()
 	}
 
 	// Load Unlimiter Car Sound data
+	LoadVanillaCarSoundData(); // Load vanilla data
 	if (LoadCarSoundData())
 	{
 		// Loaded successfully, set up all the hooks, replacements and counts

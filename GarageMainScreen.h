@@ -35,3 +35,21 @@ void __declspec(naked) StaticCameraInfoCodeCave_GarageMainScreen_ctor()
 		retn
 	}
 }
+
+void __fastcall GarageMainScreen_TriggerCarEffect(DWORD* GarageMainScreen, void* EDX_Unused, int car_effect, float power, int terrain_type, int unk)
+{
+	DWORD* CarRenderInfo;
+	int position; // eax
+	bVector3 location;
+
+	CarRenderInfo = (DWORD*)GarageMainScreen[2];
+	if (CarRenderInfo)
+	{
+		position = 0;
+		if (car_effect == CARFX_SKID_SMOKE || car_effect == CARFX_TIRE_SPEW || car_effect == CARFX_BLOWN_TIRE || car_effect == CARFX_DRIVE_ON_FLAT_TIRE)
+			position = terrain_type >> 16;
+		memset(location, 0, 12);
+
+		CarRenderInfo_TriggerEffect(CarRenderInfo, EDX_Unused, car_effect, power, terrain_type, position, (bVector3*)(GarageMainScreen + 580), (bMatrix4*)(GarageMainScreen + 584), &location);
+	}
+}

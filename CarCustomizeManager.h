@@ -73,10 +73,19 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
                     switch (CarSlotID)
                     {
                     case CARSLOTID_DECAL_LEFT_QUARTER: // DECAL_LEFT_QUARTER
-                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_LEFT_QUARTER_RECT_MEDIUM" : "DECAL_LEFT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
+                        TheCarPart = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_LEFT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_LEFT_QUARTER_RECT_MEDIUM" : "DECAL_LEFT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
+                        break;
                     case CARSLOTID_DECAL_RIGHT_QUARTER: // DECAL_RIGHT_QUARTER
-                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_RIGHT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_RIGHT_QUARTER_RECT_MEDIUM" : "DECAL_RIGHT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
+                        TheCarPart = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_RIGHT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_RIGHT_QUARTER_RECT_MEDIUM" : "DECAL_RIGHT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
+                        break;
+                    default:
+                        TheCarPart = 0;
+                        break;
                     }
+
+                    if (TheCarPart) return TheCarPart;
+
+                    break; // this kit ships no quarter layout of its own, so use the shared one
                 }
             }
         }
@@ -91,7 +100,9 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
 
                 if (*(unsigned int*)HoodPart == PartHash)
                 {
-                    return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_HOOD, bStringHash2(LayoutID == 1 ? "DECAL_HOOD_RECT_MEDIUM" : "DECAL_HOOD_RECT_SMALL", NamePartialHash), 0, -1);
+                    TheCarPart = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DECAL_HOOD, bStringHash2(LayoutID == 1 ? "DECAL_HOOD_RECT_MEDIUM" : "DECAL_HOOD_RECT_SMALL", NamePartialHash), 0, -1);
+                    if (TheCarPart) return TheCarPart;
+                    break;
                 }
             }
         }

@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
+#include "GarageFilter.h"
 
 DWORD GetCarTypeNameHashFromFECarConfig()
 {
@@ -45,6 +46,7 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 	DWORD* NewBNode; // eax MAPDST
 	DWORD* BTail; // ecx MAPDST
 	int PartsCount = 0; // eax MAPDST
+	bool FirstCandidate = true;
 
 	int SomethingUnk = *(int*)0x8389B0;
 	DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
@@ -56,9 +58,11 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 	switch (CarSlotID)
 	{
 	case CARSLOTID_HOOD: // Split Hoods
+		FirstCandidate = true;
 		while (TheCarPart)
 		{
-			if (*((char*)TheCarPart + 4) == CarPartID && (*((BYTE*)TheCarPart + 5) & 0x1F) == 5)
+			if (*((char*)TheCarPart + 4) == CarPartID && (*((BYTE*)TheCarPart + 5) & 0x1F) == 5
+				&& IsIcePartOffered(CarSlotID, TheCarPart, FirstCandidate))
 			{
 				NewBNode = (DWORD*)j__malloc(0x10u);
 				if (NewBNode)
@@ -85,9 +89,11 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 		break;
 	case CARSLOTID_FRONT_WHEEL: // SPINNER
 	case CARSLOTID_REAR_WHEEL:
+		FirstCandidate = true;
 		while (TheCarPart)
 		{
-			if (*((char*)TheCarPart + 4) == CarPartID && IsRimAvailable(CarTypeID, TheCarPart, CT_bStringHash("SPINNER")))
+			if (*((char*)TheCarPart + 4) == CarPartID && IsRimAvailable(CarTypeID, TheCarPart, CT_bStringHash("SPINNER"))
+				&& IsIcePartOffered(CarSlotID, TheCarPart, FirstCandidate))
 			{
 				NewBNode = (DWORD*)j__malloc(0x10u);
 				if (NewBNode)
@@ -115,25 +121,28 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 	default:
 		while (TheCarPart)
 		{
-			NewBNode = (DWORD*)j__malloc(0x10u);
-			if (NewBNode)
+			FirstCandidate = true;
+			if (IsIcePartOffered(CarSlotID, TheCarPart, FirstCandidate))
 			{
-				NewBNode[2] = (DWORD)TheCarPart;
-				NewBNode[3] = 0;
+				NewBNode = (DWORD*)j__malloc(0x10u);
+				if (NewBNode)
+				{
+					NewBNode[2] = (DWORD)TheCarPart;
+					NewBNode[3] = 0;
 
-				BTail = (DWORD*)PartsBList[1];
-				*BTail = (DWORD)NewBNode;
-				PartsBList[1] = (DWORD)NewBNode;
-				NewBNode[1] = (DWORD)BTail;
-				*NewBNode = (DWORD)PartsBList;
+					BTail = (DWORD*)PartsBList[1];
+					*BTail = (DWORD)NewBNode;
+					PartsBList[1] = (DWORD)NewBNode;
+					NewBNode[1] = (DWORD)BTail;
+					*NewBNode = (DWORD)PartsBList;
 
-				++PartsCount;
+					++PartsCount;
+				}
+				else
+				{
+					NewBNode = 0;
+				}
 			}
-			else
-			{
-				NewBNode = 0;
-			}
-
 			TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1);
 		}
 		break;
@@ -141,11 +150,12 @@ int GetIcePartsList(int CarSlotID, DWORD* PartsBList, unsigned int Unk)
 	case CARSLOTID_NEON_ENGINE: // Hide LED neons from other categories as they aren't supposed to render tubes
 	case CARSLOTID_NEON_TRUNK:
 	case CARSLOTID_NEON_CABIN:
+		FirstCandidate = true;
 		while (TheCarPart)
 		{
 			if (*((char*)TheCarPart + 4) == CarPartID && (CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("LED"), 0) == 0))
 			{
-				if (UnlockSystem_IsCarPartUnlocked(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk)
+				if (IsIcePartOffered(CarSlotID, TheCarPart, FirstCandidate)
 					&& ((*((BYTE*)TheCarPart + 5) & 0x1F) != 22))
 				{
 					NewBNode = (DWORD*)j__malloc(0x10u);
@@ -243,7 +253,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 				-1, 
 				"UI_CustomHUDOverlay.fng");
 
-		if (CarConfigs[CarTypeID].Specialties.Neon)
+		if (IsSpecialtyOffered(SPEC_Neon, CarConfigs[CarTypeID].Specialties.Neon))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x60);
 			if (AMenuOption)
@@ -261,7 +271,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 		
-		if (CarConfigs[CarTypeID].Specialties.WindowTint)
+		if (IsSpecialtyOffered(SPEC_WindowTint, CarConfigs[CarTypeID].Specialties.WindowTint))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -280,7 +290,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 		
-		if (CarConfigs[CarTypeID].Specialties.HeadlightColor)
+		if (IsSpecialtyOffered(SPEC_HeadlightColor, CarConfigs[CarTypeID].Specialties.HeadlightColor))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -299,7 +309,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 		
-		if (CarConfigs[CarTypeID].Specialties.NosPurge)
+		if (IsSpecialtyOffered(SPEC_NosPurge, CarConfigs[CarTypeID].Specialties.NosPurge))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -317,7 +327,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
-		if (CarConfigs[CarTypeID].Specialties.ExhaustFlame)
+		if (IsSpecialtyOffered(SPEC_ExhaustFlame, CarConfigs[CarTypeID].Specialties.ExhaustFlame))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -335,8 +345,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
-		/*
-		if (CarConfigs[CarTypeID].Specialties.TireSmoke)
+		if (IsSpecialtyOffered(SPEC_TireSmoke, CarConfigs[CarTypeID].Specialties.TireSmoke))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -352,9 +361,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 				(*(void(__thiscall**)(DWORD*, DWORD*))(*IceSelectionScreen + 24))(IceSelectionScreen, AMenuOption);
 			}
 			else AMenuOption = 0;
-		}*/
+		}
 
-		if (CarConfigs[CarTypeID].Specialties.Hydrualics)
+		if (IsSpecialtyOffered(SPEC_Hydraulics, CarConfigs[CarTypeID].Specialties.Hydrualics))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -373,7 +382,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 		
-		if (CarConfigs[CarTypeID].Specialties.TrunkAudio)
+		if (IsSpecialtyOffered(SPEC_TrunkAudio, CarConfigs[CarTypeID].Specialties.TrunkAudio))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x60);
 			if (AMenuOption)
@@ -388,7 +397,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
-		if (CarConfigs[CarTypeID].Specialties.Spinners)
+		if (IsSpecialtyOffered(SPEC_Spinners, CarConfigs[CarTypeID].Specialties.Spinners))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -407,7 +416,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
-		if (CarConfigs[CarTypeID].Specialties.SplitHoods)
+		if (IsSpecialtyOffered(SPEC_SplitHoods, CarConfigs[CarTypeID].Specialties.SplitHoods))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -426,7 +435,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 		
-		if (CarConfigs[CarTypeID].Specialties.Doors)
+		if (IsSpecialtyOffered(SPEC_Doors, CarConfigs[CarTypeID].Specialties.Doors))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)
@@ -445,7 +454,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
-		if (CarConfigs[CarTypeID].Specialties.LicensePlate)
+		if (IsSpecialtyOffered(SPEC_LicensePlate, CarConfigs[CarTypeID].Specialties.LicensePlate))
 		{
 			AMenuOption = (DWORD*)j__malloc(0x5C);
 			if (AMenuOption)

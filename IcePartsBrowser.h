@@ -307,12 +307,12 @@ void __fastcall IcePartsBrowser_NotificationMessage(DWORD* IcePartsBrowser, void
 	{
 		if (CarSlotID == CARSLOTID_MISC)
 		{
-			FETriggerCarEffect(10, 1.0f, 0);
+			FETriggerCarEffect(CARFX_NITRO, 1.0f, TERRAIN_TYPE_NONE);
 		}
 
 		if (CarSlotID == CARSLOTID_WHEEL_MANUFACTURER)
 		{
-			
+			FETriggerCarEffect(CARFX_SKID_SMOKE, 1.0f, TERRAIN_TYPE_ROAD);
 		}
 		
 		goto Game;

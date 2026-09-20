@@ -6,6 +6,14 @@ inline bool DoesFileExist(char const* path)
 	return (stat(path, &buffer) == 0);
 }
 
+int Clamp(int value, int min, int max)
+{
+	if (value < min) value = min;
+	else if (value > max) value = max;
+
+	return value;
+}
+
 bool IsUG1(int CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
@@ -191,35 +199,26 @@ bool IsMenuEmpty_Paint(int CarTypeID)
 	return 1;
 }
 
-bool IsCustomizingFromGarage()
-{
-	return *(int*)0x83898C == 1;
-}
-
-bool AreSpecialtiesHiddenInGarage()
-{
-	return HideSpecialtiesInGarage && IsCustomizingFromGarage();
-}
-
+#include "Specialties.h"
 bool IsMenuEmpty_Specialties(int CarTypeID)
 {
-	if (AreSpecialtiesHiddenInGarage()) return 1;
+	auto& S = CarConfigs[CarTypeID].Specialties;
 
 	// The game's own garage exclusion, at 0x559727
-	if (!IsCustomizingFromGarage() && CarConfigs[CarTypeID].Specialties.CustomGauges != 0) return 0;
+	if (!IsCustomizingFromGarage() && S.CustomGauges != 0) return 0;
 
-	if (CarConfigs[CarTypeID].Specialties.Neon != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.WindowTint != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.HeadlightColor != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.NosPurge != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.ExhaustFlame != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.TireSmoke != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.Hydrualics != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.TrunkAudio != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.Spinners != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.SplitHoods != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.Doors != 0) return 0;
-	if (CarConfigs[CarTypeID].Specialties.LicensePlate != 0) return 0;
+	if (IsSpecialtyOffered(SPEC_Neon, S.Neon)) return 0;
+	if (IsSpecialtyOffered(SPEC_WindowTint, S.WindowTint)) return 0;
+	if (IsSpecialtyOffered(SPEC_HeadlightColor, S.HeadlightColor)) return 0;
+	if (IsSpecialtyOffered(SPEC_NosPurge, S.NosPurge)) return 0;
+	if (IsSpecialtyOffered(SPEC_ExhaustFlame, S.ExhaustFlame)) return 0;
+	if (IsSpecialtyOffered(SPEC_TireSmoke, S.TireSmoke)) return 0;
+	if (IsSpecialtyOffered(SPEC_Hydraulics, S.Hydrualics)) return 0;
+	if (IsSpecialtyOffered(SPEC_TrunkAudio, S.TrunkAudio)) return 0;
+	if (IsSpecialtyOffered(SPEC_Spinners, S.Spinners)) return 0;
+	if (IsSpecialtyOffered(SPEC_SplitHoods, S.SplitHoods)) return 0;
+	if (IsSpecialtyOffered(SPEC_Doors, S.Doors)) return 0;
+	if (IsSpecialtyOffered(SPEC_LicensePlate, S.LicensePlate)) return 0;
 
 	return 1;
 }

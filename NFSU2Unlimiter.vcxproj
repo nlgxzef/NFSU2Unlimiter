@@ -135,7 +135,10 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AcidEmitter.h" />
+    <ClInclude Include="AIEngineBank.h" />
     <ClInclude Include="bChunk.h" />
+    <ClInclude Include="BigFileVFS.h" />
     <ClInclude Include="bList.h" />
     <ClInclude Include="bMatrix.h" />
     <ClInclude Include="bReleasePrintf.h" />
@@ -145,6 +148,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="CarCustomizeManager.h" />
     <ClInclude Include="CareerEventData.h" />
+    <ClInclude Include="CarEffect.h" />
     <ClInclude Include="CarLoader.h" />
     <ClInclude Include="CarPart.h" />
     <ClInclude Include="CarPartDatabase.h" />
@@ -173,11 +177,14 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="DetailsPane.h" />
     <ClInclude Include="DialogInterface.h" />
     <ClInclude Include="eLightFlare.h" />
+    <ClInclude Include="EngineBankTrace.h" />
+    <ClInclude Include="EngineSFXGuard.h" />
     <ClInclude Include="ePositionMarker.h" />
     <ClInclude Include="FeCarLimits.h" />
     <ClInclude Include="feDialogConfig.h" />
     <ClInclude Include="FEPackage.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GarageFilter.h" />
     <ClInclude Include="GarageMainScreen.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Helpers.h" />
@@ -205,11 +212,13 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="RimsBrowser.h" />
     <ClInclude Include="SelectablePart.h" />
     <ClInclude Include="SelectCarCameraMover.h" />
+    <ClInclude Include="Specialties.h" />
     <ClInclude Include="StarGazerGuide.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StreamingTrafficCarManager.h" />
     <ClInclude Include="Tachometer.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TerrainTypeInfo.h" />
     <ClInclude Include="UnlimiterData.h" />
     <ClInclude Include="UnlimiterStuff.h" />
     <ClInclude Include="UnlockablesMap.h" />
@@ -236,6 +245,9 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="NFSU2Unlimiter.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NFSU2UnlimiterSettings.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

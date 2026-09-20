@@ -2,6 +2,9 @@
 #include "InGameFunctions.h"
 #include "PartLink.h"
 
+bool AllowExcludedDecals = false;
+bool KeepHoodDecals = true;
+
 void __declspec(naked) BuildRandomRideCodeCave()
 {
 	_asm
@@ -202,7 +205,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
         if (TheCarPart)
         {
             // Hide excluded decal layout parts
-			int ExcludeDecalSlot = CarPart_GetExcludeDecal(TheCarPart, EDX_Unused);
+			int ExcludeDecalSlot = AllowExcludedDecals ? -1 : CarPart_GetExcludeDecal(TheCarPart, EDX_Unused);
 			if (ExcludeDecalSlot != -1 && ExcludeDecalSlot != CARSLOTID_PAINT_SPOILER)
 				*((BYTE*)RideInfo + 2104 + ExcludeDecalSlot) = 0;
         }

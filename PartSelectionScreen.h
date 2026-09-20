@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
+#include "GarageFilter.h"
 #include "PartLink.h"
 #include "ChooseRimBrand.h"
 
@@ -398,6 +399,7 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
     int CarPartID = GetCarPartFromSlot(CarSlotID);
 
     int BogusCarSlotID = CarSlotID;
+    bool FirstCandidate = true;
 
     //if (PartLink_EnabledForRide((DWORD*)gTheRideInfo)) PartLink_Resolve((DWORD*)gTheRideInfo);
 
@@ -440,7 +442,7 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
             unsigned int IsCF = CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("CARBONFIBRE"), 0) != 0 ? 666 : 0;
             if (*((char*)TheCarPart + 4) == CarPartID && PartAttribFilter == IsCF)
             {
-                if (UnlockSystem_IsCarPartUnlocked(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk)
+                if (IsCarPartOffered(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk, FirstCandidate)
                     && (CarSlotID != CARSLOTID_HOOD || (*((BYTE*)TheCarPart + 5) & 0x1F) != 5)
                     && !PartLink_IsHiddenFromMenu(TheCarPart) && !PartLink_IsSlotHidden(CarSlotID)
                     && PartLink_IsPartFiltered(TheCarPart, CarTypeID, CarSlotID))
@@ -637,7 +639,7 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
         {
             if (*((char*)TheCarPart + 4) == CarPartID && (*((BYTE*)TheCarPart + 5) & 0x1F) == PartAttribFilter)
             {
-                if (UnlockSystem_IsCarPartUnlocked(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk)
+                if (IsCarPartOffered(CarCustomizeManager_GetPartUnlockFilter(), CarSlotID, TheCarPart, SomethingUnk, FirstCandidate)
                     && ((*((BYTE*)TheCarPart + 5) & 0x1F) != 22))
                 {
                     NewBNode = (DWORD*)j__malloc(0x10u);
