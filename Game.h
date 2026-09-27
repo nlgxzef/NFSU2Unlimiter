@@ -137,8 +137,8 @@ void FixComputeMiscStats()
 
 void MapPartSlots()
 {
-	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_WHEEL_MANUFACTURER);
-	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_MISC);
+	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_UL_TIRE_SMOKE); // Tire Smoke
+	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_UL_EXHAUST_FLAME); // Exhaust Flame
 }
 
 int(*LoaderCarInfo_Game)(bChunk*) = (int(*)(bChunk*))0x636BE0;

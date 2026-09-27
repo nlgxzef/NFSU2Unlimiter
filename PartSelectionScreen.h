@@ -23,8 +23,7 @@ void PartSelectionScreen_AddCategoryCarbonChecked(DWORD* PSS, unsigned int Textu
 {
     static const int CarbonSlots[] =
     {
-        CARSLOTID_HOOD, CARSLOTID_SPOILER, CARSLOTID_ROOF,
-        CARSLOTID_LEFT_SIDE_MIRROR, CARSLOTID_RIGHT_SIDE_MIRROR,
+        CARSLOTID_HOOD, CARSLOTID_SPOILER, CARSLOTID_ROOF, CARSLOTID_WING_MIRROR,
         CARSLOTID_DOOR_LEFT, CARSLOTID_DOOR_RIGHT,
     };
 
@@ -48,7 +47,6 @@ void PartSelectionScreen_AddCategoryChecked(DWORD* PSS, unsigned int CarSlotID, 
 void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, void* EDX_Unused)
 {
     RideInfo_UpdatePartsEnabled((DWORD*)gTheRideInfo, nullptr);
-    PartLinkTraceCategories();
 
     // Read Part Options for the car
     DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
@@ -188,6 +186,14 @@ void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, vo
             PartSelectionScreen,
             CarConfigs[CarTypeID].Icons.BodyShopRims,
             CarConfigs[CarTypeID].Names.BodyShopRims);
+
+    if (CarConfigs[CarTypeID].BodyShop.Tires)
+        PartSelectionScreen_AddCategoryChecked(
+            PartSelectionScreen,
+            CARSLOTID_UL_TIRE_TEXTURE,
+            CarConfigs[CarTypeID].Icons.BodyShopTires,
+            CarConfigs[CarTypeID].Names.BodyShopTires,
+            0); // TIRES
 
     if (CarConfigs[CarTypeID].BodyShop.Brakes && !CarConfigs[CarTypeID].Main.SyncVisualPartsWithPhysics)
         PartSelectionScreen_AddCategoryChecked(
@@ -437,6 +443,7 @@ int GetPartsList(int CarSlotID, DWORD* PartsBList, unsigned int PartAttribFilter
     case CARSLOTID_DOOR_SILL_RIGHT:
     case CARSLOTID_HOOD_UNDER:
     case CARSLOTID_TRUNK_UNDER:
+    case CARSLOTID_UL_TIRE_TEXTURE:
         while (TheCarPart)
         {
             unsigned int IsCF = CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("CARBONFIBRE"), 0) != 0 ? 666 : 0;

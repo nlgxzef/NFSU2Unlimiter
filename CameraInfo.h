@@ -279,11 +279,11 @@ CameraInfo* GetPartCameraInfo(int CarTypeID, int CarSlotID)
 		CarSlotID = CARSLOTID_ROOF;
 		break;
 
-	case CARSLOTID_WHEEL_MANUFACTURER: // Tire Smoke
+	case CARSLOTID_UL_TIRE_SMOKE: // Tire Smoke
 		CarSlotID = CARSLOTID_DECAL_LEFT_QUARTER;
 		break;
 
-	case CARSLOTID_MISC: // Exhaust Flame
+	case CARSLOTID_UL_EXHAUST_FLAME: // Exhaust Flame
 		CarSlotID = CARSLOTID_EXHAUST;
 		break;
 	}
@@ -388,13 +388,16 @@ CameraInfo* __cdecl FindPartCameraInfo(int CarSlotID, int IsSUV, int IsHummer, D
 
 	// Read Part Options for the car
 	DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
-	int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
+	if (FECarConfig)
+	{
+		int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
 
-	// Get camera info from config files
-	CameraInfo* result = (CarSlotID >= CARSLOTID_VINYL_LAYER0 && CarSlotID <= CARSLOTID_VINYL_LAYER3) 
-		? GetVinylCameraInfo(CarTypeID, TheCarPart) 
-		: GetPartCameraInfo(CarTypeID, CarSlotID);
-	if (result) return result;
+		// Get camera info from config files
+		CameraInfo* result = (CarSlotID >= CARSLOTID_VINYL_LAYER0 && CarSlotID <= CARSLOTID_VINYL_LAYER3)
+			? GetVinylCameraInfo(CarTypeID, TheCarPart)
+			: GetPartCameraInfo(CarTypeID, CarSlotID);
+		if (result) return result;
+	}
 
 	// If not found, use vanilla implementation:
 	if (IsSUV && IsHummer && (CarSlotID == CARSLOTID_ENGINE || CarSlotID == CARSLOTID_NEON_ENGINE || CarSlotID == CARSLOTID_PAINT_ENGINE))
@@ -438,11 +441,11 @@ CameraInfo* __cdecl FindPartCameraInfo(int CarSlotID, int IsSUV, int IsHummer, D
 		CarSlotID = CARSLOTID_ROOF;
 		break;
 
-	case CARSLOTID_WHEEL_MANUFACTURER: // Tire Smoke
+	case CARSLOTID_UL_TIRE_SMOKE: // Tire Smoke
 		CarSlotID = CARSLOTID_DECAL_LEFT_QUARTER;
 		break;
 
-	case CARSLOTID_MISC: // Exhaust Flame
+	case CARSLOTID_UL_EXHAUST_FLAME: // Exhaust Flame
 		CarSlotID = CARSLOTID_EXHAUST;
 		break;
 	}

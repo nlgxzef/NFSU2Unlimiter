@@ -2,8 +2,7 @@
 #include "InGameFunctions.h"
 #include "PartLink.h"
 
-bool AllowExcludedDecals = false;
-bool KeepHoodDecals = true;
+bool HoodDecalsOnCustomHoods = true;
 
 void __declspec(naked) BuildRandomRideCodeCave()
 {
@@ -205,7 +204,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
         if (TheCarPart)
         {
             // Hide excluded decal layout parts
-			int ExcludeDecalSlot = AllowExcludedDecals ? -1 : CarPart_GetExcludeDecal(TheCarPart, EDX_Unused);
+			int ExcludeDecalSlot = HoodDecalsOnCustomHoods ? -1 : CarPart_GetExcludeDecal(TheCarPart, EDX_Unused);
 			if (ExcludeDecalSlot != -1 && ExcludeDecalSlot != CARSLOTID_PAINT_SPOILER)
 				*((BYTE*)RideInfo + 2104 + ExcludeDecalSlot) = 0;
         }
@@ -267,17 +266,18 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
                                 if (j == 0) sprintf(KitNameBuf, "%s_", GetCarTypeName(CarType));
                                 else sprintf(KitNameBuf, "%s_STYLE%02d_", GetCarTypeName(CarType), j);
                                 DWORD DecalNamePartialHash = bStringHash(KitNameBuf);
+                                DWORD* NewHoodDecalPart = nullptr;
 
                                 if (*HoodDecalPart == bStringHash2("DECAL_HOOD_RECT_MEDIUM", DecalNamePartialHash)) // Layout 1
-                                {
-                                    RideInfo[356 + CARSLOTID_DECAL_HOOD] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, CARSLOTID_DECAL_HOOD, bStringHash2("DECAL_HOOD_RECT_MEDIUM", KitNamePartialHash), 0, -1);
-                                    break;
-                                }
+                                    NewHoodDecalPart = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, CARSLOTID_DECAL_HOOD, bStringHash2("DECAL_HOOD_RECT_MEDIUM", KitNamePartialHash), 0, -1);
                                 else if (*HoodDecalPart == bStringHash2("DECAL_HOOD_RECT_SMALL", DecalNamePartialHash)) // Layout 2
-                                {
-                                    RideInfo[356 + CARSLOTID_DECAL_HOOD] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, CARSLOTID_DECAL_HOOD, bStringHash2("DECAL_HOOD_RECT_SMALL", KitNamePartialHash), 0, -1);
-                                    break;
-                                }
+                                    NewHoodDecalPart = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, CARSLOTID_DECAL_HOOD, bStringHash2("DECAL_HOOD_RECT_SMALL", KitNamePartialHash), 0, -1);
+                                else
+                                    continue;
+
+                                if (NewHoodDecalPart) RideInfo[356 + CARSLOTID_DECAL_HOOD] = (DWORD)NewHoodDecalPart;
+
+                                break;
                             }
                         }
 
@@ -667,7 +667,7 @@ void __fastcall RideInfo_SetStockParts(DWORD* RideInfo, void* EDX_Unused, int us
     DWORD* part = 0;
     DWORD PartNameHash = 0;
 
-    for (int i = CARSLOTID_MODEL_FIRST; i < CARSLOTID_WHEEL_MANUFACTURER; ++i)
+    for (int i = CARSLOTID_MODEL_FIRST; i < CARSLOTID_UL_TIRE_SMOKE; ++i)
     {
         if ((i < CARSLOTID_VINYL_LAYER0 || i > CARSLOTID_VINYL_LAYER3) 
             && (i < CARSLOTID_DECAL_HOOD_TEX0 || i > CARSLOTID_DECAL_RIGHT_QUARTER_TEX7))

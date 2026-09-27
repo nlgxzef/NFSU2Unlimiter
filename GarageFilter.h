@@ -1,8 +1,6 @@
 #pragma once
 
 #include "stdafx.h"
-#include "stdio.h"
-#include <filesystem>
 #include "GlobalVariables.h"
 #include "InGameFunctions.h"
 #include "Specialties.h"
@@ -38,31 +36,6 @@
 // with no way to put it back.
 
 bool GarageShowsOwnedPartsOnly = false;
-
-// Says, per part, which of the three things this rests on actually held: the entry point really
-// being the garage, the career car being found, and the inventory bit being set.
-bool GarageFilterTrace = false;
-int GarageFilterTraceUsed = 0;
-constexpr int GarageFilterTraceLimit = 300;
-
-void GarageFilterTraceLine(const char* fmt, ...)
-{
-	if (GarageFilterTraceUsed >= GarageFilterTraceLimit) return;
-
-	GarageFilterTraceUsed++;
-
-	auto Path = CurrentWorkingDirectory / "UnlimiterData" / "_GarageFilter.txt";
-	FILE* f = fopen(Path.string().c_str(), "a");
-
-	if (!f) return;
-
-	va_list args;
-	va_start(args, fmt);
-	vfprintf(f, fmt, args);
-	va_end(args);
-
-	fclose(f);
-}
 
 // GetCurrentCareerCar ends in retn 4, so it takes the career car key as a stack argument and cleans
 // it up itself. Declaring it without one made every call eat four bytes of the caller's stack.
@@ -116,8 +89,8 @@ bool IsGarageOwnershipSlot(int CarSlotID)
 	case CARSLOTID_HUD_BACKING_COLOUR:
 	case CARSLOTID_HUD_NEEDLE_COLOUR:
 	case CARSLOTID_HUD_CHARACTER_COLOUR:
-	case CARSLOTID_MISC:                // Exhaust Flame
-	case CARSLOTID_WHEEL_MANUFACTURER:  // Tire Smoke
+	case CARSLOTID_UL_EXHAUST_FLAME:                // Exhaust Flame
+	case CARSLOTID_UL_TIRE_SMOKE:  // Tire Smoke
 		return true;
 	}
 
@@ -134,7 +107,7 @@ bool ShouldHideInGarage(int CarSlotID, DWORD* CarPart, bool IsSpecialtyList, boo
 	bool IsFirst = First;
 	First = false;
 
-	if (!GarageShowsOwnedPartsOnly && !GarageFilterTrace) return false;
+	if (!GarageShowsOwnedPartsOnly) return false;
 	if (!CarPart) return false;
 
 	bool InGarage = IsCustomizingFromGarage();
@@ -145,11 +118,6 @@ bool ShouldHideInGarage(int CarSlotID, DWORD* CarPart, bool IsSpecialtyList, boo
 	bool Hide = GarageShowsOwnedPartsOnly && InGarage && CareerCar
 		&& !Installed && !Owned && !IsFirst
 		&& (IsSpecialtyList || IsGarageOwnershipSlot(CarSlotID));
-
-	if (GarageFilterTrace)
-		GarageFilterTraceLine("slot %3d  part %08X  entrypoint %d  careercar %08X  installed %d  owned %d  first %d  spec %d  -> %s\n",
-			CarSlotID, (DWORD)CarPart, *(int*)0x83898C, (DWORD)CareerCar,
-			Installed, Owned, IsFirst, IsSpecialtyList, Hide ? "hidden" : "shown");
 
 	return Hide;
 }

@@ -253,6 +253,11 @@ void __declspec(naked) ShowEngineAttrCodeCave()
 	}
 }
 
+CarRenderInfoExtra* CarRenderInfo_GetExtra(DWORD* CarRenderInfo)
+{
+	return (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+}
+
 int AnimLocationForExtraAttachment(int CarType, int CarSlotID, int orig)
 {
 	BodyShopSection& B = CarConfigs[CarType].BodyShop;
@@ -350,12 +355,12 @@ void __fastcall CarRenderInfo_TriggerEffect(DWORD* CarRenderInfo, void* EDX_Unus
 	CRI_TSE_LoadingFromExtra = 0;
 	
 	// Get tire smoke emitter
-	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 	if (extra)
 	{
 		if (extra->pRideInfo)
 		{
-			DWORD* Part = RideInfo_GetPart(extra->pRideInfo, CARSLOTID_WHEEL_MANUFACTURER);
+			DWORD* Part = RideInfo_GetPart(extra->pRideInfo, CARSLOTID_UL_TIRE_SMOKE);
 
 			if ((CarEffect == CARFX_SKID_SMOKE || CarEffect == CARFX_TIRE_SPEW)
 				&& Part && Part[0] != CT_bStringHash("VINYL_L1_COLOR01"))
@@ -523,7 +528,6 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 	}
 }
 
-static injector::hook_back<int(*)(DWORD, int, int)> hb_GetTextureInfo;
 DWORD GetNeonTextureInfo(DWORD name_hash, int return_default_texture_if_not_found, int include_unloaded_textures)
 {
 	// Required code is implemented in CarRenderInfo_UpdateCarReplacementTextures
@@ -697,7 +701,7 @@ void __fastcall CarRenderInfo_RenderNeon(DWORD* CarRenderInfo, void* EDX_Unused,
 void CarRenderInfo_SetLightState(DWORD* CarRenderInfo, int LightID, bool on)
 {
 	DWORD* TheCar = (DWORD*)CarRenderInfo[0];
-	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 
 	if (extra)
 	{
@@ -727,7 +731,7 @@ int CarRenderInfo_GetLightState(DWORD* CarRenderInfo, int LightID)
 	bool LightsOn = false;
 	bool DamageLights = false;
 
-	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 
 	if (extra)
 	{
@@ -1896,7 +1900,7 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 	eLightFlare* Flare;
 	int FlareType = 0;
 
-	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 
 	extra->TimeBaseStart = bRandomF(1.0f); // Random start time offset
 
@@ -2046,7 +2050,7 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 
 void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_Unused, DWORD* view, bVector3* position, bMatrix4* body_matrix, int force_light_state, int reflection, float scale)
 {
-	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 
 	float time = extra->TimeBaseStart + *(float*)0x7FB718; //WorldTimeSeconds + this->CarTimebaseStart
 	bMatrix4* LocalWorld = eFrameMallocMatrix(1);
@@ -2429,7 +2433,7 @@ static injector::hook_back<void (__fastcall*)(DWORD*, void*)> hb_CarRenderInfo_d
 void __fastcall CarRenderInfo_dtor_Hook(DWORD* CarRenderInfo, void* EDX_Unused)
 {
 	// Free CarRenderInfoExtra
-	CarRenderInfoExtra* extra = (CarRenderInfoExtra*)CarRenderInfo[CRI_Loc_Extra];
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 	if (extra) delete extra;
 	CarRenderInfo[CRI_Loc_Extra] = 0;
 

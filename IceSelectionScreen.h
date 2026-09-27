@@ -333,7 +333,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			if (AMenuOption)
 			{
 				IceSelectionThing_Create(AMenuOption,
-					CARSLOTID_MISC,
+					CARSLOTID_UL_EXHAUST_FLAME,
 					CarConfigs[CarTypeID].Icons.SpecialtiesExhaustFlame,
 					CarConfigs[CarTypeID].Names.SpecialtiesExhaustFlame,
 					0,
@@ -351,7 +351,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			if (AMenuOption)
 			{
 				IceSelectionThing_Create(AMenuOption,
-					CARSLOTID_WHEEL_MANUFACTURER,
+					CARSLOTID_UL_TIRE_SMOKE,
 					CarConfigs[CarTypeID].Icons.SpecialtiesTireSmoke,
 					CarConfigs[CarTypeID].Names.SpecialtiesTireSmoke,
 					0,

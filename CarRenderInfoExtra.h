@@ -2,6 +2,9 @@
 
 #define CRI_Loc_Extra 0x3C/4 // ModelOffset.pad, normally unused
 
+static injector::hook_back<int(*)(DWORD, int, int)> hb_GetTextureInfo; // for TexWizard compatibililty, also used in CarRenderInfo.h
+void TexturePainter_PaintTireTexture(DWORD*, DWORD); // TexturePainter.h
+
 bool UseUnlimiterEmitter = 1;
 
 struct CarRenderInfoExtra
@@ -18,6 +21,8 @@ struct CarRenderInfoExtra
 	int OnLights = 0;
 	int BrokenLights = 0;
 	float TimeBaseStart = 0.0f;
+
+	DWORD /*TextureInfo*/* pTireTextureInfo = nullptr;
 
 	CarRenderInfoExtra(DWORD* render_info, DWORD* ride, DWORD *car)
 	{
@@ -45,7 +50,7 @@ struct CarRenderInfoExtra
 	{
 		if (DisableExhaustFlameAndTireSmoke) return;
 
-		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_MISC);
+		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_UL_EXHAUST_FLAME);
 		bTList<AcidEmitter>* EmitterList_CARFX_NITRO = (bTList<AcidEmitter>*)(pCarRenderInfo + (0x4A8 / 4));
 		float hue, lum, sat;
 
@@ -70,7 +75,7 @@ struct CarRenderInfoExtra
 	{
 		if (DisableExhaustFlameAndTireSmoke) return;
 
-		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_WHEEL_MANUFACTURER);
+		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_UL_TIRE_SMOKE);
 		bTList<AcidEmitter>* EmitterList_CARFX_SKID_SMOKE = (bTList<AcidEmitter>*)(pCarRenderInfo + (0x470 / 4));
 		float hue, lum, sat;
 
@@ -115,9 +120,25 @@ struct CarRenderInfoExtra
 		}
 	}
 
+	void GetTireTextureInfo()
+	{
+		if (DisableTextureReplacement || DisableMaterialBasedReplacement) return;
+
+		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_UL_TIRE_TEXTURE);
+		if (Part)
+		{
+			DWORD TireTextureHash = CarPart_GetTextureName(Part);
+			if (TireTextureHash) pTireTextureInfo = (DWORD*)hb_GetTextureInfo.fun(TireTextureHash, 0, 0);
+
+			TexturePainter_PaintTireTexture(pRideInfo, TireTextureHash);
+		}
+	}
+
 	void Init()
 	{
 		ApplyExhaustFlameColor();
 		ApplyTireSmokeColor();
+
+		GetTireTextureInfo();
 	}
 };

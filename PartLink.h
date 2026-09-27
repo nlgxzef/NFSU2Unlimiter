@@ -38,28 +38,6 @@
 #define PARTLINK_FILTER_MAX 9
 #define PARTLINK_FILTER_NUM PARTLINK_FILTER_MAX + 2 // To include numberless and 0
 
-bool PartLinkTrace = false;
-
-// One file, off by default. Two questions it answers, which I have now guessed at twice: is
-// SWAPSLOT_<SLOT> being read off the part at all, and is that state current when the Body Shop
-// builds its categories.
-
-void PartLinkTraceLine(const char* fmt, ...)
-{
-	if (!PartLinkTrace) return;
-
-	auto Path = CurrentWorkingDirectory / "UnlimiterData" / "_PartLinkTrace.txt";
-	FILE* f = fopen(Path.string().c_str(), "a");
-	if (!f) return;
-
-	va_list args;
-	va_start(args, fmt);
-	vfprintf(f, fmt, args);
-	va_end(args);
-
-	fclose(f);
-}
-
 DWORD PartLinkHideSlotHashes[CARSLOTID_NUM]; // "HIDESLOT_<slot>"
 DWORD PartLinkSwapSlotHashes[CARSLOTID_NUM]; // "SWAPSLOT_<slot>"
 
@@ -157,8 +135,6 @@ void PartLink_Resolve(DWORD* RideInfo)
 	memset(PartLinkSlotHidden, 0, sizeof(PartLinkSlotHidden));
 	memset(PartLinkSwapTarget, 0, sizeof(PartLinkSwapTarget));
 
-	PartLinkTraceLine("resolve: car type %d\n", *RideInfo);
-
 	DWORD* WideBodyPart = (DWORD*)RideInfo[356 + CARSLOTID_WIDE_BODY];
 	bool HasWidebody = WideBodyPart && ((*((BYTE*)WideBodyPart + 5) & 0xE0) != 0);
 
@@ -180,13 +156,7 @@ void PartLink_Resolve(DWORD* RideInfo)
 			
 			DWORD h = CarPart_GetAppliedAttributeUParam(Part, PartLinkHideSlotHashes[target], PARTLINK_ABSENT);
 
-			if (h != PARTLINK_ABSENT)
-			{
-				PartLinkSlotHidden[target] = true;
-
-				PartLinkTraceLine("  slot %d %s: HIDESLOT_%s (raw 0x%08X)\n",
-					slot, GetCarSlotIDName(slot), GetCarSlotIDName(target), (unsigned int)h);
-			}
+			if (h != PARTLINK_ABSENT) PartLinkSlotHidden[target] = true;
 
 			DWORD v = CarPart_GetAppliedAttributeUParam(Part, PartLinkSwapSlotHashes[target], PARTLINK_ABSENT);
 
@@ -194,18 +164,9 @@ void PartLink_Resolve(DWORD* RideInfo)
 
 			// A part name hash is never a small number. Under 0x10000 means the attribute was
 			// typed Boolean or Integer, so what got stored is that field rather than ValueKey.
-			//if (v < 0x10000)
-			//{
-			//	PartLinkTraceLine("  slot %d %s: SWAPSLOT_%s = %u, not a part name hash."
-			//		" Set Type = Key in Binary.\n",
-			//		slot, GetCarSlotIDName(slot), GetCarSlotIDName(target), (unsigned int)v);
-			//	continue;
-			//}
+			//if (v < 0x10000) continue;
 
 			PartLinkSwapTarget[target] = v;
-
-			PartLinkTraceLine("  slot %d %s: SWAPSLOT_%s = 0x%08X\n",
-				slot, GetCarSlotIDName(slot), GetCarSlotIDName(target), (unsigned int)v);
 		}
 	}
 
@@ -320,28 +281,6 @@ bool PartLink_IsSlotHidden(int CarSlotID)
 	if (CarSlotID < 0 || CarSlotID >= CARSLOTID_NUM) return false;
 
 	return PartLinkSlotHidden[CarSlotID];
-}
-
-// Called from SetupBodyShop right after the resolve, so the file shows what the menu is working
-// from rather than what the resolve found a moment earlier on some other car.
-void PartLinkTraceCategories()
-{
-	if (!PartLinkTrace) return;
-
-	int n = 0;
-
-	for (int i = 0; i < CARSLOTID_NUM; i++)
-	{
-		if (!PartLinkSlotHidden[i] && !PartLinkSwapTarget[i]) continue;
-
-		PartLinkTraceLine("  category gate: slot %d %s %s%s\n", i, GetCarSlotIDName(i),
-			PartLinkSlotHidden[i] ? "hidden " : "",
-			PartLinkSwapTarget[i] ? "swapped" : "");
-
-		n++;
-	}
-
-	PartLinkTraceLine("body shop: %d slot(s) governed\n\n", n);
 }
 
 // Parts that only ever arrive by being pulled in, never by being picked. Generalises a rule the

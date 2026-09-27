@@ -9,8 +9,8 @@ bool ShouldShowColorValuesInsteadOfName(int CarSlotID)
 
 	switch (CarSlotID)
 	{
-	case CARSLOTID_WHEEL_MANUFACTURER:
-	case CARSLOTID_MISC:
+	case CARSLOTID_UL_TIRE_SMOKE:
+	case CARSLOTID_UL_EXHAUST_FLAME:
 		result = 1;
 		break;
 	default:
@@ -27,8 +27,8 @@ bool ShouldShowPaintedIcons(int CarSlotID)
 
 	switch (CarSlotID)
 	{
-	case CARSLOTID_WHEEL_MANUFACTURER:
-	case CARSLOTID_MISC:
+	case CARSLOTID_UL_TIRE_SMOKE:
+	case CARSLOTID_UL_EXHAUST_FLAME:
 	case CARSLOTID_HEADLIGHT_BULB:
 		result = 1;
 		break;
@@ -118,8 +118,8 @@ void __fastcall IcePartsBrowser_BuildPartsList_2(DWORD* IcePartsBrowser, void* E
     if (CategoryNode)
     {
         int CarSlotID = CategoryNode[18];
-        if (CarSlotID == CARSLOTID_WHEEL_MANUFACTURER
-            || CarSlotID == CARSLOTID_MISC)
+        if (CarSlotID == CARSLOTID_UL_TIRE_SMOKE
+            || CarSlotID == CARSLOTID_UL_EXHAUST_FLAME)
         {
             DWORD* PartsList = IcePartsBrowser + 21;
 
@@ -305,14 +305,15 @@ void __fastcall IcePartsBrowser_NotificationMessage(DWORD* IcePartsBrowser, void
 
 	if (message == CT_bStringHash("PAD_BUTTON1"))
 	{
-		if (CarSlotID == CARSLOTID_MISC)
+		if (CarSlotID == CARSLOTID_UL_EXHAUST_FLAME)
 		{
 			FETriggerCarEffect(CARFX_NITRO, 1.0f, TERRAIN_TYPE_NONE);
 		}
 
-		if (CarSlotID == CARSLOTID_WHEEL_MANUFACTURER)
+		if (CarSlotID == CARSLOTID_UL_TIRE_SMOKE)
 		{
 			FETriggerCarEffect(CARFX_SKID_SMOKE, 1.0f, TERRAIN_TYPE_ROAD);
+			FETriggerCarEffect(CARFX_TIRE_SPEW, 1.0f, TERRAIN_TYPE_ROAD);
 		}
 		
 		goto Game;

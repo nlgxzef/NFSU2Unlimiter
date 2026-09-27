@@ -33,9 +33,8 @@
 // pops a finished engine, and writes down what it dropped. So the log names the moment and the
 // game keeps running, rather than having to pick one.
 //
-// This does not explain who frees the object without deregistering it. The log is there to answer
-// that: it records every registration with its slot, so the entry that went stale can be matched
-// against the one that was never popped.
+// This does not explain who frees the object without deregistering it. Whatever it drops goes to
+// UnlimiterData\_EngineSFXGuard.txt, so no file means nothing needed catching.
 
 bool EngineSFXGuard = true;
 
@@ -45,17 +44,10 @@ constexpr int CARSFX_EngineSlotCount = 6; // rep stosd of 6 dwords at 0x473C3A
 
 constexpr DWORD PoolFreeFill = 0xEEEEEEEE; // 0x43FAFA
 
-// Two budgets on purpose. Registrations are steady background noise, a few per race, and on the
-// first run they spent the whole allowance before anything interesting happened. Drops and
-// anomalies are the reason this file exists, so they get a budget nothing else can touch.
-int EngineSFXGuardNoise = 0;
-int EngineSFXGuardSignal = 0;
-constexpr int EngineSFXGuardNoiseLimit = 400;
-constexpr int EngineSFXGuardSignalLimit = 400;
+int EngineSFXGuardReported = 0;
+constexpr int EngineSFXGuardReportLimit = 400;
 
 void(__thiscall* CSTATEMGR_PlayerCar_UpdateParams_Game)(DWORD* This, float Dt) = (void(__thiscall*)(DWORD*, float))0x463D80;
-void(__thiscall* CARSFX_AIEngine_InitSFX_Game)(DWORD* This) = (void(__thiscall*)(DWORD*))0x461060;
-void(__thiscall* CARSFX_PlayerEngine_InitSFX_Game)(DWORD* This) = (void(__thiscall*)(DWORD*))0x461570;
 bool(__thiscall* CARSFX_EngineBase_IsEngineFinishedLoading_Game)(DWORD* This) = (bool(__thiscall*)(DWORD*))0x461000;
 
 void EngineSFXGuardLine(const char* fmt, ...)
@@ -94,21 +86,18 @@ bool EngineSFXIsDead(DWORD Object)
 	return false;
 }
 
-void EngineSFXGuardReport(bool Signal, const char* What, int Slot, DWORD Object)
+void EngineSFXGuardReport(const char* What, int Slot, DWORD Object)
 {
-	int& Used = Signal ? EngineSFXGuardSignal : EngineSFXGuardNoise;
-	const int Limit = Signal ? EngineSFXGuardSignalLimit : EngineSFXGuardNoiseLimit;
+	if (EngineSFXGuardReported >= EngineSFXGuardReportLimit) return;
 
-	if (Used >= Limit) return;
+	EngineSFXGuardReported++;
 
-	Used++;
-
-	EngineSFXGuardLine("%s%s slot %d object 0x%08X  vtable %08X  +B0 %08X  +B4 %08X\n",
-		Signal ? "*** " : "", What, Slot, Object,
+	EngineSFXGuardLine("%s slot %d object 0x%08X  vtable %08X  +B0 %08X  +B4 %08X\n",
+		What, Slot, Object,
 		EngineSFXRead(Object), EngineSFXRead(Object + 0xB0), EngineSFXRead(Object + 0xB4));
 
-	if (Used == Limit)
-		EngineSFXGuardLine("(%s budget spent, further ones are silent)\n", Signal ? "drop" : "registration");
+	if (EngineSFXGuardReported == EngineSFXGuardReportLimit)
+		EngineSFXGuardLine("(budget spent, further ones are silent)\n");
 }
 
 // Pops dead entries off the top exactly the way 0x463DBF and 0x463DCA do for a finished one.
@@ -121,7 +110,7 @@ void EngineSFXGuardScrub()
 	// past six pointers into whatever globals follow. Never seen it happen, but it is one compare.
 	if (*Slot >= CARSFX_EngineSlotCount)
 	{
-		EngineSFXGuardReport(true, "SLOT INDEX PAST THE END OF THE ARRAY,", *Slot, 0);
+		EngineSFXGuardReport("slot index past the end of the array,", *Slot, 0);
 		*Slot = CARSFX_EngineSlotCount - 1;
 	}
 
@@ -132,7 +121,7 @@ void EngineSFXGuardScrub()
 		if (!Object) break;                 // empty top, nothing pending
 		if (!EngineSFXIsDead(Object)) break; // still alive, leave it to the game
 
-		EngineSFXGuardReport(true, "dropped freed engine sfx,", *Slot, Object);
+		EngineSFXGuardReport("dropped freed engine sfx,", *Slot, Object);
 
 		Objs[*Slot] = 0;
 		(*Slot)--;
@@ -151,25 +140,11 @@ bool __fastcall CARSFX_EngineBase_IsEngineFinishedLoading(DWORD* This, void* EDX
 {
 	if (EngineSFXIsDead((DWORD)This))
 	{
-		EngineSFXGuardReport(true, "freed engine sfx asked whether it finished loading,", *(int*)CARSFX_CurEngineSlot, (DWORD)This);
+		EngineSFXGuardReport("freed engine sfx asked whether it finished loading,", *(int*)CARSFX_CurEngineSlot, (DWORD)This);
 		return true;
 	}
 
 	return CARSFX_EngineBase_IsEngineFinishedLoading_Game(This);
-}
-
-void __fastcall CARSFX_AIEngine_InitSFX(DWORD* This, void* EDX_Unused)
-{
-	CARSFX_AIEngine_InitSFX_Game(This);
-
-	EngineSFXGuardReport(false, "AI engine registered,", *(int*)CARSFX_CurEngineSlot, (DWORD)This);
-}
-
-void __fastcall CARSFX_PlayerEngine_InitSFX(DWORD* This, void* EDX_Unused)
-{
-	CARSFX_PlayerEngine_InitSFX_Game(This);
-
-	EngineSFXGuardReport(false, "player engine registered,", *(int*)CARSFX_CurEngineSlot, (DWORD)This);
 }
 
 void InitEngineSFXGuard()
@@ -180,9 +155,6 @@ void InitEngineSFXGuard()
 	std::filesystem::remove(CurrentWorkingDirectory / "UnlimiterData" / "_EngineSFXGuard.txt", ErrorCode);
 
 	injector::WriteMemory(0x78A3C8, &CSTATEMGR_PlayerCar_UpdateParams, true); // CSTATEMGR_PlayerCar vtable
-	injector::WriteMemory(0x78AEAC, &CARSFX_AIEngine_InitSFX, true);          // CARSFX_AIEngine vtable
-	injector::WriteMemory(0x78AEFC, &CARSFX_AIEngine_InitSFX, true);          // and its second table
-	injector::WriteMemory(0x78AF4C, &CARSFX_PlayerEngine_InitSFX, true);      // CARSFX_PlayerEngine vtable
 
 	injector::MakeCALL(0x463DB1, CARSFX_EngineBase_IsEngineFinishedLoading, true); // the only caller
 }

@@ -7,7 +7,6 @@
 
 #define UNLOCKABLE_CUSTOM_HUD 23
 #define UNLOCKABLE_DECAL      76
-bool ChargeForGauges = 1;
 
 int __fastcall PlayerCareerState_GetCarPartCost(DWORD *PlayerCareerState, void *EDX_Unused, int slot, DWORD* part)
 {
@@ -32,8 +31,7 @@ int __fastcall PlayerCareerState_GetCarPartCost(DWORD *PlayerCareerState, void *
     }
     else
     {
-        bool PricedAtTierZero = unlockable == UNLOCKABLE_DECAL
-            || (ChargeForGauges && unlockable == UNLOCKABLE_CUSTOM_HUD);
+        bool PricedAtTierZero = (unlockable == UNLOCKABLE_DECAL) || (unlockable == UNLOCKABLE_CUSTOM_HUD);
 
         if (!PricedAtTierZero)
             goto ZeroCost;

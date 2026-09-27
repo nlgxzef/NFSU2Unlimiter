@@ -177,9 +177,11 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="DetailsPane.h" />
     <ClInclude Include="DialogInterface.h" />
     <ClInclude Include="eLightFlare.h" />
-    <ClInclude Include="EngineBankTrace.h" />
+    <ClInclude Include="eModel.h" />
     <ClInclude Include="EngineSFXGuard.h" />
     <ClInclude Include="ePositionMarker.h" />
+    <ClInclude Include="eSolid.h" />
+    <ClInclude Include="eViewPlatInterface.h" />
     <ClInclude Include="FeCarLimits.h" />
     <ClInclude Include="feDialogConfig.h" />
     <ClInclude Include="FEPackage.h" />
@@ -197,6 +199,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="LoadedSkin.h" />
     <ClInclude Include="LoadedSkinLayer.h" />
     <ClInclude Include="NeonPartsBrowser.h" />
+    <ClInclude Include="NetCarData.h" />
     <ClInclude Include="PartInfoWidget.h" />
     <ClInclude Include="PartLink.h" />
     <ClInclude Include="PartNode.h" />
@@ -219,6 +222,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="Tachometer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TerrainTypeInfo.h" />
+    <ClInclude Include="TexturePainter.h" />
     <ClInclude Include="UnlimiterData.h" />
     <ClInclude Include="UnlimiterStuff.h" />
     <ClInclude Include="UnlockablesMap.h" />

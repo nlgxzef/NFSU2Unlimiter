@@ -2,7 +2,29 @@
 
 #include "stdafx.h"
 #include "GlobalVariables.h"
-#include "EngineBankTrace.h"
+
+#define CARSFX_LoadedAIEngineBanks 0x82A5A0
+constexpr int CARSFX_LoadedBankCount = 6; // rep stosd of 6 dwords at 0x480FD1
+
+// The engine data array we hand the game lives in this DLL, so the base has to come from the patch
+// site rather than a constant: whichever g_ED the redirect at 0x4594DB points at right now.
+DWORD EngineDataArrayBase()
+{
+	return injector::ReadMemory<DWORD>(0x4594DB, true);
+}
+
+// -1 for anything that is not a whole record into that array, which is how a restored entry is
+// checked for being real before it is put back.
+int EngineDataIndexOf(DWORD Entry)
+{
+	DWORD Base = EngineDataArrayBase();
+
+	if (!Base || Entry < Base) return -1;
+
+	DWORD Offset = Entry - Base;
+
+	return (Offset % 0x4C) ? -1 : (int)(Offset / 0x4C);
+}
 
 // Stops an AI car from being given another AI car's engine sound.
 //
@@ -108,7 +130,7 @@ void __fastcall CSTATEMGR_AICar_ResolveEngineBankLoading(DWORD* This, void* EDX_
 
 	if (!AIEngineBankFix) return;
 
-	DWORD Base = EngineBankTraceBase();
+	DWORD Base = EngineDataArrayBase();
 
 	if (!Base) return;
 
@@ -149,22 +171,6 @@ void __fastcall CSTATEMGR_AICar_ResolveEngineBankLoading(DWORD* This, void* EDX_
 			Distinct[Spent++] = OwnId;
 		}
 
-		if (EngineBankTrace)
-		{
-			EngineBankTraceLine("Resolve       car=%08X  group %d  own id %d (%s)%s  restored over id %d (%s)\n",
-				(DWORD)State, State[0xD0 / 4], OwnId, EngineBankNameOf(OwnEntry),
-				IsEngineInLoadedArray_Game(State[0xD0 / 4], OwnId) ? "" : " [not in its group table]",
-				EngineBankIndexOf(Given), EngineBankNameOf(Given));
-
-			// CarPreSetup derived these two from the car's own entry and nothing since has touched
-			// them, so they say which granular layer the car reaches for once it is playing.
-			EngineBankTraceLine("      ginsu flag +78h=%d  dual ginsu record +84h=%08X\n",
-				State[0x78 / 4], State[0x84 / 4]);
-
-			EngineBankDescribe("own  ", OwnEntry);
-			EngineBankDescribe("given", Given);
-		}
-
 		State[0x7C / 4] = OwnId;
 		State[0x80 / 4] = OwnEntry;
 
@@ -179,52 +185,22 @@ void __fastcall EAXAITunerCar_ConnectCar(DWORD* This, void* EDX_Unused, DWORD* C
 
 	EAXAITunerCar_ConnectCar_Game(This, Car);
 
-	DWORD AfterEntry = This[0x80 / 4];
+	if (This[0x80 / 4] == BeforeEntry) return;
 
-	if (AfterEntry == BeforeEntry)
-	{
-		if (EngineBankTrace)
-			EngineBankTraceLine("ConnectCar    car=%08X  kept id %d (%s)\n",
-				(DWORD)This, EngineBankIndexOf(AfterEntry), EngineBankNameOf(AfterEntry));
+	// Only undo a swap when the entry being put back is a real one.
+	if (EngineDataIndexOf(BeforeEntry) < 0) return;
 
-		return;
-	}
+	This[0x7C / 4] = BeforeIndex;
+	This[0x80 / 4] = BeforeEntry;
 
-	// Only undo a swap when the entry we are putting back is a real one. EngineBankIndexOf returns
-	// -1 for anything that is not a whole record into the engine data array we handed the game.
-	if (AIEngineBankFix && EngineBankIndexOf(BeforeEntry) >= 0)
-	{
-		This[0x7C / 4] = BeforeIndex;
-		This[0x80 / 4] = BeforeEntry;
-
-		AIEngineBankRestored++;
-
-		if (EngineBankTrace)
-			EngineBankTraceLine("ConnectCar    car=%08X  kept id %d (%s) instead of the offered id %d (%s)\n",
-				(DWORD)This,
-				EngineBankIndexOf(BeforeEntry), EngineBankNameOf(BeforeEntry),
-				EngineBankIndexOf(AfterEntry), EngineBankNameOf(AfterEntry));
-
-		return;
-	}
-
-	if (!EngineBankTrace) return;
-
-	EngineBankTraceLine("ConnectCar    car=%08X  *** SUBSTITUTED id %d (%s)  ->  id %d (%s)\n",
-		(DWORD)This,
-		EngineBankIndexOf(BeforeEntry), EngineBankNameOf(BeforeEntry),
-		EngineBankIndexOf(AfterEntry), EngineBankNameOf(AfterEntry));
-
-	EngineBankTraceDumpLoaded();
+	AIEngineBankRestored++;
 }
 
 void InitAIEngineBank()
 {
-	if (!AIEngineBankFix && !EngineBankTrace) return;
+	if (!AIEngineBankFix) return;
 
 	injector::WriteMemory(0x78BF3C, &EAXAITunerCar_ConnectCar, true); // EAXAITunerCar vtable +0Ch
-
-	if (!AIEngineBankFix) return;
 
 	injector::MakeCALL(0x476B9F, CSTATEMGR_AICar_ResolveEngineBankLoading, true); // its only caller
 

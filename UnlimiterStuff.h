@@ -12,7 +12,7 @@ BYTE CarCountByte; // CarCount clamped to a byte
 bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
 bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, ShowDebugCarCustomize;
 
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableMaterialBasedReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -30,6 +30,7 @@ char AttachmentNameBuf[64];
 #include "CarPartDatabase.h"
 #include "CarRenderInfo.h"
 #include "RideInfo.h"
+#include "eViewPlatInterface.h"
 #include "RidePhysicsInfo.h"
 #include "CarLoader.h"
 #include "CarCustomizeManager.h"
@@ -39,6 +40,7 @@ char AttachmentNameBuf[64];
 #include "PlayerCareerState.h"
 #include "StarGazerGuide.h"
 #include "DetailsPane.h"
+#include "TexturePainter.h"
 #include "PartSelectionScreen.h"
 #include "ChooseRimBrand.h"
 #include "IceCategoryTrunkThing.h"
@@ -73,11 +75,11 @@ char AttachmentNameBuf[64];
 #include "CarSoundTuner.h"
 #include "BigFileVFS.h"
 #include "EngineSFXGuard.h"
-#include "EngineBankTrace.h"
 #include "AIEngineBank.h"
 #include "UnlimiterData.h"
 #include "CodeCaves.h"
 #include "Game.h"
+#include "NetCarData.h"
 
 int Init()
 {
@@ -104,7 +106,7 @@ int Init()
 	EnableFNGFixes = mINI_ReadInteger(Settings, "Fixes", "FNGFix", 0) != 0;
 	StreamingTrafficCarManagerFix = mINI_ReadInteger(Settings, "Fixes", "StreamingTrafficCarManagerFix", 0) != 0;
 	AccumulateTireOffsets = mINI_ReadInteger(Settings, "Fixes", "AccumulateTireOffsets", 1) != 0;
-	HiddenSpecialtiesInGarage = ParseHiddenSpecialties(mINI_ReadString(Settings, "Fixes", "HideSpecialtiesInGarage", "LicensePlate"));
+	HiddenSpecialtiesInGarage = ParseHiddenSpecialties(mINI_ReadString(Settings, "Fixes", "HideSpecialtiesInGarage", "0"));
 	EngineSFXGuard = mINI_ReadInteger(Settings, "Fixes", "EngineSFXGuard", 1) != 0;
 	AIEngineBankFix = mINI_ReadInteger(Settings, "Fixes", "AIEngineBankFix", 1) != 0;
 
@@ -119,15 +121,13 @@ int Init()
 	// Misc
 	ExpandMemoryPools = mINI_ReadInteger(Settings, "Misc", "ExpandMemoryPools", 1) != 0;
 	AddOnOpponentsPartsFix = mINI_ReadInteger(Settings, "Misc", "ForceStockPartsOnAddOnOpponents", 0) != 0;
-	ExtendFeCarLimits = mINI_ReadInteger(Settings, "Misc", "ExtendFeCarLimits", 0) != 0;// Doubles the amount of stock and tuned cars a player can have in a profile.
+	ExtendFeCarLimits = mINI_ReadInteger(Settings, "Misc", "ExtendFeCarLimits", 1) != 0;// Doubles the amount of stock and tuned cars a player can have in a profile.
 	StaticCameraGenericFallback = mINI_ReadInteger(Settings, "Misc", "StaticCameraGenericFallback", 1) != 0;
 	SortStockCarsByStage = mINI_ReadInteger(Settings, "Misc", "SortStockCarsByStage", 0) != 0;
 	FilterDecalsByInitials = Clamp(mINI_ReadInteger(Settings, "Misc", "FilterDecalsByInitials", 1), 0, 2);
-	AllowExcludedDecals = mINI_ReadInteger(Settings, "Misc", "AllowExcludedDecals", 0) != 0;
-	KeepHoodDecals = mINI_ReadInteger(Settings, "Misc", "KeepHoodDecals", 1) != 0;
+	HoodDecalsOnCustomHoods = mINI_ReadInteger(Settings, "Misc", "HoodDecalsOnCustomHoods", 1) != 0;
 	GarageShowsOwnedPartsOnly = mINI_ReadInteger(Settings, "Misc", "GarageShowsOwnedPartsOnly", 0) != 0;
 	ShowDebugCarCustomize = mINI_ReadInteger(Settings, "Misc", "ShowDebugCarCustomize", 0) != 0;
-	ChargeForGauges = mINI_ReadInteger(Settings, "Misc", "ChargeForGauges", 1) != 0;
 
 	if (!ShowDebugCarCustomize && GetModuleHandleA("NFSU2ExtraOptions.asi")) // Also check ExOpts
 	{
@@ -151,17 +151,13 @@ int Init()
 
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
+	DisableMaterialBasedReplacement = mINI_ReadInteger(Settings, "Debug", "DisableMaterialBasedReplacement", 0) != 0;
 	DisableLightFlareColors = mINI_ReadInteger(Settings, "Debug", "DisableLightFlareColors", 0) != 0;
 	DisableExhaustFlameAndTireSmoke = mINI_ReadInteger(Settings, "Debug", "DisableExhaustFlameAndTireSmoke", 0) != 0;
 	UseUnlimiterEmitter = mINI_ReadInteger(Settings, "Debug", "DisableUnlimiterEmitter", 0) == 0;
 	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
-
-	// Trace
-	PartLinkTrace = mINI_ReadInteger(Settings, "Trace", "PartLinkTrace", 0) != 0;
-	EngineBankTrace = mINI_ReadInteger(Settings, "Trace", "EngineBankTrace", 0) != 0;
-	GarageFilterTrace = mINI_ReadInteger(Settings, "Trace", "GarageFilterTrace", 0) != 0;
 
 	// Count Cars Automatically
 	injector::WriteMemory(0x7FA898, &LoaderCarInfo_Hook, true); // LoaderTable
@@ -519,7 +515,7 @@ int Init()
 		// TODO: Also check ChooseSpinnerBrand or find a smarter way to do this shit
 	}
 
-	if (KeepHoodDecals)
+	if (HoodDecalsOnCustomHoods)
 	{
 		injector::WriteMemory<BYTE>(0x55C2B0, 0xEB, true); // CarCustomizeManager::InstallPart
 	}
@@ -596,6 +592,31 @@ int Init()
 		// Neon texture
 		hb_GetTextureInfo.fun = injector::MakeCALL(0x638858, GetNeonTextureInfo, true).get(); // CarRenderInfo::ctor
 		injector::MakeRangedNOP(0x638868, 0x63886E, true); // Prevent the game from changing it back to original
+
+		// Material-based texture replacements (used for tires)
+		if (!DisableMaterialBasedReplacement)
+		{
+			// Setup code cave to replace textures by material
+			injector::MakeJMP(0x5C5A94, eViewPlatInterface_Render_MatBasedReplacementCodeCave, true); // eViewPlatInterface::Render
+
+			// Get CarRenderInfo
+			injector::MakeRangedNOP(0x6162FD, 0x616303, true);
+			injector::MakeJMP(0x6162FD, CarRenderInfo_RenderFast_GetCurrCRICodeCave, true);
+			injector::MakeRangedNOP(0x620AF8, 0x620AFD, true);
+			injector::MakeJMP(0x620AF8, CarRenderInfo_Render_GetCurrCRICodeCave, true);
+
+			// RenderFast wheels
+			injector::MakeCALL(0x61878C, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::RenderFast
+			injector::MakeCALL(0x61918C, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::RenderFast
+			injector::MakeCALL(0x619C79, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::RenderFast
+			injector::MakeCALL(0x61AB20, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::RenderFast
+
+			// Render wheels
+			injector::MakeCALL(0x62871D, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::Render - FL
+			injector::MakeCALL(0x62A084, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::Render - FR
+			injector::MakeCALL(0x62B68D, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::Render - RR
+			injector::MakeCALL(0x62D049, eViewPlatInterface_RenderWheel, true); // CarRenderInfo::Render - RL
+		}
 	}
 
 	if (!DisableLightFlareColors)
@@ -657,7 +678,7 @@ int Init()
 	if (ExpandMemoryPools)
 	{
 		// FEngMemoryPoolSize (InitFEngMemoryPool)
-		injector::WriteMemory<int>(0x8F5790, 800000, true);
+		injector::WriteMemory<int>(0x7F917C, 800000, true);
 
 		// CarLoaderPoolSizesD
 		injector::WriteMemory<int>(0x7FA9C8, 22000, true);
@@ -717,8 +738,8 @@ int Init()
 
 	InitPresetCars();
 	InitEngineSFXGuard();
-	InitEngineBankTrace();
 	InitAIEngineBank();
+	InitNetCarData();
 	
 	if (BigFileVFSHandlePoolSize > 127) BigFileVFSHandlePoolSize = 64;
 	injector::WriteMemory<BYTE>(0x486531, BigFileVFSHandlePoolSize, true);
