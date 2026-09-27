@@ -1,6 +1,6 @@
 #pragma once
 
-bool CarSoundTunerEnabled, SkipLegacyCSTCheck, ConvertFromLegacyCST, ForceUpgradeFromLegacyCST, ExportCarSoundData;
+bool CarSoundTunerEnabled, SkipLegacyCSTCheck, UseLegacyCSTData, ConvertFromLegacyCST, ForceUpgradeFromLegacyCST, ExportCarSoundData;
 int BigFileVFSHandlePoolSize = 64;
 
 #define MAX_FILES 128
@@ -211,6 +211,36 @@ char* GetNameFromIndex(int index, std::vector<FileName>& FileList)
 	return FileList[index]._n;
 }
 
+// Creates CarSoundData\Conversion.log file to keep a list of converted files.
+void CreateNewConversionLog()
+{
+	if (!ConvertFromLegacyCST) return; // We don't need to log if we are not converting.
+
+	auto Path = CurrentWorkingDirectory / "CarSoundData" / "Conversion.log";
+	FILE* f = fopen(Path.string().c_str(), "w");
+	if (!f) return;
+
+	fclose(f);
+}
+
+void AddToConversionLog(const char* fmt, ...)
+{
+	if (!ConvertFromLegacyCST) return;
+
+	auto Path = CurrentWorkingDirectory / "CarSoundData" / "Conversion.log";
+	FILE* f = fopen(Path.string().c_str(), "a");
+	if (!f) return;
+
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(f, fmt, args);
+	va_end(args);
+
+	fprintf(f, "\r\n"); // add new line automatically
+
+	fclose(f);
+}
+
 // If CST and Unlimiter are loaded at the same time, we have to restore GetCarTypeMapping function to its original state.
 // Or else, the game will crash in Unlimiter code.
 void RestoreVanillaGetCarTypeMapping()
@@ -309,16 +339,23 @@ void LoadVanillaCarSoundData()
 	}
 }
 
-void LoadLegacyCarSoundData()
+bool LoadLegacyCarSoundData()
 {
 	char FileNameBuf[MAX_PATH];
+
+	auto CarSoundDataPath = CurrentWorkingDirectory / "CarSoundData";
+
+	// Return if the directory doesn't exist
+	if (!std::filesystem::exists(CarSoundDataPath)) return 0;
+
+	CreateNewConversionLog();
 
 	for (int i = 0; i < MAX_FILES; i++)
 	{
 		sprintf(FileNameBuf, "%02d.ini", i);
 
 		// CarDataMapping
-		auto CarDataMappingINIPath = CurrentWorkingDirectory / "CarSoundData" / "CarDataMapping" / FileNameBuf;
+		auto CarDataMappingINIPath = CarSoundDataPath / "CarDataMapping" / FileNameBuf;
 		mINI::INIFile CarDataMappingINIFile(CarDataMappingINIPath.string());
 		mINI::INIStructure CarDataMappingINI;
 
@@ -341,10 +378,11 @@ void LoadLegacyCarSoundData()
 			g_CDM[i].ExtremeTurboData = mINI_ReadInteger(CarDataMappingINI, "Extreme", "TurboDataSet", g_CDM[i].ExtremeTurboData);
 
 			CarDataMappingCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(CarDataMappingINIPath.string().c_str());
 		}
 
 		// EngineData
-		auto EngineDataINIPath = CurrentWorkingDirectory / "CarSoundData" / "EngineData" / FileNameBuf;
+		auto EngineDataINIPath = CarSoundDataPath / "EngineData" / FileNameBuf;
 		mINI::INIFile EngineDataINIFile(EngineDataINIPath.string());
 		mINI::INIStructure EngineDataINI;
 
@@ -372,10 +410,11 @@ void LoadLegacyCarSoundData()
 			g_ED[i].GinsuLowPassCutoff = mINI_ReadInteger(EngineDataINI, "EngineData", "Unk2", g_ED[i].GinsuLowPassCutoff); // Was Unk2 on Legacy CST
 
 			EngineDataCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(EngineDataINIPath.string().c_str());
 		}
 
 		// DualGinsu
-		auto DualGinsuINIPath = CurrentWorkingDirectory / "CarSoundData" / "DualGinsu" / FileNameBuf;
+		auto DualGinsuINIPath = CarSoundDataPath / "DualGinsu" / FileNameBuf;
 		mINI::INIFile DualGinsuINIFile(DualGinsuINIPath.string());
 		mINI::INIStructure DualGinsuINI;
 
@@ -396,10 +435,11 @@ void LoadLegacyCarSoundData()
 			g_DG[i].DecelGinsuMixSRPM = mINI_ReadFloat(DualGinsuINI, "DualGinsu", "DecelGinsuMixSRPM", g_DG[i].DecelGinsuMixSRPM);
 
 			DualGinsuCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(DualGinsuINIPath.string().c_str());
 		}
 
 		// ShiftPattern
-		auto ShiftPatternINIPath = CurrentWorkingDirectory / "CarSoundData" / "ShiftPatterns" / FileNameBuf;
+		auto ShiftPatternINIPath = CarSoundDataPath / "ShiftPatterns" / FileNameBuf;
 		mINI::INIFile ShiftPatternINIFile(ShiftPatternINIPath.string());
 		mINI::INIStructure ShiftPatternINI;
 
@@ -431,10 +471,11 @@ void LoadLegacyCarSoundData()
 			g_SH[i].DownReattachScale = mINI_ReadFloat(ShiftPatternINI, "ShiftPattern", "UnkFloat4", g_SH[i].DownReattachScale);
 
 			ShiftPatternCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(ShiftPatternINIPath.string().c_str());
 		}
 
 		// Sweetner
-		auto SweetnerINIPath = CurrentWorkingDirectory / "CarSoundData" / "SweetnerDataSet" / FileNameBuf;
+		auto SweetnerINIPath = CarSoundDataPath / "SweetnerDataSet" / FileNameBuf;
 		mINI::INIFile SweetnerINIFile(SweetnerINIPath.string());
 		mINI::INIStructure SweetnerINI;
 
@@ -445,10 +486,11 @@ void LoadLegacyCarSoundData()
 			g_SDS[i].SputterVol = mINI_ReadInteger(SweetnerINI, "Sweetner", "ShiftSweetsVol", g_SDS[i].SputterVol);
 
 			SweetnerDataCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(SweetnerINIPath.string().c_str());
 		}
 
 		// Turbo
-		auto TurboINIPath = CurrentWorkingDirectory / "CarSoundData" / "TurboDataSet" / FileNameBuf;
+		auto TurboINIPath = CarSoundDataPath / "TurboDataSet" / FileNameBuf;
 		mINI::INIFile TurboINIFile(TurboINIPath.string());
 		mINI::INIStructure TurboINI;
 
@@ -462,10 +504,11 @@ void LoadLegacyCarSoundData()
 			g_TDS[i].LeakRate = mINI_ReadFloat(TurboINI, "Turbo", "ChargeTime", g_TDS[i].LeakRate);
 
 			TurboDataCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(TurboINIPath.string().c_str());
 		}
 
 		// AccelTrans (AccelFromIdle)
-		auto AccelTransINIPath = CurrentWorkingDirectory / "CarSoundData" / "AccelFromIdle" / FileNameBuf;
+		auto AccelTransINIPath = CarSoundDataPath / "AccelFromIdle" / FileNameBuf;
 		mINI::INIFile AccelTransINIFile(AccelTransINIPath.string());
 		mINI::INIStructure AccelTransINI;
 
@@ -478,6 +521,7 @@ void LoadLegacyCarSoundData()
 			g_AFI[i].InteruptT = mINI_ReadInteger(AccelTransINI, "AccelTrans", "Unk4", g_AFI[i].InteruptT);
 
 			AccelFromIdleCount = i + 1; // Latest successfully read file means we have that many files.
+			AddToConversionLog(AccelTransINIPath.string().c_str());
 		}
 
 		// One CarTypeMapping per car, by name, so add-on cars can have their own entry. Resolved here
@@ -489,19 +533,25 @@ void LoadLegacyCarSoundData()
 			int Mapping = GetVanillaCarTypeMapping(i);
 
 			sprintf(FileNameBuf, "%s.ini", GetCarTypeName(i));
-			auto CarTypeMappingINIPath = CurrentWorkingDirectory / "CarSoundData" / "CarTypeMapping" / FileNameBuf;
+			auto CarTypeMappingINIPath = CarSoundDataPath / "CarTypeMapping" / FileNameBuf;
 			mINI::INIFile CarTypeMappingINIFile(CarTypeMappingINIPath.string());
 			mINI::INIStructure CarTypeMappingINI;
 
 			if (CarTypeMappingINIFile.read(CarTypeMappingINI))
+			{
 				Mapping = mINI_ReadInteger(CarTypeMappingINI, "CarTypeMapping", "CarDataMapping", Mapping);
 
+				AddToConversionLog(CarTypeMappingINIPath.string().c_str());
+			}
+			
 			// A typo in an ini would otherwise index straight past our arrays
 			if (Mapping < 0 || Mapping >= MAX_FILES) Mapping = GetVanillaCarTypeMapping(i);
 
 			CarTypeMapping[i] = Mapping;
 		}
 	}
+
+	return 1;
 }
 
 bool LoadCarSoundData()
@@ -1235,11 +1285,14 @@ void DisableLegacyCarSoundTuner()
 	cstINIFile.write(cstINI, true);
 
 	// Rename CarSoundData folder
-	auto LegacyCSTDataPath = CurrentWorkingDirectory / "CarSoundData";
-	auto LegacyCSTDataPathNew = CurrentWorkingDirectory / "CarSoundData_disabled";
-	if (std::filesystem::exists(LegacyCSTDataPath) && !std::filesystem::exists(LegacyCSTDataPathNew))
+	if (!UseLegacyCSTData)
 	{
-		std::filesystem::rename(LegacyCSTDataPath, LegacyCSTDataPathNew);
+		auto LegacyCSTDataPath = CurrentWorkingDirectory / "CarSoundData";
+		auto LegacyCSTDataPathNew = CurrentWorkingDirectory / "CarSoundData_disabled";
+		if (std::filesystem::exists(LegacyCSTDataPath) && !std::filesystem::exists(LegacyCSTDataPathNew))
+		{
+			std::filesystem::rename(LegacyCSTDataPath, LegacyCSTDataPathNew);
+		}
 	}
 }
 
@@ -1252,7 +1305,7 @@ void CheckAndConvertLegacyData()
 		return;
 	}
 
-	if (!SkipLegacyCSTCheck)
+	if (!SkipLegacyCSTCheck && !UseLegacyCSTData)
 	{
 		// Legacy CST
 		if (GetModuleHandleA("NFSU2CarSoundTuner.asi")
@@ -1312,7 +1365,9 @@ void InitCarSoundTuner()
 
 	// Load Unlimiter Car Sound data
 	LoadVanillaCarSoundData(); // Load vanilla data
-	if (LoadCarSoundData())
+	bool LoadedSuccessfully = UseLegacyCSTData ? LoadLegacyCarSoundData() : LoadCarSoundData();
+
+	if (LoadedSuccessfully)
 	{
 		// Loaded successfully, set up all the hooks, replacements and counts
 			

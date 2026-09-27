@@ -116,6 +116,7 @@ int Init()
 	SerializeBigFileVFS = mINI_ReadInteger(Settings, "Sound", "SerializeBigFileVFS", 1) != 0;
 	SkipLegacyCSTCheck = mINI_ReadInteger(Settings, "Sound", "SkipLegacyCSTCheck", 0) != 0;
 	ForceUpgradeFromLegacyCST = mINI_ReadInteger(Settings, "Sound", "UpgradeFromLegacyCST", 0) != 0;
+	UseLegacyCSTData = mINI_ReadInteger(Settings, "Sound", "UseLegacyCSTData", 0) != 0;
 	ExportCarSoundData = mINI_ReadInteger(Settings, "Sound", "ExportCarSoundData", 0) != 0;
 
 	// Misc

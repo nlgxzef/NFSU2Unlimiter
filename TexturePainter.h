@@ -636,8 +636,8 @@ void TexturePainter_PaintTireTexture(DWORD* RideInfo, DWORD TextureHash)
 
 	if (!Part || CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("UNPAINTABLE"), 1)) return;
 
-	void* TexInfo = GetTextureInfo(TextureHash, 0, 0);
-	void* MaskInfo = GetTextureInfo(bStringHash2("_MASK", TextureHash), 0, 0);
+	void* TexInfo = (void*)hb_GetTextureInfo.fun(TextureHash, 0, 0);
+	void* MaskInfo = (void*)hb_GetTextureInfo.fun(bStringHash2("_MASK", TextureHash), 0, 0);
 
 	if (!TexInfo || !MaskInfo) return;
 
