@@ -65,19 +65,19 @@ void __fastcall IcePartsBrowser_RefreshHeader(DWORD* IcePartsBrowser, void* EDX_
 					clr.b = CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("BLUE"), 0) % 256;
 
 					if (part->PartNameHash == CT_bStringHash("VINYL_L1_COLOR01"))
-						FEngSetLanguageHash(FEPkg, 0xD28B9316, CT_bStringHash("STOCK"));
-					else FEPrintf(FEPkg, 0xD28B9316, "%d, %d, %d (0x%0.6x)", clr.r, clr.g, clr.b, clr.rgba);
+						FEngSetLanguageHash(FEPkg, CT_bStringHash("PART_NAME"), CT_bStringHash("STOCK"));
+					else FEPrintf(FEPkg, CT_bStringHash("PART_NAME"), "%d, %d, %d (0x%0.6x)", clr.r, clr.g, clr.b, clr.rgba);
 				}
 				else
 				{
 					DWORD LanguageHash = CarPart_GetAppliedAttributeUParam((DWORD*)part, CT_bStringHash("LANGUAGEHASH"), 0);
 
-					if (LanguageHash) FEngSetLanguageHash(FEPkg, 0xD28B9316, LanguageHash);
-					else FEPrintf(FEPkg, 0xD28B9316, CarPart_GetName((DWORD*)part));
+					if (LanguageHash) FEngSetLanguageHash(FEPkg, CT_bStringHash("PART_NAME"), LanguageHash);
+					else FEPrintf(FEPkg, CT_bStringHash("PART_NAME"), CarPart_GetName((DWORD*)part));
 				}
 				
 			}
-			else FEPrintf(FEPkg, 0xD28B9316, "None");
+			else FEPrintf(FEPkg, CT_bStringHash("PART_NAME"), "None");
 		}
 
 		int CurrentNodeIndex = ThumbnailScroller_GetCurrenNodeIndex(IcePartsBrowser + 20);
@@ -85,13 +85,13 @@ void __fastcall IcePartsBrowser_RefreshHeader(DWORD* IcePartsBrowser, void* EDX_
 
 		if (*(int*)_FEDatabase != 1 || *(int*)0x83898C == 1)
 		{
-			FEngSetInvisible_Pkg(FEPkg, 0x380B632);
+			FEngSetInvisible_Pkg(FEPkg, CT_bStringHash("PRICE"));
 		}
 		else if (CurSelPart)
 		{
 			DWORD* CategoryNode = (DWORD*)IcePartsBrowser[68];
 			int Cost = PlayerCareerState_GetCarPartCost_Game((DWORD*)ThePlayerCareer, CategoryNode[18], (DWORD*)CurSelPart->part_2);
-			FEPrintf(FEPkg, 0x380B632, "%d", Cost);
+			FEPrintf(FEPkg, CT_bStringHash("PRICE"), "%d", Cost);
 		}
 	}
 

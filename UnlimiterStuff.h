@@ -9,7 +9,7 @@ using namespace std;
 
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
-bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats;
+bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats, SeparateRims;
 bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, ShowDebugCarCustomize;
 
 bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableMaterialBasedReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
@@ -97,6 +97,7 @@ int Init()
 	AllNewCarsCanBeDrivenByAI = mINI_ReadInteger(Settings, "Main", "AllNewCarsCanBeDrivenByAI", 0) != 0;
 	RandomNameHook = mINI_ReadInteger(Settings, "Main", "RandomNameHook",
 		mINI_ReadInteger(Settings, "Main", "EnableRandomNameHook", 1)) != 0;
+	SeparateRims = mINI_ReadInteger(Settings, "Main", "SeparateRims", 1) != 0;
 
 	// Fixes
 	DisappearingWheelsFix = mINI_ReadInteger(Settings, "Fixes", "DisappearingWheelsFix", 1) != 0;
@@ -326,12 +327,11 @@ int Init()
 	// Decal Initials
 	if (FilterDecalsByInitials)
 	{
-		injector::MakeCALL(0x56BE1D, ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::Setup
-		//injector::WriteMemory(0x79D898, &ChooseDecalScreen_NotificationMessage, true); // ChooseDecalScreen::vtable
+		injector::WriteMemory(0x79D898, &ChooseDecalScreen_NotificationMessage, true); // ChooseDecalScreen::vtable
 	}
 	
-	// Fix double message while changing colors for Decals
-	injector::MakeJMP(0x56BE1D, DoubleMessageFixCodeCave_ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::NotificationMessage
+	// Fix double message while changing colors for Decals (now done in NotificationMessage by adding PAD_BUTTON1_RELEASED message response to make it trigger for a 3rd time)
+	//injector::MakeJMP(0x56BE1D, DoubleMessageFixCodeCave_ChooseDecalScreen_ToggleColors, true); // ChooseDecalScreen::NotificationMessage
 
 	// Add details pane for Spinners
 	injector::WriteMemory(0x79D8A8, &ChooseSpinnerBrand_NotificationMessage, true); // ChooseSpinnerBrand::vtable
@@ -469,51 +469,46 @@ int Init()
 	injector::MakeJMP(0x5B4DC0, RidePhysicsInfo_RebuildPhysicsInfo, true); // 4 references
 
 	// Fix rear rims
-	injector::MakeCALL(0x61DCE5, CompositeRim, true); // CompositeSkin
-	injector::MakeCALL(0x63205D, GetTempCarSkinTextures, true); // GetUsedCarTextureInfo
-	injector::WriteMemory<DWORD>(0x6336BE, 0x608, true); // LoadedWheel::LoadedWheel, Seperate rear rims and fix them in game
-	//injector::MakeJMP(0x6277FD, RearWheelLightMaterialCodeCave, true); // CarRenderInfo::Render
-	//injector::MakeRangedNOP(0x55C263, 0x55C272, true); // CarCustomizeManager::InstallPart (disable setting rear rims from front)
-	//injector::MakeRangedNOP(0x55C1A4, 0x55C1B6, true); // CarCustomizeManager::PreviewPart (disable previewing rear rims from front)
-	//injector::WriteMemory<BYTE>(0x567BD2, 29, true); // RimsBrowser::NotificationMessage
-	//injector::WriteMemory<BYTE>(0x567CB0, 29, true); // RimsBrowser::NotificationMessage
-	//injector::WriteMemory<BYTE>(0x567F49, 29, true); // RimsBrowser::NotificationMessage
-	//injector::WriteMemory<BYTE>(0x567FAA, 29, true); // RimsBrowser::NotificationMessage
-	//injector::WriteMemory<BYTE>(0x5681E5, 29, true); // RimsBrowser::NotificationMessage
-	//injector::WriteMemory<BYTE>(0x56824D, 29, true); // RimsBrowser::NotificationMessage
-	//injector::WriteMemory<BYTE>(0x55F6A6, 29, true); // RimsBrowser::Setup
-	//injector::WriteMemory<BYTE>(0x55F83B, 29, true); // RimsBrowser::ScrollVertical
-	//injector::WriteMemory<BYTE>(0x55FAA8, 29, true); // RimsBrowser::BuildPartsIconList
-	//injector::WriteMemory<BYTE>(0x55FD8A, 29, true); // RimsBrowser::StopBrowsingRims
-	//injector::WriteMemory<BYTE>(0x55FDF1, 29, true); // RimsBrowser::StopBrowsingRims
+	if (SeparateRims)
 	{
-		injector::MakeCALL(0x55F2AC, RideInfo_SetPart_Rims, true); // ChooseRimBrand::NotificationMessage
-		injector::MakeCALL(0x55F2B9, RideInfo_SetPart_Rims, true); // ChooseRimBrand::NotificationMessage
-		injector::MakeCALL(0x55F69F, RideInfo_SetPart_Rims, true); // RimsBrowser::Setup
-		injector::MakeCALL(0x55F6AC, RideInfo_SetPart_Rims, true); // RimsBrowser::Setup
-		injector::MakeCALL(0x55F834, RideInfo_SetPart_Rims, true); // RimsBrowser::ScrollVertical
-		injector::MakeCALL(0x55F841, RideInfo_SetPart_Rims, true); // RimsBrowser::ScrollVertical
-		injector::MakeCALL(0x55FAA1, RideInfo_SetPart_Rims, true); // RimsBrowser::BuildPartsIconList
-		injector::MakeCALL(0x55FAAE, RideInfo_SetPart_Rims, true); // RimsBrowser::BuildPartsIconList
-		injector::MakeCALL(0x55FD83, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
-		injector::MakeCALL(0x55FD90, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
-		injector::MakeCALL(0x55FDEA, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
-		injector::MakeCALL(0x55FDF7, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
-		injector::MakeCALL(0x567BCB, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567BD8, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567CA9, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567CB6, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567F42, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567F4F, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567FA3, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x567FB0, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x5681DE, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x5681EB, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x568246, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x568253, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
-		injector::MakeCALL(0x55C26D, RideInfo_SetPart_Rims, true); // CarCustomizeManager::InstallPart
-		injector::MakeCALL(0x55C1B1, RideInfo_SetPart_Rims, true); // CarCustomizeManager::PreviewPart
-		// TODO: Also check ChooseSpinnerBrand or find a smarter way to do this shit
+		injector::MakeCALL(0x61DCE5, CompositeRim, true); // CompositeSkin
+		injector::MakeCALL(0x63205D, GetTempCarSkinTextures, true); // GetUsedCarTextureInfo
+		injector::WriteMemory<DWORD>(0x6336BE, 0x608, true); // LoadedWheel::LoadedWheel, Separate rear rims and fix them in game
+		injector::WriteMemory(0x79CA80, &ChooseRimBrand_NotificationMessage, true); // ChooseRimBrand::NotificationMessage, add messages for "Same As" options
+		injector::MakeJMP(0x6277FD, RearWheelLightMaterialCodeCave, true); // CarRenderInfo::Render
+
+		injector::MakeJMP(0x61C280, RideInfo_SetCompositeNameHash, true); // RideInfo::SetCompositeNameHash, 16 references
+		injector::WriteMemory(0x61C2E6, DummyWheelRear, true); // RideInfo::SetCompositeNameHash DUMMY_SPINNER%d -> DUMMY_WHEEL_REAR%d
+		//injector::MakeRangedNOP(0x55C263, 0x55C272, true); // CarCustomizeManager::InstallPart (disable setting rear rims from front)
+		//injector::MakeRangedNOP(0x55C1A4, 0x55C1B6, true); // CarCustomizeManager::PreviewPart (disable previewing rear rims from front)
+		{
+			injector::MakeCALL(0x55F2AC, RideInfo_SetPart_Rims, true); // ChooseRimBrand::NotificationMessage
+			injector::MakeCALL(0x55F2B9, RideInfo_SetPart_Rims, true); // ChooseRimBrand::NotificationMessage
+			injector::MakeCALL(0x55F69F, RideInfo_SetPart_Rims, true); // RimsBrowser::Setup
+			injector::MakeCALL(0x55F6AC, RideInfo_SetPart_Rims, true); // RimsBrowser::Setup
+			injector::MakeCALL(0x55F834, RideInfo_SetPart_Rims, true); // RimsBrowser::ScrollVertical
+			injector::MakeCALL(0x55F841, RideInfo_SetPart_Rims, true); // RimsBrowser::ScrollVertical
+			injector::MakeCALL(0x55FAA1, RideInfo_SetPart_Rims, true); // RimsBrowser::BuildPartsIconList
+			injector::MakeCALL(0x55FAAE, RideInfo_SetPart_Rims, true); // RimsBrowser::BuildPartsIconList
+			injector::MakeCALL(0x55FD83, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
+			injector::MakeCALL(0x55FD90, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
+			injector::MakeCALL(0x55FDEA, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
+			injector::MakeCALL(0x55FDF7, RideInfo_SetPart_Rims, true); // RimsBrowser::StopBrowsingRims
+			injector::MakeCALL(0x567BCB, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567BD8, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567CA9, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567CB6, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567F42, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567F4F, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567FA3, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x567FB0, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x5681DE, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x5681EB, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x568246, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x568253, RideInfo_SetPart_Rims, true); // RimsBrowser::NotificationMessage
+			injector::MakeCALL(0x55C26D, RideInfo_SetPart_Rims, true); // CarCustomizeManager::InstallPart
+			injector::MakeCALL(0x55C1B1, RideInfo_SetPart_Rims, true); // CarCustomizeManager::PreviewPart
+		}
 	}
 
 	if (HoodDecalsOnCustomHoods)

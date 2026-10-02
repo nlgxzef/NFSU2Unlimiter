@@ -758,7 +758,7 @@ void __fastcall PartSelectionScreen_BuildPartsList(DWORD* PartSelectionScreen, v
     LABEL_16:
         if (*((BYTE*)CategoryNode + 52)
             && InstalledPart
-            && (!*((BYTE*)PartSelectionScreen + 469) || CarPart_GetAppliedAttributeUParam(InstalledPart, 0x721AFF7C, 0)) // CARBONFIBRE
+            && (!*((BYTE*)PartSelectionScreen + 469) || CarPart_GetAppliedAttributeUParam(InstalledPart, CT_bStringHash("CARBONFIBRE"), 0)) // CARBONFIBRE
             && (!*((BYTE*)PartSelectionScreen + 471) || (*((BYTE*)InstalledPart + 5) & 0x1F) == (BYTE)slot))
         {
             ThumbnailScroller_SnapToItem(ThumbnailScroller, (int)InstalledPart);
@@ -834,9 +834,9 @@ char const* __fastcall PartSelectionScreen_GetPartName(DWORD* PartSelectionScree
 
     if (!TheCarPart)
         return ""; // NONE
-    if (!CarPart_HasAppliedAttribute(TheCarPart, 0x4732DA07)) // LANGUAGEHASH
+    if (!CarPart_HasAppliedAttribute(TheCarPart, CT_bStringHash("LANGUAGEHASH"))) // LANGUAGEHASH
         return CarPart_GetName(TheCarPart); // Debug Name
-    AppliedAttributeUParam = CarPart_GetAppliedAttributeUParam(TheCarPart, 0x4732DA07, 0); // Name from LANGUAGEHASH
+    AppliedAttributeUParam = CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("LANGUAGEHASH"), 0); // Name from LANGUAGEHASH
     result = SearchForString(AppliedAttributeUParam);
     if (!result)
         return SearchForString(0xC01A6F63); // DEFAULT_STRING_ERROR
@@ -911,7 +911,7 @@ void __fastcall PartSelectionScreen_RefreshHeader(DWORD* PartSelectionScreen, vo
     //DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
     //int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
 
-    //FEngSetLanguageHash((const char*)PartSelectionScreen[1], 0x42ADB44C, CarConfigs[CarTypeID].Category.BodyShop);
+    //FEngSetLanguageHash((const char*)PartSelectionScreen[1], CT_bStringHash("HEADER_TEXT"), CarConfigs[CarTypeID].Category.BodyShop);
 
     RefreshDetailsPane((char const*)PartSelectionScreen[1], PartSelectionScreen + 45, PartSelectionScreen + 44, (DWORD*)PartSelectionScreen[47]);
 }
@@ -1216,18 +1216,23 @@ void __fastcall PartSelectionScreen_NotificationMessage(DWORD* PartSelectionScre
     if ((message == 0xC407210 || message == 0x406415E3) && 
         (dword_838990 == 0 && v7[3] == 29))
     {
-        DialogInterface_ShowThreeButtons((char const*)PartSelectionScreen[1], "GenericDialog_ThreeButton.fng",
-            CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),
-            CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"),
-            CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"),
-            CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),
-            CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"),
-            CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"),
-            0xB4EDEB6D,
-            1,
-            2,
-            CT_bStringHash((char*)"CUSTOMIZE_CHOOSE_FRONT_REAR_WHEEL"));
-        return;
+        if (SeparateRims)
+        {
+            DialogInterface_ShowThreeButtons((char const*)PartSelectionScreen[1], "GenericDialog_ThreeButton.fng",
+                CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),
+                CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"),
+                CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"),
+                CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),
+                CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"),
+                CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"),
+                0xB4EDEB6D,
+                1,
+                2,
+                CT_bStringHash((char*)"CUSTOMIZE_CHOOSE_FRONT_REAR_WHEEL"));
+            return;
+        }
+        else goto CustomizeAllWheels;
+        
     }
     else if (message == CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"))
     {
@@ -1243,6 +1248,7 @@ void __fastcall PartSelectionScreen_NotificationMessage(DWORD* PartSelectionScre
     }
     else if (message == CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"))
     {
+    CustomizeAllWheels:
         RimsToCustomize = 0;
         PartSelectionScreen_StartBrowsingWheels(PartSelectionScreen);
         MakeFrontendSound(8, PartSelectionScreen[12]);

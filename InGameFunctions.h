@@ -58,6 +58,7 @@ void(__thiscall* IceSelectionThing_Create)(DWORD* IceSelectionThing, unsigned in
 void(__thiscall* IceCategoryTrunkThing_Create_Game)(DWORD* IceCategoryTrunkThing) = (void(__thiscall*)(DWORD*))0x53AAC0;
 void(__thiscall* IceSelectionScreen_SetExtraFunctionTextVisibility)(DWORD* IceSelectionScreen, bool IsVisible) = (void(__thiscall*)(DWORD*, bool))0x547090;
 DWORD* (__thiscall* RideInfo_GetPart)(DWORD* RideInfo, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x6102F0;
+DWORD* (__thiscall* CarCustomizeManager_GetStockCarPart_Game)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x53AEA0;
 DWORD* (__thiscall* CarCustomizeManager_GetInstalledVinyl)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x50EFD0;
 DWORD* (__thiscall* CarCustomizeManager_GetVinylInSetup)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x521850;
 DWORD* (__thiscall* CarCustomizeManager_GetPaintSetupPart)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x5214D0;
@@ -243,6 +244,7 @@ int(*GetBuildRegion)() = (int(*)())0x570A30;
 bool(*IsBuildRegionEurope)() = (bool(*)())0x570A40;
 char const* (__thiscall* CarTypeInfo_GetManufacturerName)(DWORD* CarTypeInfo) = (char const* (__thiscall*)(DWORD*))0x610170;
 void(__thiscall* IconScrollerMenu_NotificationMessage)(DWORD* IconScrollerMenu, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2) = (void(__thiscall*)(DWORD*, DWORD, DWORD*, DWORD, DWORD))0x543D40;
+void(__thiscall* IconScrollerMenu_StartDim)(DWORD* IconScrollerMenu) = (void(__thiscall*)(DWORD*))0x538C00;
 void(__thiscall* IconScrollerMenu_StopDim)(DWORD* IconScrollerMenu) = (void(__thiscall*)(DWORD*))0x538CA0;
 void(__thiscall* CustomizeNeonMenu_StartBrowsingParts)(DWORD* CustomizeNeonMenu) = (void(__thiscall*)(DWORD*))0x557130;
 void(__thiscall* CustomizeNeonMenu_StopBrowsingParts)(DWORD* CustomizeNeonMenu) = (void(__thiscall*)(DWORD*))0x562B10;

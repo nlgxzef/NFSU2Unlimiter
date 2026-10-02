@@ -1385,6 +1385,7 @@ void LoadRimBrands()
 		ARimBrand.StringHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "String", GetDefaultRimBrandString(i));
 		ARimBrand.TextureHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "Texture", GetDefaultRimBrandTexture(i));
 		ARimBrand.NoRimSize = mINI_ReadInteger(RimBrandsINI, RimBrandID, "NoRimSize", i ? 0 : 1) != 0;
+		ARimBrand.HideBrandName = mINI_ReadInteger(RimBrandsINI, RimBrandID, "HideBrandName", 0) != 0;
 		ARimBrand.AvailableForRegularCars = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForRegularCars", 
 			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Car", GetDefaultRimBrandAvailableForRegularCars(i))) != 0;
 		ARimBrand.AvailableForSUVs = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForSUVs", 
@@ -1415,6 +1416,7 @@ void LoadRimBrands()
 				ARimBrand.TextureHash = mINI_ReadHashS(itINI, "Brand", "Texture");
 				ARimBrand.StringHash = mINI_ReadHashS(itINI, "Brand", "String");
 				ARimBrand.NoRimSize = mINI_ReadInteger(itINI, "Brand", "NoRimSize", 0) != 0;
+				ARimBrand.HideBrandName = mINI_ReadInteger(itINI, "Brand", "HideBrandName", 0) != 0;
 				ARimBrand.AvailableForRegularCars = mINI_ReadInteger(itINI, "Brand", "AvailableForRegularCars", 
 					mINI_ReadInteger(itINI, "Brand", "Car", 1)) != 0;
 				ARimBrand.AvailableForSUVs = mINI_ReadInteger(itINI, "Brand", "AvailableForSUVs",
@@ -1430,6 +1432,7 @@ void LoadRimBrands()
 						RimBrands_temp[k].StringHash = ARimBrand.StringHash;
 						RimBrands_temp[k].TextureHash = ARimBrand.TextureHash;
 						RimBrands_temp[k].NoRimSize = ARimBrand.NoRimSize;
+						RimBrands_temp[k].HideBrandName = ARimBrand.HideBrandName;
 						RimBrands_temp[k].AvailableForRegularCars = ARimBrand.AvailableForRegularCars;
 						RimBrands_temp[k].AvailableForSUVs = ARimBrand.AvailableForSUVs;
 

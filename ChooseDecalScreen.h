@@ -22,28 +22,39 @@ void ScrollDecalInitial(int direction)
 	}
 }
 
+BYTE GetDecalInitial(DWORD* part)
+{
+	char const* name = CarPart_GetName(part);
+	return *(BYTE*)name;
+}
+
 bool IsDecalInitial(DWORD* part)
 {
 	if (DecalInitial == DECAL_INITIAL_ALL) return true;
 	
-	char const* name = CarPart_GetName(part);
+	BYTE intl = GetDecalInitial(part);
 	if (DecalInitial == DECAL_INITIAL_START)
 	{
-		return *(BYTE*)name <= DECAL_INITIAL_START || *(BYTE*)name > DECAL_INITIAL_END;
+		return intl <= DECAL_INITIAL_START || intl > DECAL_INITIAL_END;
 	}
-	return *(BYTE*)name == DecalInitial;
+	return intl == DecalInitial;
 }
 
 void __fastcall ChooseDecalScreen_RefreshHeader(DWORD* ChooseDecalScreen, void* EDX_Unused)
 {
 	ChooseDecalScreen_RefreshHeader_Game(ChooseDecalScreen);
 
-	RefreshDetailsPane((char const*)ChooseDecalScreen[1], ChooseDecalScreen + 21, ChooseDecalScreen + 20, (DWORD*)ChooseDecalScreen[23]);
+	DWORD* CurrSelPart = (DWORD*)ChooseDecalScreen[23];
+	RefreshDetailsPane((char const*)ChooseDecalScreen[1], ChooseDecalScreen + 21, ChooseDecalScreen + 20, CurrSelPart);
 
-	int Cur = ThumbnailScroller_GetCurrenNodeIndex(ChooseDecalScreen + 20);
-	if (FilterDecalsByInitials && (Cur == 0 || Cur == 1))
+	if (FilterDecalsByInitials)
 	{
-		if (DecalInitial != DECAL_INITIAL_ALL) FEPrintf((char const*)ChooseDecalScreen[1], 0xD28B9316, "%c", DecalInitial);
+		if (DecalInitial != DECAL_INITIAL_ALL) FEPrintf((char const*)ChooseDecalScreen[1], CT_bStringHash("INITIAL"), "%c", DecalInitial);
+		else FEPrintf((char const*)ChooseDecalScreen[1], CT_bStringHash("INITIAL"), "*");
+	}
+	else
+	{
+		FEngSetInvisible_Pkg((char const*)ChooseDecalScreen[1], CT_bStringHash("INITIAL_GROUP"));
 	}
 }
 
@@ -57,9 +68,12 @@ bool IsDecalWhite(DWORD* part)
 
 bool IsDecalAvailable(DWORD* Part, DWORD IsWhite)
 {
-	if (FilterDecalsByInitials) return IsDecalInitial(Part);
+	bool result = 0;
+	
+	result = IsWhite != IsDecalWhite(Part);
+	if (result && FilterDecalsByInitials) result = IsDecalInitial(Part);
 
-	return IsWhite != IsDecalWhite(Part);
+	return result;
 }
 
 int GetDecalsList(int CarSlotID, bTList<SelectablePart> *DecalsList, DWORD IsWhite)
@@ -107,11 +121,6 @@ void __fastcall ChooseDecalScreen_ScrollInitials(DWORD* ChooseDecalScreen, void*
 	ChooseDecalScreen_RefreshHeader(ChooseDecalScreen, EDX_Unused);
 }
 
-void __fastcall ChooseDecalScreen_ToggleColors(DWORD* ChooseDecalScreen, void* EDX_Unused)
-{
-	ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, 1);
-}
-
 void __fastcall ChooseDecalScreen_NotificationMessage(DWORD* ChooseDecalScreen, void* EDX_Unused, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2)
 {
 	switch (message)
@@ -124,7 +133,8 @@ void __fastcall ChooseDecalScreen_NotificationMessage(DWORD* ChooseDecalScreen, 
 		ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, 1);
 		break;
 	case CT_bStringHash("PAD_BUTTON1"):
-		ChooseDecalScreen_ScrollInitials(ChooseDecalScreen, EDX_Unused, 1);
+	case CT_bStringHash("PAD_BUTTON1_RELEASED"):
+		ChooseDecalScreen_ToggleColors_Game(ChooseDecalScreen);
 		break;
 	default:
 		ChooseDecalScreen_NotificationMessage_Game(ChooseDecalScreen, message, fe_obj, param1, param2);
@@ -140,7 +150,7 @@ void __declspec(naked) DoubleMessageFixCodeCave_ChooseDecalScreen_ToggleColors()
 		cmp eax, edi
 		jnz loc_56BE22 // 2nd message has different eax and edi values
 
-		call ChooseDecalScreen_ToggleColors
+		call ChooseDecalScreen_ToggleColors_Game
 
 		loc_56BE22 :
 		push 0x56BE22

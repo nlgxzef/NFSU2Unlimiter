@@ -35,6 +35,8 @@ struct eSolidPlatInterface
 	eSolidPlatInfo* PlatInfo;
 };
 
+struct eModel; // shut up C2027
+
 struct eSolid : eSolidPlatInterface, bTNode<eSolid>
 {
 	unsigned __int8 Version;

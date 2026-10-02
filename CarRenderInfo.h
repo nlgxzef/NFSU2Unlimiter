@@ -1227,14 +1227,14 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	}
 	
 	DWORD *RPart = (DWORD*)ride_info[356 + CARSLOTID_REAR_WHEEL]; // Rear wheel
-	if (RPart && (Part[0] != RPart[0])) // Check if rear wheel is different from front wheel
+	if (RPart && (Part != RPart)) // Check if rear wheel is different from front wheel
 	{
 		TextureHash = CarPart_GetTextureName(RPart);
-		if (TextureHash);// info->MappedWheelHash = bStringHash2((char*)"_WHEEL", TextureHash);
+		if (TextureHash) info->MappedSpinnerHash = bStringHash2((char*)"_WHEEL", TextureHash);
 		else
 		{
 			sprintf(TextureNameBuf, "%s_TIRE", CarTypeName);
-			//info->MappedWheelHash = CarConfigs[ride_info[0]].Textures.TireInnerMask ? bStringHash(TextureNameBuf) : 0;
+			info->MappedSpinnerHash = CarConfigs[ride_info[0]].Textures.TireInnerMask ? bStringHash(TextureNameBuf) : 0;
 		}
 	}
 
@@ -1251,7 +1251,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	}
 	else // non-skinnable cars
 	{
-		Part = (DWORD*)ride_info[356 + CARSLOTID_BASE_PAINT]; // paint
+		//Part = (DWORD*)ride_info[356 + CARSLOTID_BASE_PAINT]; // paint
 
 		TextureHash = info->MappedSkinHash;
 		info->ReplaceSkinHash = TextureHash;
@@ -1307,7 +1307,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	Part = (DWORD*)ride_info[356 + CARSLOTID_HEADLIGHT]; // Headlights
 	if (Part)
 	{
-		HLTex = CarPart_GetAppliedAttributeUParam(Part, 0x10C98090, HLTex); // TEXTURE_NAME
+		HLTex = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME"), HLTex); // TEXTURE_NAME
 	}
 
 	Part = (DWORD*)ride_info[356 + CARSLOTID_BRAKELIGHT]; // Brakelights
@@ -1384,7 +1384,7 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 	Part = (DWORD*)ride_info[356 + CARSLOTID_BASE]; // Interior
 	if (Part)
 	{
-		TextureHash = CarPart_GetAppliedAttributeUParam(Part, 0x10C98090, TextureHash); // TEXTURE_NAME
+		TextureHash = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME"), TextureHash); // TEXTURE_NAME
 	}
 	NumUsedCarTextures += UsedCarTextureAddToTable(info->TexturesToLoadPerm, NumUsedCarTextures, MaxPermTex, TextureHash);
 	
@@ -1520,20 +1520,18 @@ void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front
 
 // Rear wheel light material replacement
 // 0x6277FD
-DWORD ecx_wheel_backup;
 void __declspec(naked) RearWheelLightMaterialCodeCave()
 {
 	_asm
 	{
-		mov ecx_wheel_backup, ecx
-		mov ecx, dword ptr ds : [esp + eax + 0x190]
+		mov ecx, dword ptr ds : [esp + eax + 0x178]
 		test ecx, ecx // wheel model != 0
 		jz loc_62787A
 		mov ecx, dword ptr ds : [esp + eax + 0x1F0]
 		test ecx, ecx // light material != 0
 		jz loc_62787A
 		mov eax, dword ptr ds : [esp + 0xE0]
-		mov ecx, dword ptr ds : [esp + eax + 0x190]
+		mov ecx, dword ptr ds : [esp + eax + 0x178]
 		mov eax, dword ptr ds : [esp + eax + 0x1F0]
 		push eax
 		push 0x22719FA9 // MAGSILVER
@@ -1541,19 +1539,18 @@ void __declspec(naked) RearWheelLightMaterialCodeCave()
 		mov eax, dword ptr ds : [esp + 0xE0]
 		mov ecx, dword ptr ds : [esp + eax + 0x1F0]
 		push ecx
-		mov ecx, dword ptr ds : [esp + eax + 0x194]
+		mov ecx, dword ptr ds : [esp + eax + 0x17C]
 		push 0xFD102A92 // MAGCHROME
 		call eModel_ReplaceLightMaterial_Game
 		mov eax, dword ptr ds : [esp + 0xE0]
 		mov ecx, dword ptr ds : [esp + eax + 0x1F0]
 		push ecx
-		mov ecx, dword ptr ds : [esp + eax + 0x194]
+		mov ecx, dword ptr ds : [esp + eax + 0x17C]
 		push 0x12049251 // MAGGUNMETAL
 		call eModel_ReplaceLightMaterial_Game
 		mov eax, dword ptr ds : [esp + 0xE0]
 
 		loc_62787A :
-		mov ecx, ecx_wheel_backup
 			push 0x62787A
 			retn
 	}
@@ -2076,7 +2073,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 		// Check for US parking lights
 		bool USParkingLights = 0;
 		DWORD* HeadlightPart = RideInfo_GetPart(RideInfo, CARSLOTID_HEADLIGHT);
-		if (HeadlightPart) USParkingLights = CarPart_GetAppliedAttributeUParam(HeadlightPart, bStringHash((char*)"US_PARKING_LIGHTS"), 0) != 0;
+		if (HeadlightPart) USParkingLights = CarPart_GetAppliedAttributeUParam(HeadlightPart, CT_bStringHash("US_PARKING_LIGHTS"), 0) != 0;
 
 		int PixelSize = eView_GetPixelSize(view, position, 3.0f);
 

@@ -123,29 +123,49 @@ void __fastcall CustomizeNeonMenu_Setup(DWORD* CustomizeNeonMenu, void* EDX_Unus
 {
     char const* CustomizeNeonMenuPackage = (char const*)CustomizeNeonMenu[1];
 
-    CustomizeNeonMenu[10] = bStringHash("HELP_CARSPECIALTIES_NEON_SELECT");
+    CustomizeNeonMenu[10] = CT_bStringHash("HELP_CARSPECIALTIES_NEON_SELECT");
 
     // Read Part Options for the car
     DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
     int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
 
     if (CarConfigs[CarTypeID].Specialties.UnderglowNeon) 
-        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 154, bStringHash("NEON_ICON_BASE"), bStringHash("UI_ICE_NEON_UNDERCAR"), -1);
+        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 
+            CARSLOTID_NEON, 
+            CarConfigs[CarTypeID].Icons.SpecialtiesUnderglowNeon, 
+            CarConfigs[CarTypeID].Names.SpecialtiesUnderglowNeon, 
+            -1);
 
     if (CarConfigs[CarTypeID].Specialties.EngineNeon) 
-        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 155, bStringHash("NEON_ICON_ENGINE"), bStringHash("UI_ICE_NEON_ENGINE"), -1);
+        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 
+            CARSLOTID_NEON_ENGINE, 
+            CarConfigs[CarTypeID].Icons.SpecialtiesEngineNeon, 
+            CarConfigs[CarTypeID].Names.SpecialtiesEngineNeon, 
+            -1);
 
     if (CarConfigs[CarTypeID].Specialties.CabinNeon)
     {
-        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 156, bStringHash("NEON_ICON_CABIN"), bStringHash("UI_ICE_NEON_CABIN"), -1);
-        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 158, bStringHash("NEON_ICON_CABIN_CONFIGURE"), bStringHash("UI_ICE_NEON_CABIN_LAYOUT"), -1);
+        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 
+            CARSLOTID_CABIN_NEON_FRAME,
+            CarConfigs[CarTypeID].Icons.SpecialtiesCabinNeonLayout, 
+            CarConfigs[CarTypeID].Names.SpecialtiesCabinNeonLayout, 
+            -1);
+        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 
+            CARSLOTID_NEON_CABIN, 
+            CarConfigs[CarTypeID].Icons.SpecialtiesCabinNeon, 
+            CarConfigs[CarTypeID].Names.SpecialtiesCabinNeon, 
+            -1);
     }
 
     if (CarConfigs[CarTypeID].Specialties.TrunkNeon) 
-        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 157, bStringHash("NEON_ICON_TRUNK"), bStringHash("UI_ICE_NEON_TRUNK"), -1);
+        CustomizeNeonMenu_AddSelection(CustomizeNeonMenu, 
+            CARSLOTID_NEON_TRUNK, 
+            CarConfigs[CarTypeID].Icons.SpecialtiesTrunkNeon, 
+            CarConfigs[CarTypeID].Names.SpecialtiesTrunkNeon, 
+            -1);
 
     DWORD LastButton = FEngGetLastButton(CustomizeNeonMenuPackage);
     (*(void(__thiscall**)(DWORD*, DWORD))(CustomizeNeonMenu[19] + 32))(CustomizeNeonMenu + 19, LastButton);
     FEngSetInvisible_Pkg(CustomizeNeonMenuPackage, 0x5978FC5F);
-    FEngSetLanguageHash(CustomizeNeonMenuPackage, 0x42ADB44C, bStringHash("CUSTOMIZE_TITLE_INTERIORS_SHOP"));
+    FEngSetLanguageHash(CustomizeNeonMenuPackage, CT_bStringHash("HEADER_TEXT"), CT_bStringHash("CUSTOMIZE_TITLE_INTERIORS_SHOP"));
 }

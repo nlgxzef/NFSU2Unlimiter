@@ -201,7 +201,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	char const* IceSelectionScreenPackage = (char const*)IceSelectionScreen[1];
 	DWORD* AMenuOption;
 
-	FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CT_bStringHash("CUSTOMIZE_TITLE_INTERIORS_SHOP"));
+	FEngSetLanguageHash(IceSelectionScreenPackage, CT_bStringHash("HEADER_TEXT"), CT_bStringHash("CUSTOMIZE_TITLE_INTERIORS_SHOP"));
 
 	DWORD TrunkSlotIcons[12] = {
 		CarConfigs[CarTypeID].Icons.SpecialtiesTrunkAudioSlot1,
@@ -473,14 +473,14 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 			else AMenuOption = 0;
 		}
 
-		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
-		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
+		FEngSetInvisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("JOY_EVENT_INSTALL"));
+		FEngSetInvisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("INSTALL"));
 		break;
 
 	case 2:
-		FEngSetVisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
-		FEngSetVisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
-		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
+		FEngSetVisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("JOY_EVENT_INSTALL"));
+		FEngSetVisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("INSTALL"));
+		FEngSetLanguageHash(IceSelectionScreenPackage, CT_bStringHash("HEADER_TEXT"), CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
@@ -509,9 +509,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 		break;
 
 	case 3:
-		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
-		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
-		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
+		FEngSetInvisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("JOY_EVENT_INSTALL"));
+		FEngSetInvisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("INSTALL"));
+		FEngSetLanguageHash(IceSelectionScreenPackage, CT_bStringHash("HEADER_TEXT"), CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
@@ -556,9 +556,9 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 
 	case 4:
 	case 5:
-		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xA2285688);
-		FEngSetInvisible_Pkg(IceSelectionScreenPackage, 0xC318FF76);
-		FEngSetLanguageHash(IceSelectionScreenPackage, 0x42ADB44C, CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
+		FEngSetInvisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("JOY_EVENT_INSTALL"));
+		FEngSetInvisible_Pkg(IceSelectionScreenPackage, CT_bStringHash("INSTALL"));
+		FEngSetLanguageHash(IceSelectionScreenPackage, CT_bStringHash("HEADER_TEXT"), CarConfigs[CarTypeID].Names.SpecialtiesTrunkAudio);
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{

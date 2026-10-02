@@ -683,7 +683,7 @@ void __fastcall ChoosePaintScreen_BuildPaintList(DWORD* ChoosePaintScreen, void*
 
         if (InstalledPart)
         {
-            if (*((BYTE*)ChoosePaintScreen + 396)) ChoosePaintScreen[93] = CarPart_GetAppliedAttributeUParam(InstalledPart, 0xEBB03E66, 0); // BRAND_NAME
+            if (*((BYTE*)ChoosePaintScreen + 396)) ChoosePaintScreen[93] = CarPart_GetAppliedAttributeUParam(InstalledPart, CT_bStringHash("BRAND_NAME"), 0); // BRAND_NAME
         }
 
         *((BYTE*)ChoosePaintScreen + 396) = 0;
@@ -748,10 +748,10 @@ void __fastcall ChoosePaintScreen_BuildPaintList(DWORD* ChoosePaintScreen, void*
 
         // Show or hide locked icon
         if (ChoosePaintScreen[86] == (DWORD)(ChoosePaintScreen + 86)) // no datum
-            FEngSetScript_Pkg(PackageName, 0x23A43844, "SHOW", 1);
+            FEngSetScript_Pkg(PackageName, CT_bStringHash("LOCK_MASTER_2"), "SHOW", 1);
         else
         {
-            FEngSetScript_Pkg(PackageName, 0x23A43844, "HIDE", 1);
+            FEngSetScript_Pkg(PackageName, CT_bStringHash("LOCK_MASTER_2"), "HIDE", 1);
 
             // Refresh if selected one is out of bounds
             if (SelectedDatum >= NumPaintSwatchObjects) ChoosePaintScreen_RedrawSwatches(ChoosePaintScreen, EDX_Unused, SelectedDatum);
@@ -839,17 +839,17 @@ void __fastcall ChoosePaintScreen_ScrollPaintTypes(DWORD* ChoosePaintScreen, voi
     ChoosePaintScreen_BuildPaintList(ChoosePaintScreen, EDX_Unused);
     if ((DWORD*)ChoosePaintScreen[86] == ChoosePaintScreen + 86)
     {
-        FEngSetInvisible_Pkg(PackageName, 0x9BA6D658);
-        FEngSetScript_Pkg(PackageName, 0x23A43844, "SHOW", 1);
+        FEngSetInvisible_Pkg(PackageName, CT_bStringHash("U2_PAINT_HIGHLIGHT"));
+        FEngSetScript_Pkg(PackageName, CT_bStringHash("LOCK_MASTER_2"), "SHOW", 1);
         if (*(int*)0x850078 == 1)
-            FEngSetInvisible_Pkg(PackageName, 0x13C45E);
+            FEngSetInvisible_Pkg(PackageName, CT_bStringHash("CASH"));
         goto RefreshHeader;
     }
-    FEngSetVisible_Pkg(PackageName, 0x9BA6D658);
-    FEngSetScript_Pkg(PackageName, 0x9BA6D658, "BLINK", 1);
-    FEngSetScript_Pkg(PackageName, 0x23A43844, "HIDE", 1);
+    FEngSetVisible_Pkg(PackageName, CT_bStringHash("U2_PAINT_HIGHLIGHT"));
+    FEngSetScript_Pkg(PackageName, CT_bStringHash("U2_PAINT_HIGHLIGHT"), "BLINK", 1);
+    FEngSetScript_Pkg(PackageName, CT_bStringHash("LOCK_MASTER_2"), "HIDE", 1);
     if (*(int*)0x850078 == 1)
-        FEngSetVisible_Pkg(PackageName, 0x13C45E);
+        FEngSetVisible_Pkg(PackageName, CT_bStringHash("CASH"));
     v6 = ChoosePaintScreen[90];
     if (!v6 || (v7 = ChoosePaintScreen[22]) == 0)
     {
@@ -904,14 +904,14 @@ void __fastcall ChoosePaintScreen_RefreshHeader(DWORD* ChoosePaintScreen, void* 
 
     if (GetNumAvailablePaintIDFromType(Min, CarSlotID) > 1)
     {
-        FEngSetVisible_Pkg((char*)ChoosePaintScreen[1], 0x9DE5BA07); // LTRIGGER_ICON
-        FEngSetVisible_Pkg((char*)ChoosePaintScreen[1], 0x7A1FF30D); // RTRIGGER_ICON
+        FEngSetVisible_Pkg((char*)ChoosePaintScreen[1], CT_bStringHash("LTRIGGER_ICON")); // LTRIGGER_ICON
+        FEngSetVisible_Pkg((char*)ChoosePaintScreen[1], CT_bStringHash("RTRIGGER_ICON")); // RTRIGGER_ICON
     }
     else
     {
         
-        FEngSetInvisible_Pkg((const char*)ChoosePaintScreen[1], 0x9DE5BA07); // LTRIGGER_ICON
-        FEngSetInvisible_Pkg((const char*)ChoosePaintScreen[1], 0x7A1FF30D); // RTRIGGER_ICON
+        FEngSetInvisible_Pkg((const char*)ChoosePaintScreen[1], CT_bStringHash("LTRIGGER_ICON")); // LTRIGGER_ICON
+        FEngSetInvisible_Pkg((const char*)ChoosePaintScreen[1], CT_bStringHash("RTRIGGER_ICON")); // RTRIGGER_ICON
     }
     
     //if (State == 1) FEngSetInvisible_Pkg((const char*)ChoosePaintScreen[1], 0x31A9C0A); // PAINTTYPEGROUP

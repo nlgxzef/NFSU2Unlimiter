@@ -29,9 +29,9 @@ void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
     TheCarPart = *(DWORD**)(*(DWORD*)(RimsBrowser[22] + 76) + 8);
     PartName = (const char*)CarPart_GetName(TheCarPart);
 
-    if (CarPart_HasAppliedAttribute(TheCarPart, 0x4732DA07)) // LANGUAGEHASH
+    if (CarPart_HasAppliedAttribute(TheCarPart, CT_bStringHash("LANGUAGEHASH"))) // LANGUAGEHASH
     {
-        PartNameLanguageHash = CarPart_GetAppliedAttributeUParam(TheCarPart, 0x4732DA07, 0); // LANGUAGEHASH
+        PartNameLanguageHash = CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("LANGUAGEHASH"), 0); // LANGUAGEHASH
         PartNameFromHash = GetLocalizedString(PartNameLanguageHash);
         PartName = PartNameFromHash;
     }
@@ -50,30 +50,30 @@ void __fastcall RimsBrowser_RefreshHeader(DWORD* RimsBrowser, void* EDX_Unused)
     if ((DWORD*)RimsBrowser[85] != RimsBrowser + 85)
     {
         TheCarPart = *(DWORD**)(RimsBrowser[87] + 44);
-        HasLanguageHash = CarPart_HasAppliedAttribute(TheCarPart, 0x4732DA07);// LANGUAGEHASH
+        HasLanguageHash = CarPart_HasAppliedAttribute(TheCarPart, CT_bStringHash("LANGUAGEHASH"));// LANGUAGEHASH
         RimsBrowserPackage = (const char*)RimsBrowser[1];
 
         if (HasLanguageHash)
         {
-            InnerRadius = (char)CarPart_GetAppliedAttributeUParam(TheCarPart, 0xEB0101E2, 0);// INNER_RADIUS
-            PartName = (const char*)CarPart_GetAppliedAttributeUParam(TheCarPart, 0x4732DA07, 0);// LANGUAGEHASH
+            InnerRadius = (char)CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("INNER_RADIUS"), 0);// INNER_RADIUS
+            PartName = (const char*)CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("LANGUAGEHASH"), 0);// LANGUAGEHASH
         }
         else
         {
-            InnerRadius = (char)CarPart_GetAppliedAttributeUParam(TheCarPart, 0xEB0101E2, 0);// INNER_RADIUS
+            InnerRadius = (char)CarPart_GetAppliedAttributeUParam(TheCarPart, CT_bStringHash("INNER_RADIUS"), 0);// INNER_RADIUS
             PartName = (const char*)CarPart_GetName(TheCarPart);
         }
 
-        FEPrintf(RimsBrowserPackage, 0xD28B9316, "%s %d\"", PartName, InnerRadius);
+        FEPrintf(RimsBrowserPackage, CT_bStringHash("PART_NAME"), "%s %d\"", PartName, InnerRadius);
 
         if (*(int*)_FEDatabase == 1)
         {
             Cost = PlayerCareerState_GetCarPartCost_Game((DWORD*)ThePlayerCareer, CARSLOTID_FRONT_WHEEL, TheCarPart);
-            FEPrintf(RimsBrowserPackage, 0x380B632, "%d", Cost);
+            FEPrintf(RimsBrowserPackage, CT_bStringHash("PRICE"), "%d", Cost);
         }
         else
         {
-            FEngSetInvisible_Pkg(RimsBrowserPackage, 0x380B632);
+            FEngSetInvisible_Pkg(RimsBrowserPackage, CT_bStringHash("PRICE"));
         }
     }
 

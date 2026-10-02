@@ -50,6 +50,12 @@ bool IsTraffic(BYTE CarTypeID)
 	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 2;
 }
 
+bool IsSkinnable(BYTE CarTypeID)
+{
+	if (CarTypeID >= CarCount) return 0;
+	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x88C) != 0;
+}
+
 int GetCarTypeIDFromHash(DWORD CarTypeNameHash)
 {
 	for (int i = 0; i < CarCount; i++)

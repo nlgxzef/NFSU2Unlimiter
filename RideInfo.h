@@ -127,6 +127,14 @@ void MirrorFrontBrakeToRear(DWORD* RideInfo)
     if (NewRearBrake) RideInfo[356 + CARSLOTID_REAR_BRAKE] = (DWORD)NewRearBrake;
 }
 
+bool RideInfo_HasDifferentWheels(DWORD* RideInfo)
+{
+	CarPart* FrontWheel = (CarPart*)RideInfo[356 + CARSLOTID_FRONT_WHEEL];
+	CarPart* RearWheel = (CarPart*)RideInfo[356 + CARSLOTID_REAR_WHEEL];
+
+	return FrontWheel && RearWheel && (FrontWheel != RearWheel);
+}
+
 bool __fastcall RideInfo_TrunkAudioSlotAvailable(DWORD* RideInfo, void* EDX_Unused, int CarSlotID)
 {
     DWORD* TrunkAudioPart;
@@ -786,4 +794,18 @@ void GetRidePartAttributes()
         g_displayHUDattributes[6] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("GREEN"), 0);
         g_displayHUDattributes[5] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("BLUE"), 0);
     }
+}
+
+char const* DummyWheelRear = "DUMMY_WHEEL_REAR%d";
+
+void __fastcall RideInfo_SetCompositeNameHash(DWORD* RideInfo, void *EDX_Unused, int id)
+{
+    char buf[64]; // [esp+8h] [ebp-40h] BYREF
+
+    bSPrintf(buf, "DUMMY_SKIN%d", id);
+	RideInfo[353] = IsSkinnable(RideInfo[0]) ? bStringHash(buf) : 0;
+    bSPrintf(buf, "DUMMY_WHEEL%d", id);
+    RideInfo[354] = bStringHash(buf);
+    bSPrintf(buf, RideInfo_HasDifferentWheels(RideInfo) ? DummyWheelRear : "DUMMY_SPINNER%d", id);
+    RideInfo[355] = bStringHash(buf);
 }
