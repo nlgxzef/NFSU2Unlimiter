@@ -47,13 +47,13 @@ DWORD GetPerfPartNameHash(PerfPart *part)
 		switch (part->NameHash)
 		{
 		case CT_bStringHash("TU_STAGE_1_TURBO_KIT"):
-			result = DefaultPerformancePartHashes[DefaultPerformancePartCount - 3]; // Supercharger Stage 1
+			result = DefaultPerformancePartHashes[PERF_PART_SC_STAGE_1_SUPERCHARGER_KIT]; // Supercharger Stage 1
 			break;
 		case CT_bStringHash("TU_STAGE_2_TURBO_KIT"):
-			result = DefaultPerformancePartHashes[DefaultPerformancePartCount - 2]; // Supercharger Stage 1
+			result = DefaultPerformancePartHashes[PERF_PART_SC_STAGE_2_SUPERCHARGER_KIT]; // Supercharger Stage 2
 			break;
 		case CT_bStringHash("TU_STAGE_3_TURBO_KIT"):
-			result = DefaultPerformancePartHashes[DefaultPerformancePartCount - 1]; // Supercharger Stage 1
+			result = DefaultPerformancePartHashes[PERF_PART_SC_STAGE_3_SUPERCHARGER_KIT]; // Supercharger Stage 3
 			break;
 		}
 	}
@@ -69,9 +69,4 @@ DWORD GetPerfPartNameHash(PerfPart *part)
 	}
 
 	return result;
-}
-
-void ChangeToSupercharger(PerfPart *part)
-{
-
 }

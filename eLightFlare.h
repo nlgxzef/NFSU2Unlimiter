@@ -5,7 +5,7 @@
 
 #include "Color.h"
 
-typedef struct eLightFlare
+struct eLightFlare
 {
 	/* 0x0000 */ eLightFlare* Next;
 	/* 0x0004 */ eLightFlare* Prev;
@@ -23,4 +23,4 @@ typedef struct eLightFlare
 	/* 0x002e */ short ScenerySectionNumber;
 
 	inline operator void* () noexcept { return reinterpret_cast<void*>(this); }
-} eLightFlare; /* size: 0x0030 */
+};

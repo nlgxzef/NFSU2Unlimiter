@@ -629,15 +629,14 @@ void __fastcall RideInfo_SyncVisualPartsWithPhysics_Hook(DWORD* RideInfo, void* 
 
     MainSection& M = CarConfigs[CarType].Main;
 
-    if (!M.SyncVisualPartsWithPhysics && !M.SyncBrakesWithPhysics) return;
-
     // Snapshot the brake slots, let the game function run, then put them back if brakes are meant
     // to be chosen by hand. Aerodynamics is not in this list: it writes into RidePhysicsInfo
     // rather than the parts array, so it stays on the master flag.
     DWORD SavedFrontBrake = RideInfo[356 + CARSLOTID_FRONT_BRAKE];
     DWORD SavedRearBrake = RideInfo[356 + CARSLOTID_REAR_BRAKE];
 
-    RideInfo_SyncVisualPartsWithPhysics(RideInfo, perf, random);
+    if (M.SyncVisualPartsWithPhysics)
+        RideInfo_SyncVisualPartsWithPhysics(RideInfo, perf, random);
 
     if (!M.SyncBrakesWithPhysics)
     {

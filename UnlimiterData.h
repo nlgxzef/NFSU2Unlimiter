@@ -46,11 +46,17 @@ void LoadCarConfigs()
 	// PartLink
 	DefaultCarConfig.PartLinking.Enabled = mINI_ReadInteger(GeneralINI, "PartLink", "Enabled", 0) != 0;
 
+	// Physics
+	DefaultCarConfig.Physics.CamberStock = mINI_ReadFloat(GeneralINI, "Physics", "CamberStock", 0.0f);
+	DefaultCarConfig.Physics.CamberKit = mINI_ReadFloat(GeneralINI, "Physics", "CamberKit", 0.5f);
+	DefaultCarConfig.Physics.CamberCoilOver = mINI_ReadFloat(GeneralINI, "Physics", "CamberCoilOver", 0.5f);
+
 	// Stats
 	DefaultCarConfig.Stats.TimingKludgeFactor060 = mINI_ReadFloat(GeneralINI, "Stats", "TimingKludgeFactor060");
 	DefaultCarConfig.Stats.TimingKludgeFactor0100 = mINI_ReadFloat(GeneralINI, "Stats", "TimingKludgeFactor0100");
 
 	// StarGazer
+	DefaultCarConfig.StarGazer.Enabled = mINI_ReadInteger(GeneralINI, "StarGazer", "Enabled", 1);
 	DefaultCarConfig.StarGazer.StartingRep = mINI_ReadInteger(GeneralINI, "StarGazer", "StartingRep", 0);
 
 	// Textures
@@ -78,13 +84,13 @@ void LoadCarConfigs()
 	DefaultCarConfig.BodyShop.Quarter = mINI_ReadInteger(GeneralINI, "BodyShop", "Quarter", 0) != 0;
 	DefaultCarConfig.BodyShop.Spoiler = mINI_ReadInteger(GeneralINI, "BodyShop", "Spoiler", 1) != 0;
 	DefaultCarConfig.BodyShop.Hood = mINI_ReadInteger(GeneralINI, "BodyShop", "Hood", 1) != 0;
-	DefaultCarConfig.BodyShop.Engine = mINI_ReadInteger(GeneralINI, "BodyShop", "Engine", 0) != 0;
+	DefaultCarConfig.BodyShop.Engine = mINI_ReadInteger(GeneralINI, "BodyShop", "Engine", 1) != 0;
 	DefaultCarConfig.BodyShop.Trunk = mINI_ReadInteger(GeneralINI, "BodyShop", "Trunk", 0) != 0;
 	DefaultCarConfig.BodyShop.RoofScoops = mINI_ReadInteger(GeneralINI, "BodyShop", "RoofScoops", 1) != 0;
 	DefaultCarConfig.BodyShop.Interior = mINI_ReadInteger(GeneralINI, "BodyShop", "Interior", 0) != 0;
 	DefaultCarConfig.BodyShop.Roof = mINI_ReadInteger(GeneralINI, "BodyShop", "Roof", 0) != 0;
 	DefaultCarConfig.BodyShop.Tires = mINI_ReadInteger(GeneralINI, "BodyShop", "Tires", 0) != 0;
-	DefaultCarConfig.BodyShop.Brakes = mINI_ReadInteger(GeneralINI, "BodyShop", "Brakes", 0) != 0;
+	DefaultCarConfig.BodyShop.Brakes = mINI_ReadInteger(GeneralINI, "BodyShop", "Brakes", 1) != 0;
 	DefaultCarConfig.BodyShop.Headlights = mINI_ReadInteger(GeneralINI, "BodyShop", "Headlights", 1) != 0;
 	DefaultCarConfig.BodyShop.Taillights = mINI_ReadInteger(GeneralINI, "BodyShop", "Taillights", 1) != 0;
 	DefaultCarConfig.BodyShop.Mirrors = mINI_ReadInteger(GeneralINI, "BodyShop", "Mirrors", 1) != 0;
@@ -485,11 +491,11 @@ void LoadCarConfigs()
 	DefaultCarConfig.Names.PaintPurchaseSetup = mINI_ReadHashS(GeneralINI, "Names", "PaintPurchaseSetup", "PAINT_CATEGORY_PURCHASE_SETUP");
 	DefaultCarConfig.Names.SpecialtiesCustomGauges = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesCustomGauges", "UI_ICE_GAUGES");
 	DefaultCarConfig.Names.SpecialtiesNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesNeon", "UI_ICE_NEON");
-	DefaultCarConfig.Names.SpecialtiesUnderglowNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesUnderglowNeon", "NEON_ICON_BASE");
-	DefaultCarConfig.Names.SpecialtiesEngineNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesEngineNeon", "NEON_ICON_ENGINE");
-	DefaultCarConfig.Names.SpecialtiesCabinNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesCabinNeon", "NEON_ICON_CABIN");
-	DefaultCarConfig.Names.SpecialtiesCabinNeonLayout = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesCabinNeonLayout", "NEON_ICON_CABIN_CONFIGURE");
-	DefaultCarConfig.Names.SpecialtiesTrunkNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkNeon", "NEON_ICON_TRUNK");
+	DefaultCarConfig.Names.SpecialtiesUnderglowNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesUnderglowNeon", "UI_ICE_NEON_UNDERCAR");
+	DefaultCarConfig.Names.SpecialtiesEngineNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesEngineNeon", "UI_ICE_NEON_ENGINE");
+	DefaultCarConfig.Names.SpecialtiesCabinNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesCabinNeon", "UI_ICE_NEON_CABIN");
+	DefaultCarConfig.Names.SpecialtiesCabinNeonLayout = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesCabinNeonLayout", "UI_ICE_NEON_CABIN_LAYOUT");
+	DefaultCarConfig.Names.SpecialtiesTrunkNeon = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesTrunkNeon", "UI_ICE_NEON_TRUNK");
 	DefaultCarConfig.Names.SpecialtiesWindowTint = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesWindowTint", "UI_ICE_TINT");
 	DefaultCarConfig.Names.SpecialtiesHeadlightColor = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesHeadlightColor", "UI_ICE_HEADLIGHTS");
 	DefaultCarConfig.Names.SpecialtiesNosPurge = mINI_ReadHashS(GeneralINI, "Names", "SpecialtiesNosPurge", "UI_ICE_NOS_PURGE");
@@ -647,11 +653,17 @@ void LoadCarConfigs()
 		// PartLink
 		ACarConfig.PartLinking.Enabled = mINI_ReadInteger(CarINI, "PartLink", "Enabled", DefaultCarConfig.PartLinking.Enabled) != 0;
 
+		// Physics
+		ACarConfig.Physics.CamberStock = mINI_ReadFloat(CarINI, "Physics", "CamberStock", DefaultCarConfig.Physics.CamberStock);
+		ACarConfig.Physics.CamberKit = mINI_ReadFloat(CarINI, "Physics", "CamberKit", DefaultCarConfig.Physics.CamberKit);
+		ACarConfig.Physics.CamberCoilOver = mINI_ReadFloat(CarINI, "Physics", "CamberCoilOver", DefaultCarConfig.Physics.CamberCoilOver);
+
 		// Stats
 		ACarConfig.Stats.TimingKludgeFactor060 = mINI_ReadFloat(CarINI, "Stats", "TimingKludgeFactor060", DefaultCarConfig.Stats.TimingKludgeFactor060);
 		ACarConfig.Stats.TimingKludgeFactor0100 = mINI_ReadFloat(CarINI, "Stats", "TimingKludgeFactor0100", DefaultCarConfig.Stats.TimingKludgeFactor0100);
 
 		// StarGazer
+		ACarConfig.StarGazer.Enabled = mINI_ReadInteger(CarINI, "StarGazer", "Enabled", DefaultCarConfig.StarGazer.Enabled);
 		ACarConfig.StarGazer.StartingRep = mINI_ReadInteger(CarINI, "StarGazer", "StartingRep", DefaultCarConfig.StarGazer.StartingRep);
 
 		// Textures

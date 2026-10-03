@@ -11,6 +11,7 @@
 #include "CarSlotAnim.h"
 #include "CarPartID.h"
 #include "CarEffect.h"
+#include "ePhysicsPerformanceParts.h"
 //#include "MenuID.h"
 
 // Helpers

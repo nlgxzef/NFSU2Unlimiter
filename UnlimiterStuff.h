@@ -388,6 +388,12 @@ int Init()
 	// Hook RideInfo_SetStockParts (8 references)
 	injector::MakeJMP(0x637040, RideInfo_SetStockParts, true);
 
+	// Hook RideInfo_FillWithPreset
+	injector::MakeCALL(0x4DF20F, RideInfo_FillWithPreset, true); // UIMain::UIMain
+	injector::MakeCALL(0x5039E2, RideInfo_FillWithPreset, true); // SponsorCarInfo::BuildRide
+	injector::MakeCALL(0x5261D1, RideInfo_FillWithPreset, true); // RaceStarter::AddCareerEventAIOpponents
+	injector::MakeCALL(0x52866D, RideInfo_FillWithPreset, true); // PlayerCareerState::BuildRideForPlayer
+
 	// Hook FindPartWithLevel and make it recursive
 	injector::MakeCALL(0x637077, FindPartWithLevel, true); // RideInfo::SetStockParts
 	injector::MakeCALL(0x639C5B, FindPartWithLevel, true); // RideInfo::SyncVisualPartsWithPhysics
@@ -463,7 +469,12 @@ int Init()
 		
 	// Custom rep
 	injector::MakeCALL(0x52354B, PlayerCareerState_GetCarPartRep, true); // StarGazerGuide::GetNumberOfStars
-	injector::MakeJMP(0x5234C0, StarGazerGuide_GetNumberOfStars, true); // 4 references
+
+	// StarGazer
+	injector::MakeCALL(0x528477, StarGazerGuide_GetNumberOfStars, true); // PlayerCareerState::GetCurrentPlayerStarRating
+	injector::MakeCALL(0x53D89A, StarGazerGuide_GetNumberOfStars, true); // sub_53D870
+	injector::MakeCALL(0x55B1D0, StarGazerGuide_GetNumberOfStars, true); // StarGazerGuide::NotifyVisualRatingChange
+	injector::MakeCALL(0x528477, StarGazerGuide_GetNumberOfStars, true); // StarGazerGuide::NotifyVisualRatingChange
 
 	// Fix tire skids (WIP)
 	injector::MakeJMP(0x5B4DC0, RidePhysicsInfo_RebuildPhysicsInfo, true); // 4 references

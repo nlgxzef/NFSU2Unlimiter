@@ -47,8 +47,14 @@ float GetNumStarsFromRep(int Rep)
 	return (float)i + (float)Remainder / (float)RepForThisLevel;
 }
 
+float(__thiscall* StarGazerGuide_GetNumberOfStars_Game)(DWORD* StarGazerGuide, DWORD* ride) = (float(__thiscall*)(DWORD*, DWORD*))0x5234C0;
 float __fastcall StarGazerGuide_GetNumberOfStars(DWORD* StarGazerGuide, void* EDX_Unused, DWORD* ride)
 {
+	int CarType = ride[0];
+
+	// Jump to original function if StarGazer is disabled for this car
+	if (!CarConfigs[CarType].StarGazer.Enabled) return StarGazerGuide_GetNumberOfStars_Game(StarGazerGuide, ride);
+
 	if (TheStarGazer.ForceRep != -1)
 	{
 		float Forced = GetNumStarsFromRep(TheStarGazer.ForceRep);
@@ -56,7 +62,7 @@ float __fastcall StarGazerGuide_GetNumberOfStars(DWORD* StarGazerGuide, void* ED
 		return Forced;
 	}
 
-	int CarType = ride[0];
+	
 	int Rep = CarConfigs[CarType].StarGazer.StartingRep;
 
 	DWORD* WideBodyPart = (DWORD*)ride[356 + CARSLOTID_WIDE_BODY];

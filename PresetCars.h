@@ -106,7 +106,9 @@ struct PresetCar // size 0x338
 	ObjectLink link;      // 0x00, sentinel node is PresetCars
 	char modelName[32];   // 0x08, e.g. ESCALADE
 	char Name[32];        // 0x28, e.g. SNOOP_DOGG
-	char _pad[0x2F0];
+	DWORD PerformanceLevel;
+	DWORD PartNameHashes[170];
+	BYTE PerformanceParts[68];
 };
 
 struct InventoryCar // size 0x18
@@ -1019,4 +1021,53 @@ void InitPresetCars()
 	{
 		injector::MakeJMP(0x525FBB, FindPresetCarWhenTuningForIngameCarCodeCave, true);        // RaceStarter
 	}
+}
+
+// moved from RideInfo.h to get rid of compiler errors
+void __fastcall RideInfo_FillWithPreset(DWORD* RideInfo, void* EDX_Unused, DWORD preset_hash)
+{
+	PresetCar* preset = FindFEPresetCar(preset_hash);
+	if (preset)
+	{
+		DWORD CarTypeNameHash = FEHashUpper(preset->modelName);
+		DWORD* CarTypeInfo = GetCarTypeInfoFromHash(CarTypeNameHash);
+		int type = CarTypeInfo[0x840 / 4];
+
+		if (type != RideInfo[0])
+		{
+			RideInfo_Init(RideInfo, type, 1, 0, 0);
+		}
+		RideInfo_SetStockParts(RideInfo, EDX_Unused, 0);
+
+		for (int i = CARSLOTID_BASE; i < CARSLOTID_NUM; ++i)
+		{
+			DWORD PartNameHash = preset->PartNameHashes[i];
+			if (PartNameHash && PartNameHash != 1)
+			{
+				DWORD* part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, type, i, PartNameHash, 0, -1);
+				if (part) RideInfo_SetPart(RideInfo, EDX_Unused, i, part);
+			}
+
+			/* // May be unneccessary, as we already set stock parts beforehand
+			if (i == CARSLOTID_TOP)
+			{
+				DWORD* part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, type, i, 0, 0, -1);
+				if (part) RideInfo_SetPart(RideInfo, EDX_Unused, i, part);
+			}
+			*/
+		}
+
+		int PerformanceLevel = preset->PerformanceLevel;
+		if (PerformanceLevel == -1)
+		{
+			for (int p = PERF_PART_WT_REMOVE_REAR_SEATS; p < PERF_PART_NUM_PERF_PARTS; p++) // Skip the last 3 fake parts
+			{
+				BYTE PerfPart = preset->PerformanceParts[p];
+				if (PerfPart != -1)
+					PhysicsUpgradeSpecification_InstallPerfPart_i(RideInfo + 188, p, PerfPart != 0, 0);
+			}
+		}
+		else PhysicsUpgradeSpecification_InstallAllPerfParts(RideInfo + 188, PerformanceLevel, -1);
+	}
+	RidePhysicsInfo_RebuildPhysicsInfo_bbb(RideInfo + 4, 1, 1, 1);
 }

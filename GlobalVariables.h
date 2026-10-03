@@ -371,6 +371,13 @@ struct CarRenderInfoSection
 	bool HasSunroof;
 };
 
+struct PhysicsSection
+{
+	float CamberStock;
+	float CamberKit;
+	float CamberCoilOver;
+};
+
 struct PartLinkSection
 {
 	bool Enabled;
@@ -384,6 +391,7 @@ struct StatsSection
 
 struct StarGazerSection
 {
+	bool Enabled;
 	int StartingRep;
 };
 
@@ -985,7 +993,7 @@ struct AnimationSection
 };
 
 
-#define DefaultPerformancePartCount 71
+#define DefaultPerformancePartCount PERF_PART_NUM_PERF_PARTS_INCL_SC
 
 struct PerformancePartsSection
 {
@@ -999,6 +1007,7 @@ struct CarConfig
 	TextureSection Textures;
 	CarRenderInfoSection RenderInfo;
 	PartLinkSection PartLinking;
+	PhysicsSection Physics;
 	StatsSection Stats;
 	StarGazerSection StarGazer;
 	CategorySection Category;

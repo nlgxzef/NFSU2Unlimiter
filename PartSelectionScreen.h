@@ -195,7 +195,7 @@ void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, vo
             CarConfigs[CarTypeID].Names.BodyShopTires,
             0); // TIRES
 
-    if (CarConfigs[CarTypeID].BodyShop.Brakes && !CarConfigs[CarTypeID].Main.SyncVisualPartsWithPhysics)
+    if (CarConfigs[CarTypeID].BodyShop.Brakes && !CarConfigs[CarTypeID].Main.SyncBrakesWithPhysics)
         PartSelectionScreen_AddCategoryChecked(
             PartSelectionScreen,
             CARSLOTID_FRONT_BRAKE,

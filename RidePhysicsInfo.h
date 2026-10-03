@@ -13,7 +13,6 @@ void __fastcall RidePhysicsInfo_RebuildPhysicsInfo(float* RidePhysicsInfo, void*
     float* _ccpi; // [esp+8h] [ebp-4h]
     float CompleatCarPhysicsInfo[480];
     float a4a; // [esp+18h] [ebp+Ch]
-    DWORD AttrVal;
 
     float* PerformanceClassRange = (float*)_PerformanceClassRange;
     float flt_7A1A80 = *(float*)0x7A1A80;
@@ -34,28 +33,34 @@ void __fastcall RidePhysicsInfo_RebuildPhysicsInfo(float* RidePhysicsInfo, void*
         // Check our custom attributes for track width
         float FrontTireOffset = 0;
         float RearTireOffset = 0;
+        float FrontTireWidth = CompleatCarPhysicsInfo[9]; // fl, 21 = fr
+        float RearTireWidth = CompleatCarPhysicsInfo[33]; // rr, 45 = rl
+        float FrontTireRadius = CompleatCarPhysicsInfo[8]; // fl, 20 = fr
+        float RearTireRadius = CompleatCarPhysicsInfo[32]; // rr, 44 = rl
 
 		bool HasWideBody = WideBodyPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_WIDE_BODY) == 1);
 
         if (HasWideBody) // check has WIDE_BODY and its visibility
         {
-            AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
-            FrontTireOffset = *(float*)&AttrVal;
-            AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
-            RearTireOffset = *(float*)&AttrVal;
+            FrontTireOffset = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_OFFSET"), 0.0f);
+            RearTireOffset = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("REAR_TIRE_OFFSET"), 0.0f);
+
+            FrontTireWidth = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_WIDTH"), -1.0f);
+            RearTireWidth = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("REAR_TIRE_WIDTH"), -1.0f);
+
+            FrontTireRadius = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_RADIUS"), -1.0f);
+            RearTireRadius = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("REAR_TIRE_RADIUS"), -1.0f);
         }
 
         bool TakeBodyOffsets = AccumulateTireOffsets || !HasWideBody;
         
         if (TakeBodyOffsets && FenderPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_FENDER) == 1)) // check has FENDER and its visibility
         {
-            AttrVal = CarPart_GetAppliedAttributeUParam(FenderPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
-            FrontTireOffset += *(float*)&AttrVal;
+            FrontTireOffset += CarPart_GetAppliedAttributeFParam(FenderPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_OFFSET"), 0.0f);
         }
         if (TakeBodyOffsets && QuarterPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_QUARTER) == 1)) // check has QUARTER and its visibility
         {
-            AttrVal = CarPart_GetAppliedAttributeUParam(QuarterPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
-            RearTireOffset += *(float*)&AttrVal;
+            RearTireOffset += CarPart_GetAppliedAttributeFParam(QuarterPart, EDX_Unused, CT_bStringHash("REAR_TIRE_OFFSET"), 0.0f);
         }
         
 
@@ -68,6 +73,31 @@ void __fastcall RidePhysicsInfo_RebuildPhysicsInfo(float* RidePhysicsInfo, void*
         CompleatCarPhysicsInfo[36] -= RearTireOffset;
         CompleatCarPhysicsInfo[47] += RearTireOffset;
         CompleatCarPhysicsInfo[48] += RearTireOffset;
+
+		// Set tire widths
+        if (FrontTireWidth != -1.0f)
+        {
+            CompleatCarPhysicsInfo[9] = FrontTireWidth; // fl
+            CompleatCarPhysicsInfo[21] = FrontTireWidth; // fr
+        }
+        if (RearTireWidth != -1.0f)
+        {
+            CompleatCarPhysicsInfo[33] = RearTireWidth; // rr
+            CompleatCarPhysicsInfo[45] = RearTireWidth; // rl
+        }
+        
+		// Set tire radius
+        if (FrontTireRadius != -1.0f)
+        {
+            CompleatCarPhysicsInfo[8] = FrontTireRadius; // fl
+            CompleatCarPhysicsInfo[20] = FrontTireRadius; // fr
+        }
+        if (RearTireRadius != -1.0f)
+        {
+            CompleatCarPhysicsInfo[32] = RearTireRadius; // rr
+            CompleatCarPhysicsInfo[44] = RearTireRadius; // rl
+        }
+		
 
         CompleatCarPhysicsInfo_BuildCarPhysicsInfo(CompleatCarPhysicsInfo, RidePhysicsInfo + 12, RidePhysicsInfo + 184, a4);
         CompleatCarPhysicsInfo_ApplyJunkmanUpgrades(CompleatCarPhysicsInfo, RidePhysicsInfo + 12, RidePhysicsInfo + 184);
@@ -133,13 +163,22 @@ float __fastcall RidePhysicsInfo_GetCamberPercent(DWORD* RidePhysicsInfo, void* 
     int CarTypeID = *RidePhysicsInfo;
     float result = .0f;
 
-    if (CarConfigs[CarTypeID].Main.SyncVisualPartsWithPhysics)
+	DWORD* RideInfo = RidePhysicsInfo - 4;
+	DWORD* PhysUpgSpec = RidePhysicsInfo + 184;
+
+	// Check body kit if it has a custom camber attribute
+	CarPart* BodyKitPart = (CarPart*)RideInfo[356 + CARSLOTID_WIDE_BODY];
+    if (BodyKitPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_WIDE_BODY) == 1)) // check has WIDE_BODY and its visibility
     {
-        if (*((BYTE*)RidePhysicsInfo + 852))
-            result = .5f;
-        if (*((BYTE*)RidePhysicsInfo + 851))
-            return result + .5f;
-    }
+        result += CarPart_GetAppliedAttributeFParam((DWORD*)BodyKitPart, EDX_Unused, CT_bStringHash("CAMBER"), 0.0f);
+	}
+
+    // Check performance parts
+    result += CarConfigs[CarTypeID].Physics.CamberStock;
+    if (PhysicsUpgradeSpecification_IsPerfPartInstalled((BYTE*)PhysUpgSpec, PERF_PART_SU_CAMBER_KIT))
+        result += CarConfigs[CarTypeID].Physics.CamberKit;
+    if (PhysicsUpgradeSpecification_IsPerfPartInstalled((BYTE*)PhysUpgSpec, PERF_PART_SU_COIL_OVER_SUSPENSION_SYSTEM))
+        result += CarConfigs[CarTypeID].Physics.CamberCoilOver;
 
     return result;
 }

@@ -10,6 +10,7 @@ DWORD(*bStringHash)(char const* StringToHash) = (DWORD(*)(char const*))0x43DB50;
 DWORD(*bStringHash2)(char const* StringToHash, int PartialHash) = (DWORD(*)(char const*, int))0x43DB80;
 char* (*GetCarTypeName)(int CarTypeID) = (char* (*)(int))0x610110;
 DWORD* (*GetCarTypeInfo)(int CarTypeID) = (DWORD * (*)(int))0x610110;
+DWORD* (*GetCarTypeInfoFromHash)(DWORD CarTypeNameHash) = (DWORD * (*)(DWORD))0x610130;
 int(*GetCarPartFromSlot_Game)(int CarSlotID) = (int(*)(int))0x60FEE0;
 int(*ShowTrunkUnderInFE_Game)(int CarTypeID) = (int(*)(int))0x60C8F0;
 int(*RemoveCentreBrakeWithCustomSpoiler_Game)(int CarTypeID) = (int(*)(int))0x60C8A0;
@@ -57,6 +58,7 @@ bool (*IsNeonCompletelyLocked)() = (bool(*)())0x539FB0;
 void(__thiscall* IceSelectionThing_Create)(DWORD* IceSelectionThing, unsigned int CarSlotID, unsigned int TextureHash, unsigned int LanguageHash, int CarAnimLocation, bool IsLocked, char const* FEPackageName) = (void(__thiscall*)(DWORD*, unsigned int, unsigned int, unsigned int, int, bool, char const*))0x53A9D0;
 void(__thiscall* IceCategoryTrunkThing_Create_Game)(DWORD* IceCategoryTrunkThing) = (void(__thiscall*)(DWORD*))0x53AAC0;
 void(__thiscall* IceSelectionScreen_SetExtraFunctionTextVisibility)(DWORD* IceSelectionScreen, bool IsVisible) = (void(__thiscall*)(DWORD*, bool))0x547090;
+void (__thiscall* RideInfo_Init)(DWORD* RideInfo, int type, int usage, int has_dash, int can_be_vertex_damaged) = (void (__thiscall*)(DWORD*, int, int, int, int))0x610270;
 DWORD* (__thiscall* RideInfo_GetPart)(DWORD* RideInfo, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x6102F0;
 DWORD* (__thiscall* CarCustomizeManager_GetStockCarPart_Game)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x53AEA0;
 DWORD* (__thiscall* CarCustomizeManager_GetInstalledVinyl)(DWORD* CarCustomizeManager, int CarSlotID) = (DWORD * (__thiscall*)(DWORD*, int))0x50EFD0;
@@ -112,6 +114,7 @@ int(__thiscall* CustomPhysicsSpec_GetNumActiveTunings)(DWORD* CustomPhysicsSpec)
 void(__thiscall* CustomPhysicsSpec_RebuildCustomTunings)(DWORD* CustomPhysicsSpec) = (void(__thiscall*)(DWORD*))0x5B4780;
 void(__thiscall* RidePhysicsInfo_ComputeMiscStats)(DWORD* RidePhysicsInfo) = (void(__thiscall*)(DWORD*))0x5B06A0;
 DWORD*(__thiscall* RidePhysicsInfo_GetCarPhysicsInfo)(DWORD* RidePhysicsInfo, bool rebuild) = (DWORD*(__thiscall*)(DWORD*, bool))0x5B5350;
+void(__thiscall* RidePhysicsInfo_RebuildPhysicsInfo_bbb)(DWORD* RidePhysicsInfo, bool, bool, bool) = (void(__thiscall*)(DWORD*, bool, bool, bool))0x5B4FC0;
 void(*MakeAccelerationTable)(float* unk1, float* unk2) = (void(*)(float*, float*))0x5B5AB0;
 float(__thiscall* Table_GetValue)(float* Table, float Value) = (float(__thiscall*)(float*, float))0x5764D0;
 float(*bDistBetween)(float* v1, float* v2) = (float(*)(float*, float*))0x43CE10;
@@ -274,6 +277,9 @@ void(*ConvertRGBtoHSL)(float r, float g, float b, float* hue, float* sat, float*
 void(*FETriggerCarEffect)(int effect, float amount, int terrain_type) = (void(*)(int, float, int))0x4C1920;
 int(*GetCarTypeMapping_Game)(int) = (int(*)(int))0x459240;
 void(__thiscall* sub_4367C0)(bList* lst) = (void(__thiscall*)(bList*))0x4367C0;
+void(__thiscall* PhysicsUpgradeSpecification_InstallAllPerfParts)(DWORD* PhysicsUpgradeSpecification, int upgrade_level, int packgage_type) = (void(__thiscall*)(DWORD*, int, int))0x5A64A0;
+void(__thiscall* PhysicsUpgradeSpecification_InstallPerfPart_i)(DWORD* PhysicsUpgradeSpecification, int ePhysicsPerformancePart, bool, bool) = (void(__thiscall*)(DWORD*, int, bool, bool))0x599680;
+void(__thiscall* PhysicsUpgradeSpecification_InstallPerfPart)(DWORD* PhysicsUpgradeSpecification, DWORD* PerfPackagePart, bool, bool) = (void(__thiscall*)(DWORD*, DWORD*, bool, bool))0x5A6320;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

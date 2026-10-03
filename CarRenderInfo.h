@@ -402,6 +402,10 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 	float SpinnerOffset; // st7
 	float FrontTireOffset;
 	float RearTireOffset;
+	float FrontTireWidth;
+	float RearTireWidth;
+	float FrontTireRadius;
+	float RearTireRadius;
 	int UseCustomWidth; // eax
 	float CurrWheelWidth; // st7
 	int FrontWheelSomething; // [esp+Ch] [ebp-10h]
@@ -433,28 +437,37 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 		// Check our custom attributes for track width
 		FrontTireOffset = 0;
 		RearTireOffset = 0;
+		FrontTireWidth = -1.0f;
+		RearTireWidth = -1.0f;
+		FrontTireRadius = -1.0f;
+		RearTireRadius = -1.0f;
+
+		WheelWidthOffsets = (float*)(CarRenderInfo + 264); // [4]
+		WheelOffsets = (float*)(CarRenderInfo + 256); // [4][2] + [4] + [2] + [4]??
 
 		bool HasWideBody = WideBodyPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_WIDE_BODY) == 1);
 
 		if (HasWideBody) // check has WIDE_BODY and its visibility
 		{
-			AttrVal = CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
-			FrontTireOffset = *(float*)&AttrVal;
-			AttrVal =  CarPart_GetAppliedAttributeUParam(WideBodyPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
-			RearTireOffset = *(float*)&AttrVal;
+			FrontTireOffset = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_OFFSET"), 0.0f);
+			RearTireOffset = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("REAR_TIRE_OFFSET"), 0.0f);
+
+			FrontTireWidth = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_WIDTH"), -1.0f);
+			RearTireWidth = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("REAR_TIRE_WIDTH"), -1.0f);
+
+			FrontTireRadius = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_RADIUS"), -1.0f);
+			RearTireRadius = CarPart_GetAppliedAttributeFParam(WideBodyPart, EDX_Unused, CT_bStringHash("REAR_TIRE_RADIUS"), -1.0f);
 		}
 
 		bool TakeBodyOffsets = AccumulateTireOffsets || !HasWideBody;
 		
 		if (TakeBodyOffsets && FenderPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_FENDER) == 1)) // check has FENDER and its visibility
 		{
-			AttrVal = CarPart_GetAppliedAttributeUParam(FenderPart, CT_bStringHash("FRONT_TIRE_OFFSET"), 0);
-			FrontTireOffset += *(float*)&AttrVal;
+			FrontTireOffset += CarPart_GetAppliedAttributeFParam(FenderPart, EDX_Unused, CT_bStringHash("FRONT_TIRE_OFFSET"), 0.0f);
 		}
 		if (TakeBodyOffsets && QuarterPart && (*((BYTE*)RideInfo + 2104 + CARSLOTID_QUARTER) == 1)) // check has QUARTER and its visibility
 		{
-			AttrVal = CarPart_GetAppliedAttributeUParam(QuarterPart, CT_bStringHash("REAR_TIRE_OFFSET"), 0);
-			RearTireOffset += *(float*)&AttrVal;
+			RearTireOffset += CarPart_GetAppliedAttributeFParam(QuarterPart, EDX_Unused, CT_bStringHash("REAR_TIRE_OFFSET"), 0.0f);
 		}
 		
 
@@ -469,9 +482,6 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 			RearWheelSomething = 0;
 
 		WheelWidth = *(float*)_WheelStandardWidth;
-
-		WheelWidthOffsets = (float*)(CarRenderInfo + 264); // [4]
-		WheelOffsets = (float*)(CarRenderInfo + 256); // [4][2] + [4] + [2] + [4]??
 
 		for (i = 72; i < 120; i += 12) // 72, 84, 96, 108
 		{
@@ -516,7 +526,10 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 			else
 				CurrWheelWidth = WheelWidth;
 
-			WheelWidthOffsets[0] = CurrWheelWidth;
+			if (WheelID <= 1)
+				WheelWidthOffsets[0] = FrontTireWidth != -1.0f ? FrontTireWidth : CurrWheelWidth;
+			else
+				WheelWidthOffsets[0] = RearTireWidth != -1.0f ? RearTireWidth : CurrWheelWidth;
 			++WheelWidthOffsets;
 
 			WheelOffsets += 2;
