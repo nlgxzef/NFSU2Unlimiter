@@ -5,13 +5,13 @@
 
 #pragma pack(push, 1)
 
-typedef struct
+struct ReplacementTextureEntry
 {
 	/* 0x0000 */ DWORD hOldNameHash;
 	/* 0x0004 */ DWORD hNewNameHash;
 	/* 0x0008 */ DWORD* pTextureInfo;
-	/* 0x000C */ DWORD unk;
-} ReplacementTextureEntry;
+	/* 0x000C */ DWORD* ppReplacedTextureInfo;
+};
 
 #pragma pack(pop)
 
@@ -55,7 +55,7 @@ void ReplacementTextureTable_UpdateEntry(ReplacementTextureEntry* table, int ind
 	{
 		table[index].hNewNameHash = dest;
 		table[index].pTextureInfo = (DWORD*)-1;
-		table[index].unk = 0;
+		table[index].ppReplacedTextureInfo = 0;
 	}
 }
 
@@ -68,7 +68,7 @@ void ReplacementTextureTable_WriteEntry(ReplacementTextureEntry* table, int inde
 		table[index].hOldNameHash = src;
 		table[index].hNewNameHash = dest;
 		table[index].pTextureInfo = (DWORD*)-1;
-		table[index].unk = 0;
+		table[index].ppReplacedTextureInfo = 0;
 	}
 }
 

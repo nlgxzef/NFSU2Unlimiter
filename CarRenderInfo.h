@@ -260,6 +260,10 @@ CarRenderInfoExtra* CarRenderInfo_GetExtra(DWORD* CarRenderInfo)
 
 int AnimLocationForExtraAttachment(int CarType, int CarSlotID, int orig)
 {
+	// LinkSpoiler 2: the spoiler stays where its marker puts it instead of following the trunk.
+	if (CarSlotID == CARSLOTID_SPOILER && CarConfigs[CarType].RenderInfo.LinkSpoiler == 2)
+		return -1;
+
 	BodyShopSection& B = CarConfigs[CarType].BodyShop;
 
 	bool ExtraEnabled[6] = {
@@ -295,6 +299,8 @@ void __declspec(naked) CarRenderInfo_Render_AnimLocationForExtraAttachmentCodeCa
 		mov esi_backup, esi
 		mov esi, dword ptr ds: [esp + 0x58]
 		mov CarRenderInfo, esi
+		mov PartAnim_RenderCarRenderInfo, esi // for the part's animation set (PartAnimations.h)
+		mov PartAnim_RenderSlotPiece, eax
 		pushad
 	}
 
@@ -314,6 +320,77 @@ void __declspec(naked) CarRenderInfo_Render_AnimLocationForExtraAttachmentCodeCa
 		mov ecx, AnimLoc
 		mov eax, dword ptr ds : [esp + 0xC8]
 		push 0x623463
+		retn
+	}
+}
+
+#define CRI_Loc_Models 1514 // CarRenderInfo+17A8h: an eModel* for each slot * 2 + piece, 4 LODs each
+
+ePositionMarker* CarRenderInfo_FindSlotMarker(DWORD* CarRenderInfo, int CarSlotID, DWORD NameHash)
+{
+	eModel* Model = (eModel*)CarRenderInfo[CRI_Loc_Models + CarSlotID * 2 * 4]; // first piece, LOD A
+	if (!Model || !Model->Solid) return 0;
+	return eSolid_GetPositionMarker((DWORD*)Model->Solid, NameHash);
+}
+
+ePositionMarker* __stdcall CarRenderInfo_GetBaseMarker(DWORD NameHash, DWORD* BaseSolid, DWORD* CarRenderInfo)
+{
+	DWORD* RideInfo = (DWORD*)CarRenderInfo[1];
+	if (RideInfo)
+	{
+		CarRenderInfoSection& R = CarConfigs[RideInfo[0]].RenderInfo;
+		int From = -1;
+
+		if (NameHash == CT_bStringHash("SPOILER") && R.LinkSpoiler == 1) From = CARSLOTID_TRUNK;
+		else if (NameHash == CT_bStringHash("ROOF_SCOOP")) From = CARSLOTID_ROOF;
+
+		if (From >= 0)
+		{
+			ePositionMarker* Marker = CarRenderInfo_FindSlotMarker(CarRenderInfo, From, NameHash);
+			if (Marker) return Marker;
+		}
+	}
+
+	return eSolid_GetPositionMarker(BaseSolid, NameHash);
+}
+
+// 0x635021 (SPOILER) and 0x635033 (ROOF_SCOOP)
+void __declspec(naked) CarRenderInfo_GetBaseMarkerCodeCave()
+{
+	_asm
+	{
+		push ebx                   // CarRenderInfo
+		push ecx                   // the base's solid
+		push dword ptr[esp + 0x0C] // the marker's hash
+		call CarRenderInfo_GetBaseMarker
+		retn 4                     // as eSolid::GetPositionMarker
+	}
+}
+
+DWORD* __stdcall CarRenderInfo_GetCabinNeonModel(DWORD* CarRenderInfo)
+{
+	DWORD* RideInfo = (DWORD*)CarRenderInfo[1];
+
+	if (RideInfo
+		&& CarRenderInfo_FindSlotMarker(CarRenderInfo, CARSLOTID_ROOF, CT_bStringHash("CABIN_NEON_START_0")))
+		return (DWORD*)CarRenderInfo[CRI_Loc_Models + CARSLOTID_ROOF * 2 * 4];
+
+	return (DWORD*)CarRenderInfo[CRI_Loc_Models]; // the base, as the game does
+}
+
+// 0x6359AC CarRenderInfo::UpdateCarParts: mov eax, [ebx+17A8h], the model the cabin neon markers
+// are looked for in. ecx holds a count the code after this uses.
+void __declspec(naked) CarRenderInfo_GetCabinNeonModelCodeCave()
+{
+	_asm
+	{
+		push ecx
+		push edx
+		push ebx // CarRenderInfo
+		call CarRenderInfo_GetCabinNeonModel
+		pop edx
+		pop ecx
+		push 0x6359B2
 		retn
 	}
 }
@@ -721,19 +798,27 @@ void CarRenderInfo_SetLightState(DWORD* CarRenderInfo, int LightID, bool on)
 		if (LightID == -1 && TheCar)
 		{
 			// Headlights
-			if (((BYTE*)TheCar)[2365]) extra->OnLights |= 7;
-			else extra->OnLights &= 7;
+			if (((BYTE*)TheCar)[2365]) extra->OnLights |= LIGHT_HEADLIGHTS;
+			else extra->OnLights &= ~LIGHT_HEADLIGHTS;
 
 			// Brakelights
-			if (((BYTE*)TheCar)[2372]) extra->OnLights |= 56;
-			else extra->OnLights &= 56;
+			if (((BYTE*)TheCar)[2372]) extra->OnLights |= LIGHT_BRAKELIGHTS;
+			else extra->OnLights &= ~LIGHT_BRAKELIGHTS;
+
+			// Reverse lights
+			if (TheCar[308] == 0) extra->OnLights |= LIGHT_REVERSE; // Gear == 0 (reverse)
+			else extra->OnLights &= ~LIGHT_REVERSE;
+
+			// Flashers
+			if (Car_IsBlinking(TheCar)) extra->OnLights |= (LIGHT_LSIGNAL + LIGHT_RSIGNAL); // blinking (reset)
+			else extra->OnLights &= ~(LIGHT_LSIGNAL + LIGHT_RSIGNAL);
 		}
 		else
 		{
 			if (on)
 				extra->OnLights |= LightID;
 			else
-				extra->OnLights &= LightID;
+				extra->OnLights &= ~LightID;
 		}
 	}
 }
@@ -1190,14 +1275,12 @@ int GetTempCarSkinTextures(DWORD* textures_to_load, int num_textures, int max_te
 
 void GetUsedCarTextureInfo(UsedCarTextureInfo* info, DWORD* ride_info, int front_end_only, int engine)
 {
-	/*
-	GetUsedCarTextureInfo_Game(info, ride_info, front_end_only, engine);
-	char TextureNameBu2f[64];
-
-	sprintf(TextureNameBu2f, "%s_SKIN1", CarTypeName); // SKIN1
-	printf("%s", TextureNameBu2f); // SKIN1
-	return;
-	*/
+	// Return if invalid ride_info or car type index is out of bounds
+	if ((int)ride_info[0] < 0 || (int)ride_info[0] >= CarCount)
+	{
+		memset(info, 0, sizeof(UsedCarTextureInfo));
+		return;
+	}
 
 	char* CarTypeName = GetCarTypeName(ride_info[0]);
 	int NumUsedCarTextures = 0;
@@ -1907,8 +1990,9 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 {
 	DWORD* Model;
 	ePositionMarker* Marker;
-	eLightFlare* Flare;
+	eLightFlare* Flare, *Last;
 	int FlareType = 0;
+	Color FlareTint = 0;
 
 	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CarRenderInfo);
 
@@ -1919,93 +2003,90 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 		for (int i = CARSLOTID_MODEL_NUM * 2 - 1; i >= 0; i--) // 63 slots, 2 models for 4 LODs
 		{
 			Marker = 0;
-			Model = (DWORD*)(CarRenderInfo[1514 + i * 4]);
+			Model = (DWORD*)(CarRenderInfo[CRI_Loc_Models + i * 4]); // LOD A of all models
 
 			if (Model)
 			{
-				while (1)
+				Marker = eModel_GetPositionMarker(Model, Marker);
+				do
 				{
-					Marker = eModel_GetPositionMarker(Model, Marker);
-					if (!Marker) break;
-
-					Flare = (eLightFlare*)j__malloc(0x30);
-					if (!Flare) break;
+					if (!Marker) break; // No (more) markers
 
 					switch (Marker->NameHash)
 					{
 					case CT_bStringHash("CENTRE_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 2, 0, 0), 0);
-						if (!Flare->ColourTint) goto _LeftHeadlight;
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 2, 0, 0), 0);
+						if (!FlareTint) goto _LeftHeadlight;
 						break;
 					case CT_bStringHash("RIGHT_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 1, 0, 0), 0);
-						if (!Flare->ColourTint) goto _LeftHeadlight;
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 1, 0, 0), 0);
+						if (!FlareTint) goto _LeftHeadlight;
 						break;
 					case CT_bStringHash("LEFT_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
 					_LeftHeadlight:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 0, 0, 0), 0);
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_HEADLIGHT, 0, 0, 0), 0);
 						break;
 
 
 					case CT_bStringHash("CENTRE_BRAKELIGHT"):
 						FlareType = 1; // ELF_CAR_BRAKELIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 2, 0, 0);
-						if (!Flare->ColourTint) goto _LeftBrakelight;
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 2, 0, 0);
+						if (!FlareTint) goto _LeftBrakelight;
 						break;
 					case CT_bStringHash("RIGHT_BRAKELIGHT"):
 						FlareType = 1; // ELF_CAR_BRAKELIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 1, 0, 0);
-						if (!Flare->ColourTint) goto _LeftBrakelight;
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 1, 0, 0);
+						if (!FlareTint) goto _LeftBrakelight;
 						break;
 					case CT_bStringHash("LEFT_BRAKELIGHT"):
 						FlareType = 1; // ELF_CAR_BRAKELIGHT
 					_LeftBrakelight:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 0, 0, 0);
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 0, 0, 0);
 						break;
 
 
 					case CT_bStringHash("RIGHT_REVERSE"):
 						FlareType = 3; // ELF_CAR_REVERSELIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 4, 0, 0);
-						if (!Flare->ColourTint) goto _LeftReverse;
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 4, 0, 0);
+						if (!FlareTint) goto _LeftReverse;
 						break;
 					case CT_bStringHash("LEFT_REVERSE"):
 						FlareType = 3; // ELF_CAR_REVERSELIGHT
 					_LeftReverse:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 3, 0, 0);
+						FlareTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CARSLOTID_BRAKELIGHT, 3, 0, 0);
 						break;
 
 
 					case CT_bStringHash("COPLIGHTRED"):
-						Flare->ColourTint = 0x9300007F;
+						FlareTint = 0x9300007F;
 						FlareType = 5; // ELF_CAR_COPLIGHTRED
 						break;
 
 					case CT_bStringHash("COPLIGHTBLUE"):
-						Flare->ColourTint = 0x937F0000;
+						FlareTint = 0x937F0000;
 						FlareType = 6; // ELF_CAR_COPLIGHTBLUE
 						break;
 
 					case CT_bStringHash("COPLIGHTWHITE"):
-						Flare->ColourTint = 0x7F7F7F7F;
+						FlareTint = 0x7F7F7F7F;
 						FlareType = 7; // ELF_CAR_COPLIGHTWHITE
 						break;
 
 					case CT_bStringHash("COPLIGHTBRIGHTRED"):
-						Flare->ColourTint = 0x660000AA;
+						FlareTint = 0x660000AA;
 						FlareType = 10; // ELF_CAR_COPLIGHTBRIGHTRED
 						break;
 
 					case CT_bStringHash("COPLIGHTBRIGHTBLUE"):
-						Flare->ColourTint = 0x66870300;
+						FlareTint = 0x66870300;
 						FlareType = 11; // ELF_CAR_COPLIGHTBRIGHTBLUE
 						break;
 
 					case CT_bStringHash("COPLIGHTORANGE"):
-						Flare->ColourTint = 0x662684FF;
+						FlareTint = 0x662684FF;
 						FlareType = 12; // ELF_CAR_COPLIGHTORANGE
 						break;
 
@@ -2014,13 +2095,20 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 					case CT_bStringHash("FRONT_RIGHT_SIGNAL"):
 					case CT_bStringHash("REAR_LEFT_SIGNAL"):
 					case CT_bStringHash("REAR_RIGHT_SIGNAL"):
-						Flare->ColourTint = 0x9300496D;
+						FlareTint = 0x9300496D;
 						FlareType = 11; //17; // ELF_BLINKING_AMBER
 						break;
+
+					default:
+						goto _NextMarker;
 					}
+
+					Flare = (eLightFlare*)j__malloc(0x30); // new flare
+					if (!Flare) goto _NextMarker;
 
 					Flare->NameHash = Marker->NameHash;
 					Flare->Type = FlareType;
+					Flare->ColourTint = FlareTint;
 
 					switch (FlareType)
 					{
@@ -2036,6 +2124,7 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 						Flare->Flags = 4; // Uni-Directional
 						break;
 					}
+
 					Flare->PositionX = Marker->Matrix.v3.x - *((float*)CarRenderInfo + 12);
 					Flare->PositionY = Marker->Matrix.v3.y - *((float*)CarRenderInfo + 13);
 					Flare->PositionZ = Marker->Matrix.v3.z - *((float*)CarRenderInfo + 14);
@@ -2044,19 +2133,27 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 					Flare->DirectionY = Marker->Matrix.v2.y;
 					Flare->DirectionZ = Marker->Matrix.v2.z;
 
-					//bTNode<eLightFlare>_AddAfter((bTNode<eLightFlare>*)CarRenderInfo[65], CarRenderInfo[66]);
-
-					eLightFlare* Last = (eLightFlare*)CarRenderInfo[253];
+					//Add to list
+					Last = (eLightFlare*)CarRenderInfo[253];
 					Last->Next = Flare;
 					CarRenderInfo[253] = (DWORD)Flare;
 					Flare->Prev = Last;
 					Flare->Next = (eLightFlare*)(CarRenderInfo + 252);
 
+				_NextMarker:
+					Marker = eModel_GetPositionMarker(Model, Marker); // get next marker
 				}
+				while (Marker);
 			}
 		}
 	}
 }
+
+bool gTWEAKER_NISLightEnabled = false;
+float gTWEAKER_NISLightIntensity = 1.0f;
+float gTWEAKER_NISLightPosX = 0.0f;
+float gTWEAKER_NISLightPosY = 0.0f;
+float gTWEAKER_NISLightPosZ = 0.0f;
 
 void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_Unused, DWORD* view, bVector3* position, bMatrix4* body_matrix, int force_light_state, int reflection, float scale)
 {
@@ -2080,7 +2177,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 		CarRenderInfo_SetLightState(CarRenderInfo, ForceLightFlaresOn, true);
 
 		DWORD* RideInfo = (DWORD*)CarRenderInfo[1]; // this->pRideInfo
-		if (IsCop(RideInfo[0]) && (extra->OnLights & 0x1000) != 0)// UsageType = Cop && mOnLights = Cop Lights
+		if (IsCop(RideInfo[0]) && (extra->OnLights & LIGHT_COPRED) != 0)// UsageType = Cop && mOnLights = Cop Lights
 			++view[21];
 
 		// Check for US parking lights
@@ -2090,7 +2187,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 
 		int PixelSize = eView_GetPixelSize(view, position, 3.0f);
 
-		if (eGetCurrentViewMode() == 3) PixelSize = (int)(PixelSize * *(float*)0x7A6700);
+		if (eGetCurrentViewMode() == 3) PixelSize = (int)(PixelSize * *(float*)0x7A6700); // PLAYER1_RVM??
 
 		if (PixelSize >= 4/*view[9]*/ && eView_GetVisibleState(view, (bVector3*)(CarRenderInfo + 4), (bVector3*)(CarRenderInfo + 8), LocalWorld)) // this->AABBMin, this->AABBMax
 		{
@@ -2102,13 +2199,15 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			float IntsRightBrakelight = 0.85f;
 			float IntsCentreBrakelight = 0.0f;
 
+			/* // force hl on for non-traffic cars??
 			if (!(TheCar && *(DWORD*)(TheCar[5] + 4) == 3))
 			{
 				IntsLeftHeadlight = 1.0f;
 				IntsRightHeadlight = 1.0f;
 				IntsCentreHeadlight = 1.0f;
 			}
-			
+			*/
+
 			float IntsLeftReverse = 0.0f;
 			float IntsRightReverse = 0.0f;
 			float IntsCopRed = 0.0f;
@@ -2125,20 +2224,20 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			if (*(bool*)ForceBrakelightsOn) force_light_state |= 2;
 			if (*(bool*)ForceReverselightsOn) force_light_state |= 4;
 
-			if ((force_light_state & 1) || (TheCar && *((BYTE*)TheCar + 2365)))  // FORCE_HEADLIGHTS_ON
+			if ((force_light_state & FORCE_HEADLIGHTS_ON) || (TheCar && *((BYTE*)TheCar + 2365)))
 			{
 				IntsLeftHeadlight += 1.0f;
 				IntsRightHeadlight = IntsLeftHeadlight;
 				IntsCentreHeadlight = IntsLeftHeadlight;
 			}
-			else if (force_light_state & 8) // FORCE_HEADLIGHTS_OFF
+			else if (force_light_state & FORCE_HEADLIGHTS_OFF)
 			{
 				IntsLeftHeadlight = 0.0f;
 				IntsRightHeadlight = 0.0f;
 				IntsCentreHeadlight = 0.0f;
 			}
 
-			if (force_light_state & 2) // FORCE_BRAKELIGHTS_ON
+			if (force_light_state & FORCE_BRAKELIGHTS_ON)
 			{
 				IntsLeftBrakelight += 1.0f;
 				IntsRightBrakelight = IntsLeftBrakelight;
@@ -2150,19 +2249,19 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 				IntsRightBrakelight = IntsLeftBrakelight;
 				IntsCentreBrakelight = IntsLeftBrakelight * 0.5f;
 			}
-			else if (force_light_state & 16) // FORCE_BRAKELIGHTS_OFF
+			else if (force_light_state & FORCE_BREAKLIGHTS_OFF)
 			{
 				IntsLeftBrakelight = 0.85f;
 				IntsRightBrakelight = 0.85f;
 				IntsCentreBrakelight = 0.0f;
 			}
 
-			if (force_light_state & 4) // FORCE_REVERSELIGHTS_ON
+			if (force_light_state & FORCE_REVERSELIGHTS_ON)
 			{
 				IntsLeftReverse = 1.0f;
 				IntsRightReverse = 1.0f;
 			}
-			else if (force_light_state & 32) // FORCE_REVERSELIGHTS_OFF
+			else if (force_light_state & FORCE_REVERSELIGHTS_OFF)
 			{
 				IntsLeftReverse = 0.0f;
 				IntsRightReverse = 0.0f;
@@ -2177,68 +2276,68 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 
 			
 			// LIGHT_LHEAD
-			if (OnLights & 1) IntsLeftHeadlight = 1.0f;
-			if (BrokenLights & 1) IntsLeftHeadlight = 0.0f;
+			if (OnLights & LIGHT_LHEAD) IntsLeftHeadlight = 1.0f;
+			if (BrokenLights & LIGHT_LHEAD) IntsLeftHeadlight = 0.0f;
 
 			// LIGHT_RHEAD
-			if (OnLights & 2) IntsRightHeadlight = 1.0f;
-			if (BrokenLights & 2) IntsRightHeadlight = 0.0f;
+			if (OnLights & LIGHT_RHEAD) IntsRightHeadlight = 1.0f;
+			if (BrokenLights & LIGHT_RHEAD) IntsRightHeadlight = 0.0f;
 
 			// LIGHT_CHEAD
-			if (OnLights & 4) IntsCentreHeadlight = 1.0f;
-			if (BrokenLights & 4) IntsCentreHeadlight = 0.0f;
+			if (OnLights & LIGHT_CHEAD) IntsCentreHeadlight = 1.0f;
+			if (BrokenLights & LIGHT_CHEAD) IntsCentreHeadlight = 0.0f;
 
 			// LIGHT_LBRAKE
-			if (OnLights & 8) IntsLeftBrakelight += 16.0f;
-			if (BrokenLights & 8) IntsLeftBrakelight = 0.0f;
+			if (OnLights & LIGHT_LBRAKE) IntsLeftBrakelight += 16.0f;
+			if (BrokenLights & LIGHT_LBRAKE) IntsLeftBrakelight = 0.0f;
 
 			// LIGHT_RBRAKE
-			if (OnLights & 16) IntsRightBrakelight += 16.0f;
-			if (BrokenLights & 16) IntsRightBrakelight = 0.0f;
+			if (OnLights & LIGHT_RBRAKE) IntsRightBrakelight += 16.0f;
+			if (BrokenLights & LIGHT_RBRAKE) IntsRightBrakelight = 0.0f;
 
 			// LIGHT_CBRAKE
-			if (OnLights & 32) IntsCentreBrakelight = 16.5f;
-			if (BrokenLights & 32) IntsCentreBrakelight = 0.0f;
+			if (OnLights & LIGHT_CBRAKE) IntsCentreBrakelight = 16.5f;
+			if (BrokenLights & LIGHT_CBRAKE) IntsCentreBrakelight = 0.0f;
 
 			// LIGHT_LREVERSE
-			if (OnLights & 64) IntsLeftReverse += 17.0f;
-			if (BrokenLights & 64) IntsLeftReverse = 0.0f;
+			if (OnLights & LIGHT_LREVERSE) IntsLeftReverse += 17.0f;
+			if (BrokenLights & LIGHT_LREVERSE) IntsLeftReverse = 0.0f;
 
 			// LIGHT_RREVERSE
-			if (OnLights & 128) IntsRightReverse += 17.0f;
-			if (BrokenLights & 128) IntsRightReverse = 0.0f;
+			if (OnLights & LIGHT_RREVERSE) IntsRightReverse += 17.0f;
+			if (BrokenLights & LIGHT_RREVERSE) IntsRightReverse = 0.0f;
 
 			// LIGHT_LRSIGNAL
-			if (OnLights & 256) IntsRearLeftSignal = 1.0f;
-			if (BrokenLights & 256) IntsRearLeftSignal = 0.0f;
+			if (OnLights & LIGHT_LRSIGNAL) IntsRearLeftSignal = 1.0f;
+			if (BrokenLights & LIGHT_LRSIGNAL) IntsRearLeftSignal = 0.0f;
 
 			// LIGHT_RRSIGNAL
-			if (OnLights & 512) IntsRearRightSignal = 1.0f;
-			if (BrokenLights & 512) IntsRearRightSignal = 0.0f;
+			if (OnLights & LIGHT_RRSIGNAL) IntsRearRightSignal = 1.0f;
+			if (BrokenLights & LIGHT_RRSIGNAL) IntsRearRightSignal = 0.0f;
 
 			// LIGHT_LFSIGNAL
-			if (OnLights & 1024) IntsFrontLeftSignal = 1.0f;
-			if (BrokenLights & 1024) IntsFrontLeftSignal = 0.0f;
+			if (OnLights & LIGHT_LFSIGNAL) IntsFrontLeftSignal = 1.0f;
+			if (BrokenLights & LIGHT_LFSIGNAL) IntsFrontLeftSignal = 0.0f;
 
 			// LIGHT_RFSIGNAL
-			if (OnLights & 2048) IntsFrontRightSignal = 1.0f;
-			if (BrokenLights & 2048) IntsFrontRightSignal = 0.0f;
+			if (OnLights & LIGHT_RFSIGNAL) IntsFrontRightSignal = 1.0f;
+			if (BrokenLights & LIGHT_RFSIGNAL) IntsFrontRightSignal = 0.0f;
 
 			// LIGHT_COPRED
-			if (OnLights & 4096) IntsCopRed = cpr;
-			if (BrokenLights & 4096) IntsCopRed = 0.0f;
+			if (OnLights & LIGHT_COPRED) IntsCopRed = cpr;
+			if (BrokenLights & LIGHT_COPRED) IntsCopRed = 0.0f;
 
 			// LIGHT_COPBLUE
-			if (OnLights & 8192) IntsCopBlue = cpb;
-			if (BrokenLights & 8192) IntsCopBlue = 0.0f;
+			if (OnLights & LIGHT_COPBLUE) IntsCopBlue = cpb;
+			if (BrokenLights & LIGHT_COPBLUE) IntsCopBlue = 0.0f;
 
 			// LIGHT_COPWHITE
-			if (OnLights & 16384)
+			if (OnLights & LIGHT_COPWHITE)
 			{
 				IntsCopWhite = cpw;
 				FlickerHeadlights = 1;
 			}
-			if (BrokenLights & 16384) IntsCopWhite = 0.0f;
+			if (BrokenLights & LIGHT_COPWHITE) IntsCopWhite = 0.0f;
 
 			int flarecount = 0;
 			float copflicker = coplightflicker(time, 0);
@@ -2262,7 +2361,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			// Render
 			for (eLightFlare* Flare = (eLightFlare*)CarRenderInfo[252]; //this->LightFlareList
 				(DWORD*)Flare != CarRenderInfo + 252;
-				Flare = Flare->Next)
+				Flare = Flare->GetNext())
 			{
 				IntensityScale = 0.0f;
 				ReflectionOverride = 0.0f;
@@ -2275,21 +2374,15 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 					switch (Flare->NameHash)
 					{
 					case 0x9DB90133: // LEFT_HEADLIGHT
-						//if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
 						IntensityScale = FlickerHeadlights ? copflicker * IntsLeftHeadlight : IntsLeftHeadlight;
-						//Flare->ColourTint = CarRenderInfo[224];
 						break;
 
 					case 0xD09091C6: // RIGHT_HEADLIGHT
-						//if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
 						IntensityScale = FlickerHeadlights ? (1.0f - copflicker) * IntsRightHeadlight : IntsRightHeadlight;
-						//Flare->ColourTint = CarRenderInfo[224];
 						break;
 
 					case 0x7A5BCF69: // CENTRE_HEADLIGHT
-						//if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
 						IntensityScale = IntsCentreHeadlight;
-						//Flare->ColourTint = CarRenderInfo[224];
 						break;
 
 					case 0x31A66786: // LEFT_BRAKELIGHT
@@ -2329,13 +2422,19 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 						break;
 
 					case 0x1E4150B4: // COPLIGHTRED
-					case 0x41489594: // COPLIGHTBRIGHTRED
 						IntensityScale = coplightflicker2(time, 0, flarecount) * IntsCopRed;
 						break;
 
+					case 0x41489594: // COPLIGHTBRIGHTRED
+						IntensityScale = coplightflicker2(time, 1, flarecount) * IntsCopRed;
+						break;
+
 					case 0xE662C161: // COPLIGHTBLUE
-					case 0x6A52A241: // COPLIGHTBRIGHTBLUE
 						IntensityScale = coplightflicker2(time, 1, flarecount) * IntsCopBlue;
+						break;
+
+					case 0x6A52A241: // COPLIGHTBRIGHTBLUE
+						IntensityScale = coplightflicker2(time, 0, flarecount) * IntsCopBlue;
 						break;
 
 					case 0xB4348DBA: // COPLIGHTWHITE
@@ -2388,14 +2487,14 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			{
 				float NISLightIntensity = 1.0f;
 				bVector3 NISLightPos;
-				NISLightPos.x = *(float*)_gTWEAKER_NISLightPosX + position->x;
-				NISLightPos.y = *(float*)_gTWEAKER_NISLightPosY + position->y;
-				NISLightPos.z = *(float*)_gTWEAKER_NISLightPosZ + position->z;
+				NISLightPos.x = gTWEAKER_NISLightPosX + position->x;
+				NISLightPos.y = gTWEAKER_NISLightPosY + position->y;
+				NISLightPos.z = gTWEAKER_NISLightPosZ + position->z;
 
-				if (*(bool*)_gTWEAKER_NISLightEnabled)
+				if (gTWEAKER_NISLightEnabled)
 				{
 					position = &NISLightPos;
-					NISLightIntensity = *(float*)_gTWEAKER_NISLightIntensity;
+					NISLightIntensity = gTWEAKER_NISLightIntensity;
 				}
 				if (IntsCopRed > 0.0f || IntsCopBlue > 0.0f)
 				{

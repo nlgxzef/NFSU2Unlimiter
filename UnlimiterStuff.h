@@ -9,10 +9,10 @@ using namespace std;
 
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
-bool PresetCarsInCustomize, PresetCarsInQuickRace, UnlockSponsorCarsWithoutCheats, SeparateRims;
+bool PresetCarsInCustomize, PresetCarsInQuickRace, PresetCarsInOnline, ShowPresetNames, UnlockSponsorCarsWithoutCheats, SeparateRims;
 bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, ShowDebugCarCustomize;
 
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableMaterialBasedReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableMaterialBasedReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix, NOSGaugeColorFromExhaustFlame;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -22,12 +22,13 @@ char AttachmentNameBuf[64];
 
 #include "InGameFunctions.h"
 #include "UserCalls.h"
+#include "GlobalVariables.h"
 #include "UnlockablesMap.h"
 #include "DialogInterface.h"
 #include "CameraInfo.h"
-#include "CarTypeInfo.h"
 #include "CarPart.h"
 #include "CarPartDatabase.h"
+#include "PartAnimations.h"
 #include "CarRenderInfo.h"
 #include "RideInfo.h"
 #include "eViewPlatInterface.h"
@@ -67,6 +68,7 @@ char AttachmentNameBuf[64];
 #include "StreamingTrafficCarManager.h"
 #include "RandomCharacterNames.h"
 #include "Tachometer.h"
+#include "NitrousGauge.h"
 #include "HUD_Customizer.h"
 #include "CustomHUD_Browser.h"
 #include "FeCarLimits.h"
@@ -128,6 +130,7 @@ int Init()
 	SortStockCarsByStage = mINI_ReadInteger(Settings, "Misc", "SortStockCarsByStage", 0) != 0;
 	FilterDecalsByInitials = Clamp(mINI_ReadInteger(Settings, "Misc", "FilterDecalsByInitials", 1), 0, 2);
 	HoodDecalsOnCustomHoods = mINI_ReadInteger(Settings, "Misc", "HoodDecalsOnCustomHoods", 1) != 0;
+	NOSGaugeColorFromExhaustFlame = mINI_ReadInteger(Settings, "Misc", "NOSGaugeColorFromExhaustFlame", 1) != 0;
 	GarageShowsOwnedPartsOnly = mINI_ReadInteger(Settings, "Misc", "GarageShowsOwnedPartsOnly", 0) != 0;
 	ShowDebugCarCustomize = mINI_ReadInteger(Settings, "Misc", "ShowDebugCarCustomize", 0) != 0;
 
@@ -144,6 +147,8 @@ int Init()
 	// Sponsor Cars
 	PresetCarsInCustomize = mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0) != 0;
 	PresetCarsInQuickRace = mINI_ReadInteger(Settings, "SponsorCars", "EnableInQuickRace", 0) != 0;
+	PresetCarsInOnline = mINI_ReadInteger(Settings, "SponsorCars", "EnableInOnline", 0) != 0;
+	ShowPresetNames = mINI_ReadInteger(Settings, "SponsorCars", "ShowPresetNames", 0) != 0;
 	UnlockSponsorCarsWithoutCheats = mINI_ReadInteger(Settings, "SponsorCars", "UnlockWithoutCheats", 0) != 0;
 
 	// Car Categories
@@ -388,6 +393,10 @@ int Init()
 	// Hook RideInfo_SetStockParts (8 references)
 	injector::MakeJMP(0x637040, RideInfo_SetStockParts, true);
 
+	// Hook RideInfo_BuildRandomRide (custom random parts)
+	injector::MakeCALL(0x639A88, RideInfo_BuildRandomRide, true); // RideInfo::SyncVisualPartsWithPhysics
+	injector::MakeRangedNOP(0x6371B3, 0x6371C2, true); // RideInfo::SetRandomPart - enable hood decals and hood under
+
 	// Hook RideInfo_FillWithPreset
 	injector::MakeCALL(0x4DF20F, RideInfo_FillWithPreset, true); // UIMain::UIMain
 	injector::MakeCALL(0x5039E2, RideInfo_FillWithPreset, true); // SponsorCarInfo::BuildRide
@@ -525,6 +534,12 @@ int Init()
 	if (HoodDecalsOnCustomHoods)
 	{
 		injector::WriteMemory<BYTE>(0x55C2B0, 0xEB, true); // CarCustomizeManager::InstallPart
+	}
+
+	if (NOSGaugeColorFromExhaustFlame)
+	{
+		//injector::MakeRangedNOP(0x4F6BCF, 0x4F6BDD, true); // NitrousGauge::NitrousGaug disable default color
+		injector::MakeCALL(0x4F8E6C, NitrousGauge_ctor_Hook, true); // FEngHud::Update
 	}
 		
 	// Allow custom prefixes for custom HUDs
@@ -673,6 +688,10 @@ int Init()
 
 	// Check CarRenderInfo::Render data
 	injector::MakeJMP(0x6253ED, LinkLicensePlateToTrunkCodeCave, true); // LinkLicensePlateToTrunk
+	injector::MakeCALL(0x635021, CarRenderInfo_GetBaseMarkerCodeCave, true); // LinkSpoiler, CarRenderInfo::UpdateCarParts
+	injector::MakeCALL(0x635033, CarRenderInfo_GetBaseMarkerCodeCave, true); // LinkRoofScoopToRoof, CarRenderInfo::UpdateCarParts
+	injector::MakeRangedNOP(0x6359AC, 0x6359B2, true);
+	injector::MakeJMP(0x6359AC, CarRenderInfo_GetCabinNeonModelCodeCave, true); // LinkCabinNeonToRoof, CarRenderInfo::UpdateCarParts
 	injector::MakeCALL(0x62331B, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
 	injector::MakeCALL(0x623479, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
 	//injector::MakeCALL(0x615817, RemoveCentreBrakeWithCustomSpoiler, true); // RemoveCentreBrakeWithCustomSpoiler
@@ -747,6 +766,7 @@ int Init()
 	InitEngineSFXGuard();
 	InitAIEngineBank();
 	InitNetCarData();
+	InitPartAnimations();
 	
 	if (BigFileVFSHandlePoolSize > 127) BigFileVFSHandlePoolSize = 64;
 	injector::WriteMemory<BYTE>(0x486531, BigFileVFSHandlePoolSize, true);

@@ -11,6 +11,7 @@
 #include "CarSlotAnim.h"
 #include "CarPartID.h"
 #include "CarEffect.h"
+#include "CarUsageType.h"
 #include "ePhysicsPerformanceParts.h"
 //#include "MenuID.h"
 
@@ -22,6 +23,10 @@
 #include "bList.h"
 #include "bVector.h"
 #include "bMatrix.h"
+#include "CarPhysicsInfo.h"
+#include "CompleatCarPhysicsInfo.h"
+#include "CarCamera.h"
+#include "CarTypeInfo.h"
 #include "ePositionMarker.h"
 #include "eLightFlare.h"
 #include "eSolid.h"

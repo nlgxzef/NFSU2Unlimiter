@@ -97,13 +97,6 @@ struct FEPlayerCarDB
 auto FEPlayerCarDB_Player1 = (FEPlayerCarDB*)0x0083AD90;
 auto FEPlayerCarDB_Player2 = (FEPlayerCarDB*)0x008458DC;
 
-struct CarTypeInfo
-{
-	int Data[0x224];
-};
-
-CarTypeInfo*& CarTypeInfos = *(CarTypeInfo**)0x008A1CCC;
-
 struct CombinedPointers
 {
 	FEStockCar* pStockCars1[48];
@@ -191,11 +184,11 @@ void __fastcall DefaultStockCars(FEPlayerCarDB* player1, int, int)
 
 		for (int i = 0; i < CarCount; i++)
 		{
-			auto carTypeInfo = CarTypeInfos + i;
+			auto carTypeInfo = CarTypeInfoArray[i];
 			
-			if (!carTypeInfo->Data[0x10]) continue;          // has geometry file name?
-			if ((carTypeInfo->Data[0x36] & 0x20000) == 0) continue; // WhatGame?
-			if (carTypeInfo->Data[0x211] != 0) continue;     // carUsageType, 0 = player car
+			if (!carTypeInfo.GeometryFilename) continue;     // has geometry file name?
+			if ((carTypeInfo.WhatGame & 0x2) == 0) continue; // WhatGame?
+			if (!carTypeInfo.IsRacer()) continue;     // carUsageType, 0 = player car
 
 			stockCars++;
 			if (stockCars <= 0x30) continue;                 // the game's own array holds these

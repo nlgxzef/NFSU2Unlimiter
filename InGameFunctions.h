@@ -4,13 +4,12 @@
 #include "stdio.h"
 
 #include "InGameTypes.h"
-#include "GlobalVariables.h"
 
 DWORD(*bStringHash)(char const* StringToHash) = (DWORD(*)(char const*))0x43DB50;
 DWORD(*bStringHash2)(char const* StringToHash, int PartialHash) = (DWORD(*)(char const*, int))0x43DB80;
-char* (*GetCarTypeName)(int CarTypeID) = (char* (*)(int))0x610110;
-DWORD* (*GetCarTypeInfo)(int CarTypeID) = (DWORD * (*)(int))0x610110;
-DWORD* (*GetCarTypeInfoFromHash)(DWORD CarTypeNameHash) = (DWORD * (*)(DWORD))0x610130;
+char* (*GetCarTypeName_Game)(int CarTypeID) = (char* (*)(int))0x610110;
+DWORD* (*GetCarTypeInfo_Game)(int CarTypeID) = (DWORD * (*)(int))0x610110;
+DWORD* (*GetCarTypeInfoFromHash_Game)(DWORD CarTypeNameHash) = (DWORD * (*)(DWORD))0x610130;
 int(*GetCarPartFromSlot_Game)(int CarSlotID) = (int(*)(int))0x60FEE0;
 int(*ShowTrunkUnderInFE_Game)(int CarTypeID) = (int(*)(int))0x60C8F0;
 int(*RemoveCentreBrakeWithCustomSpoiler_Game)(int CarTypeID) = (int(*)(int))0x60C8A0;
@@ -234,6 +233,7 @@ int(*CompositeWheel)(DWORD* ride_info, DWORD dest_namehash, DWORD src_namehash, 
 bool(*PartsCategoryRimsIsLocked)() = (bool(*)())0x539C20;
 bool(*Player_IsHudKPH)() = (bool(*)())0x5EA8B0;
 ePositionMarker* (__thiscall* eModel_GetPositionMarker)(DWORD* eModel, ePositionMarker* previous) = (ePositionMarker * (__thiscall*)(DWORD*, ePositionMarker*))0x48D8A0;
+ePositionMarker* (__thiscall* eSolid_GetPositionMarker)(DWORD* eSolid, DWORD NameHash) = (ePositionMarker * (__thiscall*)(DWORD*, DWORD))0x488FA0;
 void(__thiscall* eModel_ReplaceLightMaterial_Game)(DWORD* eModel, int NameHash, int LightMaterial) = (void(__thiscall*)(DWORD*, int, int))0x48D860;
 void* (__cdecl* GetTextureInfo)(DWORD NameHash, int return_default_texture_if_not_found, int include_unloaded_textures) = (void* (__cdecl*)(DWORD, int, int))0x4901D0;
 int(__cdecl* bSPrintf)(const char* buf, const char* format, ...) = (int(__cdecl*)(const char*, const char*, ...))0x4400D0;
@@ -280,6 +280,7 @@ void(__thiscall* sub_4367C0)(bList* lst) = (void(__thiscall*)(bList*))0x4367C0;
 void(__thiscall* PhysicsUpgradeSpecification_InstallAllPerfParts)(DWORD* PhysicsUpgradeSpecification, int upgrade_level, int packgage_type) = (void(__thiscall*)(DWORD*, int, int))0x5A64A0;
 void(__thiscall* PhysicsUpgradeSpecification_InstallPerfPart_i)(DWORD* PhysicsUpgradeSpecification, int ePhysicsPerformancePart, bool, bool) = (void(__thiscall*)(DWORD*, int, bool, bool))0x599680;
 void(__thiscall* PhysicsUpgradeSpecification_InstallPerfPart)(DWORD* PhysicsUpgradeSpecification, DWORD* PerfPackagePart, bool, bool) = (void(__thiscall*)(DWORD*, DWORD*, bool, bool))0x5A6320;
+bool(__thiscall* Car_IsBlinking)(DWORD* Car) = (bool(__thiscall*)(DWORD*))0x5EBFA0;
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

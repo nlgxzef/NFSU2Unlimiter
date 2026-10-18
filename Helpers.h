@@ -29,41 +29,31 @@ bool IsUG2(int CarTypeID)
 bool IsSUV(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
-	return *(bool*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x88A) || CarConfigs[CarTypeID].Main.GameType == 3;
+	return CarTypeInfoArray[CarTypeID].GetIsSUV() || CarConfigs[CarTypeID].Main.GameType == 3;
 }
 
 bool IsRacer(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
-	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 0;
+	return CarTypeInfoArray[CarTypeID].IsRacer();
 }
 
 bool IsCop(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
-	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 1;
+	return CarTypeInfoArray[CarTypeID].IsCop();
 }
 
 bool IsTraffic(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
-	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 2;
+	return CarTypeInfoArray[CarTypeID].IsTraffic();
 }
 
 bool IsSkinnable(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
-	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x88C) != 0;
-}
-
-int GetCarTypeIDFromHash(DWORD CarTypeNameHash)
-{
-	for (int i = 0; i < CarCount; i++)
-	{
-		if (*(DWORD*)((*(DWORD*)_CarTypeInfoArray) + i * 0x890 + 0xD0) == CarTypeNameHash)
-			return i;
-	}
-	return ReplacementCar;
+	return CarTypeInfoArray[CarTypeID].IsSkinnable();
 }
 
 bool IsInitiallyUnlocked(BYTE CarTypeID)
@@ -81,61 +71,41 @@ bool CanCarBeDrivenByAI(BYTE CarTypeID)
 bool UsesSupercharger(BYTE CarTypeID)
 {
 	if (CarConfigs[CarTypeID].Main.InductionType == 1) return 1;
-
-	// Not sure
-	DWORD SpoolBaseD = *(DWORD*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x358);
-	DWORD SpoolTopD = *(DWORD*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x638);
-	float SpoolBase = *(float*)&SpoolBaseD;
-	float SpoolTop = *(float*)&SpoolTopD;
-
-	return (SpoolBase == 0.0f) && (SpoolTop == 0.0f);
+	return 0;
 }
 
-void DoFEPartAnim(int location, bool on, float amount)
+DWORD* GetCarTypeInfo(int CarTypeID)
 {
-	if (on && FEGetAnimationState(location))
-	{
-		FEDoCarPartAnimNow(location, on, amount);
-	}
-	if (!on && !FEGetAnimationState(location))
-	{
-		FEDoCarPartAnimNow(location, on, amount);
-	}
+	if (CarTypeID < 0 || CarTypeID >= CarCount)
+		CarTypeID = (ReplacementCar >= 0 && ReplacementCar < CarCount) ? ReplacementCar : 0;
+
+	return GetCarTypeInfo_Game(CarTypeID);
 }
 
-void GetAndDoFEPartAnim(int CarSlotID, bool on, float amount)
+char* GetCarTypeName(int CarTypeID)
 {
-	DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
-	int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
-	int CarTypeNameHash = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 8))(FECarConfig);
+	return (char*)GetCarTypeInfo(CarTypeID);
+}
 
-	int location = CarConfigs[CarTypeID].Animations.AnimationType[CarSlotID];
-	bool loaded = IsCarPartsAnimLoadedForCar(CarTypeNameHash);
-
-	if (loaded)
+DWORD* GetCarTypeInfoFromHash(DWORD CarTypeNameHash)
+{
+	for (int i = 0; i < CarCount; i++)
 	{
-		if (location == 6) // Both hood and trunk
-		{
-			DoFEPartAnim(0, on, amount);
-			DoFEPartAnim(1, on, amount);
-		}
-		else if (location == 5) // Both doors
-		{
-			DoFEPartAnim(2, on, amount);
-			DoFEPartAnim(3, on, amount);
-		}
-		else if (location == 4) // Explode (all)
-		{
-			DoFEPartAnim(0, on, amount);
-			DoFEPartAnim(1, on, amount);
-			DoFEPartAnim(2, on, amount);
-			DoFEPartAnim(3, on, amount);
-		}
-		else if (location >= 0 && location <= 3) // Not none
-		{
-			DoFEPartAnim(location, on, amount);
-		}
+		if (CarTypeInfoArray[i].CarTypeNameHash == CarTypeNameHash)
+			return GetCarTypeInfo(i);
 	}
+
+	return GetCarTypeInfo(ReplacementCar);
+}
+
+int GetCarTypeIDFromHash(DWORD CarTypeNameHash)
+{
+	for (int i = 0; i < CarCount; i++)
+	{
+		if (CarTypeInfoArray[i].CarTypeNameHash == CarTypeNameHash)
+			return i;
+	}
+	return ReplacementCar;
 }
 
 void FillUpPerformanceConfig()
@@ -229,6 +199,233 @@ bool IsMenuEmpty_Specialties(int CarTypeID)
 	return 1;
 }
 
+char* GetDefaultRimBrandName(int ID)
+{
+	if (ID > DefaultRimBrandCount) return (char*)"";
+	else return DefaultRimBrandNames[ID];
+}
+
+char* GetDefaultRimBrandTexture(int ID)
+{
+	if (ID > DefaultRimBrandCount) return (char*)"";
+	else return DefaultRimBrandTextures[ID];
+}
+
+char* GetDefaultRimBrandString(int ID)
+{
+	if (ID > DefaultRimBrandCount) return (char*)"";
+	else return DefaultRimBrandStrings[ID];
+}
+
+int GetDefaultRimBrandAvailableForRegularCars(int ID)
+{
+	if (ID > DefaultRimBrandCount) return 1;
+	else return DefaultRimBrandAvailableForRegularCars[ID];
+}
+
+int GetDefaultRimBrandAvailableForSUVs(int ID)
+{
+	if (ID > DefaultRimBrandCount) return 1;
+	else return DefaultRimBrandAvailableForSUVs[ID];
+}
+
+int GetDefaultVinylGroupIndex(int ID)
+{
+	if (ID > DefaultVinylGroupCount) return 1;
+	else return DefaultVinylGroupIndexes[ID];
+}
+
+char* GetDefaultVinylGroupTexture(int ID)
+{
+	if (ID > DefaultVinylGroupCount) return (char*)"";
+	else return DefaultVinylGroupTextures[ID];
+}
+
+char* GetDefaultVinylGroupString(int ID)
+{
+	if (ID > DefaultVinylGroupCount) return (char*)"";
+	else return DefaultVinylGroupStrings[ID];
+}
+
+char* GetDefaultPaintBrandName(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return (char*)"";
+	else return DefaultPaintBrandNames[ID];
+}
+
+char* GetDefaultPaintBrandString(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return (char*)"";
+	else return DefaultPaintBrandStrings[ID];
+}
+
+int GetDefaultLinkLicensePlateToTrunk(int CarTypeID)
+{
+	switch (CarTypeID)
+	{
+	case 0:	// PEUGOT
+	case 1:	// FOCUS
+	case 5:	// CIVIC
+	case 8:	// HUMMER
+	case 9:	// NAVIGATOR
+	case 12:// SENTRA
+	case 13:// CELICA
+	case 14:// IS300
+	case 17:// A3
+	case 25:// GTO
+		return 1;
+	}
+
+	return 0;
+}
+
+int GetDefaultShowTrunkUnderInFE(int CarType)
+{
+	switch (CarType)
+	{
+	case 0:	// PEUGOT
+	case 1:	// FOCUS
+	case 2:	// COROLLA
+	case 3:	// 240SX
+	case 6:	// PEUGOT106
+	case 7:	// CORSA
+	case 8:	// HUMMER
+	case 9:	// NAVIGATOR
+	case 10:// ESCALADE
+	case 11:// TIBURON
+	case 13:// CELICA
+	case 15:// SUPRA
+	case 16:// GOLF
+	case 17:// A3
+	case 18:// RSX
+	case 19:// ECLIPSE
+	case 20:// TT
+	case 22:// 350Z
+	case 24:// 3000GT
+	case 29:// RX7
+		return 1;
+	}
+
+	return 0;
+}
+
+int GetDefaultRemoveCentreBrakeWithCustomSpoiler(int CarType)
+{
+	switch (CarType)
+	{
+	case 5:	 // CIVIC
+	case 11: // TIBURON
+	case 12: // SENTRA
+	case 24: // 3000GT
+	case 25: // GTO
+	case 30: // IMPREZAWRX
+		return 1;
+	}
+
+	return 0;
+}
+
+int GetDefaultHasSunroof(int CarTypeID)
+{
+	switch (CarTypeID)
+	{
+	case 3:	 // 240SX
+	case 5:	 // CIVIC
+	case 18: // RSX
+	case 23: // G35
+		return 1;
+	}
+
+	return 0;
+}
+
+int GetDefaultGameType(int CarTypeID)
+{
+	switch (CarTypeID)
+	{
+	case 0: // PEUGOT
+	case 1: // FOCUS
+	case 3: // 240SX
+	case 4: // MIATA
+	case 5: // CIVIC
+	case 11: // TIBURON
+	case 12: // SENTRA
+	case 13: // CELICA
+	case 15: // SUPRA
+	case 16: // GOLF
+	case 18: // RSX
+	case 19: // ECLIPSE
+	case 22: // 350Z
+	case 27: // SKYLINE
+	case 29: // RX7
+		return 1; // UG1
+
+	case 2: // COROLLA
+	case 6: // PEUGOT106
+	case 7: // CORSA
+	case 14: // IS300
+	case 17: // A3
+	case 20: // TT
+	case 21: // RX8
+	case 23: // G35
+	case 24: // 3000GT
+	case 25: // GTO
+	case 26: // MUSTANGGT
+	case 28: // LANCEREVO8
+	case 30: // IMPREZAWRX
+		return 2; // UG2
+
+	case 8: // HUMMER
+	case 9: // NAVIGATOR
+	case 10: // ESCALADE
+		return 3; // SUV
+	}
+
+	return 0;
+}
+
+int GetDefaultPaintBrandAvailableForBody(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 1;
+	else return DefaultPaintBrandAvailableForBody[ID];
+}
+
+int GetDefaultPaintBrandAvailableForRims(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 0;
+	else return DefaultPaintBrandAvailableForRims[ID];
+}
+
+int GetDefaultPaintBrandAvailableForBrakes(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 0;
+	else return DefaultPaintBrandAvailableForBrakes[ID];
+}
+
+int GetDefaultPaintBrandAvailableForHoses(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 1;
+	else return DefaultPaintBrandAvailableForHoses[ID];
+}
+
+int GetDefaultPaintBrandAvailableForTrunk(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 1;
+	else return DefaultPaintBrandAvailableForTrunk[ID];
+}
+
+int GetDefaultPaintBrandAvailableForMuffler(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 1;
+	else return DefaultPaintBrandAvailableForMuffler[ID];
+}
+
+int GetDefaultPaintBrandAvailableForVinyl(int ID)
+{
+	if (ID > DefaultPaintBrandCount) return 1;
+	else return DefaultPaintBrandAvailableForVinyl[ID];
+}
+
 void SetRimBrandName(RimBrand& Brand, const char* Name)
 {
 	Brand.BrandNameHash = bStringHash((char*)Name);
@@ -257,6 +454,20 @@ void SetFileName(char *File, const char* Name, size_t size = 64)
 
 	memcpy(File, src, len);
 	File[len] = '\0';
+}
+
+char ProfileNameBuf[32];
+char* GetProfileName()
+{
+	char* result = (char*)0x83A9E0;
+	if (!result[0]) return (char*)"UNDRGND2";
+
+	strcpy(ProfileNameBuf, result);
+	return ProfileNameBuf;
+}
+char* GetProfileNameUpper()
+{
+	return strupr(GetProfileName());
 }
 
 void SetExitGameFlag()

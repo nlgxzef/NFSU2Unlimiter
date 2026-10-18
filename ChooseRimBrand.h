@@ -1,7 +1,6 @@
 #pragma once
 #include "stdio.h"
 #include "InGameFunctions.h"
-#include "Helpers.h"
 
 char RimBrandName[64];
 
@@ -185,7 +184,7 @@ bool IsRimAvailable(int CarTypeID, DWORD* CarPart, DWORD BrandNameHash)
         if ((CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("OUTER_RADIUS"), 0) == RimOuterRadius) || (IsNoRimSize(BrandNameHash)) || RemoveRimSizeRestrictions)
         {
             UnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
-            if (UnlockSystem_IsCarPartUnlocked(UnlockFilter, 29, CarPart, *(int*)0x8389B0))
+            if (UnlockSystem_IsCarPartUnlocked(UnlockFilter, CARSLOTID_FRONT_WHEEL, CarPart, *(int*)0x8389B0))
                 return IsStock | 1;
         }
     }

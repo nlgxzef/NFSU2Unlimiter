@@ -1,0 +1,10 @@
+#pragma once
+
+enum CarUsageType : __int32
+{
+	CAR_USAGE_TYPE_RACING = 0x0,
+	CAR_USAGE_TYPE_COP = 0x1,
+	CAR_USAGE_TYPE_TRAFFIC = 0x2,
+	CAR_USAGE_TYPE_WHEELS = 0x3,
+	CAR_USAGE_TYPE_UNIVERSAL = 0x4,
+};

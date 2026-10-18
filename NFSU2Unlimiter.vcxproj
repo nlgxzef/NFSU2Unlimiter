@@ -146,6 +146,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="BuyPerfPartWidget.h" />
     <ClInclude Include="bVector.h" />
     <ClInclude Include="CameraInfo.h" />
+    <ClInclude Include="CarCamera.h" />
     <ClInclude Include="CarCustomizeManager.h" />
     <ClInclude Include="CareerEventData.h" />
     <ClInclude Include="CarEffect.h" />
@@ -153,12 +154,14 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="CarPart.h" />
     <ClInclude Include="CarPartDatabase.h" />
     <ClInclude Include="CarPartID.h" />
+    <ClInclude Include="CarPhysicsInfo.h" />
     <ClInclude Include="CarRenderInfo.h" />
     <ClInclude Include="CarRenderInfoExtra.h" />
     <ClInclude Include="CarSlotAnim.h" />
     <ClInclude Include="CarSlotID.h" />
     <ClInclude Include="CarSoundTuner.h" />
     <ClInclude Include="CarTypeInfo.h" />
+    <ClInclude Include="CarUsageType.h" />
     <ClInclude Include="ChooseCustomizeCategory.h" />
     <ClInclude Include="ChooseDecalCategory.h" />
     <ClInclude Include="ChooseDecalScreen.h" />
@@ -171,6 +174,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="ChooseVinylLayerScreen.h" />
     <ClInclude Include="CodeCaves.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="CompleatCarPhysicsInfo.h" />
     <ClInclude Include="CustomHUD_Browser.h" />
     <ClInclude Include="CustomizationScreenManager.h" />
     <ClInclude Include="CustomizeNeonMenu.h" />
@@ -201,6 +205,8 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="LoadedSkinLayer.h" />
     <ClInclude Include="NeonPartsBrowser.h" />
     <ClInclude Include="NetCarData.h" />
+    <ClInclude Include="NitrousGauge.h" />
+    <ClInclude Include="PartAnimations.h" />
     <ClInclude Include="PartInfoWidget.h" />
     <ClInclude Include="PartLink.h" />
     <ClInclude Include="PartNode.h" />

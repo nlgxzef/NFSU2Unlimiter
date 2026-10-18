@@ -369,6 +369,7 @@ struct CarRenderInfoSection
 	bool ShowTrunkUnderInFE;
 	bool RemoveCentreBrakeWithCustomSpoiler;
 	bool HasSunroof;
+	bool LinkSpoiler;
 };
 
 struct PhysicsSection
@@ -1000,6 +1001,21 @@ struct PerformancePartsSection
 	DWORD ReplacementHashes[DefaultPerformancePartCount];
 };
 
+struct StockPartsSection
+{
+	bool CustomStockParts;
+	DWORD Parts[CARSLOTID_NUM];
+};
+
+struct RandomPartsSection
+{
+	int CustomRandomParts;
+	int RandomRearRimProbability;
+	bool MatchSideDecals;
+	bool RandomizeInTraffic;
+	bool Parts[CARSLOTID_NUM];
+};
+
 struct CarConfig
 {
 	DWORD* CarTypeInfo;
@@ -1019,12 +1035,29 @@ struct CarConfig
 	NamesSection Names;
 	AnimationSection Animations;
 	PerformancePartsSection PerformanceParts;
-	//StockPartsSection StockParts;
-	//RandomPartsSection RandomParts;
+	StockPartsSection StockParts;
+	RandomPartsSection RandomParts;
 };
 
 CarConfig DefaultCarConfig;
-std::vector<CarConfig> CarConfigs;
+struct CarConfigList : std::vector<CarConfig>
+{
+	template <class T>
+	CarConfig& operator[](T CarTypeID)
+	{
+		size_t Index = (size_t)CarTypeID; // a negative id becomes a huge one
+
+		return Index < size() ? std::vector<CarConfig>::operator[](Index) : DefaultCarConfig;
+	}
+
+	CarConfigList& operator=(std::vector<CarConfig>&& Other)
+	{
+		std::vector<CarConfig>::operator=(std::move(Other));
+		return *this;
+	}
+};
+
+CarConfigList CarConfigs;
 
 // _FNGFixes.ini
 struct Child
@@ -1115,233 +1148,6 @@ DWORD ColorHashes[5][4] = {
 	{CT_bStringHash("REDR"),	CT_bStringHash("GREENR"),		CT_bStringHash("BLUER"),		CT_bStringHash("ALPHAR")	 },
 	{CT_bStringHash("REDR2"),	CT_bStringHash("GREENR2"),		CT_bStringHash("BLUER2"),		CT_bStringHash("ALPHAR2")	 }
 };
-
-char* GetDefaultRimBrandName(int ID)
-{
-	if (ID > DefaultRimBrandCount) return (char*)"";
-	else return DefaultRimBrandNames[ID];
-}
-
-char* GetDefaultRimBrandTexture(int ID)
-{
-	if (ID > DefaultRimBrandCount) return (char*)"";
-	else return DefaultRimBrandTextures[ID];
-}
-
-char* GetDefaultRimBrandString(int ID)
-{
-	if (ID > DefaultRimBrandCount) return (char*)"";
-	else return DefaultRimBrandStrings[ID];
-}
-
-int GetDefaultRimBrandAvailableForRegularCars(int ID)
-{
-	if (ID > DefaultRimBrandCount) return 1;
-	else return DefaultRimBrandAvailableForRegularCars[ID];
-}
-
-int GetDefaultRimBrandAvailableForSUVs(int ID)
-{
-	if (ID > DefaultRimBrandCount) return 1;
-	else return DefaultRimBrandAvailableForSUVs[ID];
-}
-
-int GetDefaultVinylGroupIndex(int ID)
-{
-	if (ID > DefaultVinylGroupCount) return 1;
-	else return DefaultVinylGroupIndexes[ID];
-}
-
-char* GetDefaultVinylGroupTexture(int ID)
-{
-	if (ID > DefaultVinylGroupCount) return (char*)"";
-	else return DefaultVinylGroupTextures[ID];
-}
-
-char* GetDefaultVinylGroupString(int ID)
-{
-	if (ID > DefaultVinylGroupCount) return (char*)"";
-	else return DefaultVinylGroupStrings[ID];
-}
-
-char* GetDefaultPaintBrandName(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return (char*)"";
-	else return DefaultPaintBrandNames[ID];
-}
-
-char* GetDefaultPaintBrandString(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return (char*)"";
-	else return DefaultPaintBrandStrings[ID];
-}
-
-int GetDefaultLinkLicensePlateToTrunk(int CarTypeID)
-{
-	switch (CarTypeID)
-	{
-		case 0:	// PEUGOT
-		case 1:	// FOCUS
-		case 5:	// CIVIC
-		case 8:	// HUMMER
-		case 9:	// NAVIGATOR
-		case 12:// SENTRA
-		case 13:// CELICA
-		case 14:// IS300
-		case 17:// A3
-		case 25:// GTO
-			return 1;
-	}
-
-	return 0;
-}
-
-int GetDefaultShowTrunkUnderInFE(int CarType)
-{
-	switch (CarType)
-	{
-		case 0:	// PEUGOT
-		case 1:	// FOCUS
-		case 2:	// COROLLA
-		case 3:	// 240SX
-		case 6:	// PEUGOT106
-		case 7:	// CORSA
-		case 8:	// HUMMER
-		case 9:	// NAVIGATOR
-		case 10:// ESCALADE
-		case 11:// TIBURON
-		case 13:// CELICA
-		case 15:// SUPRA
-		case 16:// GOLF
-		case 17:// A3
-		case 18:// RSX
-		case 19:// ECLIPSE
-		case 20:// TT
-		case 22:// 350Z
-		case 24:// 3000GT
-		case 29:// RX7
-			return 1;
-	}
-
-	return 0;
-}
-
-int GetDefaultRemoveCentreBrakeWithCustomSpoiler(int CarType)
-{
-	switch (CarType)
-	{
-		case 5:	 // CIVIC
-		case 11: // TIBURON
-		case 12: // SENTRA
-		case 24: // 3000GT
-		case 25: // GTO
-		case 30: // IMPREZAWRX
-			return 1;
-	}
-
-	return 0;
-}
-
-int GetDefaultHasSunroof(int CarTypeID)
-{
-	switch (CarTypeID)
-	{
-		case 3:	 // 240SX
-		case 5:	 // CIVIC
-		case 18: // RSX
-		case 23: // G35
-			return 1;
-	}
-
-	return 0;
-}
-
-int GetDefaultGameType(int CarTypeID)
-{
-	switch (CarTypeID)
-	{
-		case 0: // PEUGOT
-		case 1: // FOCUS
-		case 3: // 240SX
-		case 4: // MIATA
-		case 5: // CIVIC
-		case 11: // TIBURON
-		case 12: // SENTRA
-		case 13: // CELICA
-		case 15: // SUPRA
-		case 16: // GOLF
-		case 18: // RSX
-		case 19: // ECLIPSE
-		case 22: // 350Z
-		case 27: // SKYLINE
-		case 29: // RX7
-			return 1; // UG1
-
-		case 2: // COROLLA
-		case 6: // PEUGOT106
-		case 7: // CORSA
-		case 14: // IS300
-		case 17: // A3
-		case 20: // TT
-		case 21: // RX8
-		case 23: // G35
-		case 24: // 3000GT
-		case 25: // GTO
-		case 26: // MUSTANGGT
-		case 28: // LANCEREVO8
-		case 30: // IMPREZAWRX
-			return 2; // UG2
-
-		case 8: // HUMMER
-		case 9: // NAVIGATOR
-		case 10: // ESCALADE
-			return 3; // SUV
-	}
-
-	return 0;
-}
-
-int GetDefaultPaintBrandAvailableForBody(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 1;
-	else return DefaultPaintBrandAvailableForBody[ID];
-}
-
-int GetDefaultPaintBrandAvailableForRims(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 0;
-	else return DefaultPaintBrandAvailableForRims[ID];
-}
-
-int GetDefaultPaintBrandAvailableForBrakes(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 0;
-	else return DefaultPaintBrandAvailableForBrakes[ID];
-}
-
-int GetDefaultPaintBrandAvailableForHoses(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 1;
-	else return DefaultPaintBrandAvailableForHoses[ID];
-}
-
-int GetDefaultPaintBrandAvailableForTrunk(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 1;
-	else return DefaultPaintBrandAvailableForTrunk[ID];
-}
-
-int GetDefaultPaintBrandAvailableForMuffler(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 1;
-	else return DefaultPaintBrandAvailableForMuffler[ID];
-}
-
-int GetDefaultPaintBrandAvailableForVinyl(int ID)
-{
-	if (ID > DefaultPaintBrandCount) return 1;
-	else return DefaultPaintBrandAvailableForVinyl[ID];
-}
 
 char* DefaultPerformancePartNames[]
 {

@@ -7,6 +7,24 @@ void TexturePainter_PaintTireTexture(DWORD*, DWORD); // TexturePainter.h
 
 bool UseUnlimiterEmitter = 1;
 
+#define NUM_LICENSE_PLATE_TEXTURES 12
+
+DWORD DefaultLicensePlateReplacementTextures[]
+{
+	CT_bStringHash("LICENSE_PLATE"),
+	CT_bStringHash("LICENSE_PLATE_FRAME"),
+	CT_bStringHash("LICENSE_PLATE_STICKERS"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT1"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT2"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT3"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT4"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT5"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT6"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT7"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT8"),
+	CT_bStringHash("LICENSE_PLATE_DIGIT9"),
+};
+
 struct CarRenderInfoExtra
 {
 	DWORD /*CarRenderInfo*/* pCarRenderInfo;
@@ -23,6 +41,8 @@ struct CarRenderInfoExtra
 	float TimeBaseStart = 0.0f;
 
 	DWORD /*TextureInfo*/* pTireTextureInfo = nullptr;
+
+	ReplacementTextureEntry LicensePlateReplacementTextureTable[NUM_LICENSE_PLATE_TEXTURES];
 
 	CarRenderInfoExtra(DWORD* render_info, DWORD* ride, DWORD *car)
 	{
@@ -134,11 +154,156 @@ struct CarRenderInfoExtra
 		}
 	}
 
+	void InitLicensePlateReplacementTextureTable()
+	{
+		DWORD PlateTextureHash = 0;
+
+		// Get plate part first
+		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_LICENSE_PLATE);
+		if (Part)
+		{
+			PlateTextureHash = CarPart_GetTextureName(Part);
+		}
+		
+		// Initialize with empty table
+		for (int i = 0; i < NUM_LICENSE_PLATE_TEXTURES; i++)
+		{
+			LicensePlateReplacementTextureTable[i].hOldNameHash = DefaultLicensePlateReplacementTextures[i];
+			LicensePlateReplacementTextureTable[i].hNewNameHash = CT_bStringHash("DEFAULTALPHA");
+			LicensePlateReplacementTextureTable[i].pTextureInfo = (DWORD*)0xFFFFFFFF;
+			LicensePlateReplacementTextureTable[i].ppReplacedTextureInfo = 0;
+
+			if (i == 0)
+			{
+				LicensePlateReplacementTextureTable[i].hNewNameHash = 
+					PlateTextureHash ? PlateTextureHash : DefaultLicensePlateReplacementTextures[i];
+			}
+		}
+
+		// Attach this table to the license plate model
+		for (int i = 0; i < 8; i++)
+		{
+			eModel* LPModel = (eModel*)(pCarRenderInfo[0x17A8 / 4 + CARSLOTID_LICENSE_PLATE * 8 + i]);
+			if (LPModel)
+			{
+				LPModel->pReplacementTextureTable = (DWORD*)LicensePlateReplacementTextureTable;
+				LPModel->NumReplacementTextures = NUM_LICENSE_PLATE_TEXTURES;
+			}
+		}
+	}
+
+	char *RandomizeLicensePlate(int num)
+	{
+		char buf[NUM_LICENSE_PLATE_TEXTURES - 2]; // 9 chars + \0
+
+		for (int i = 0; i < num; i++)
+		{
+			char c = bRandom(26) + 'A';
+			char n = bRandom(10) + '0';
+
+			if (num == 7)
+			{
+				switch (i)
+				{
+				case 1:
+				case 2:
+				case 3:
+					buf[i] = c;
+					break;
+				default:
+					buf[i] = n;
+					break;
+				}
+			}
+			else
+			{
+				switch (i)
+				{
+				case 2:
+				case 3:
+				case 4:
+					buf[i] = c;
+					break;
+				default:
+					buf[i] = n;
+					break;
+				}
+			}
+		}
+
+		return buf;
+	}
+
+	void AssignLicensePlate()
+	{
+		int NumMorphTargets = 0;
+		char buf[64];
+		char texbuf[64];
+		
+		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_LICENSE_PLATE);
+		if (Part)
+		{
+			NumMorphTargets = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("MORPHTARGET_NUM"), 0);
+		}
+
+		if (!NumMorphTargets) return; // No need to assign, the plate is not customizable
+
+		int r = NumMorphTargets - 2;
+
+		DWORD* DriverInfo = nullptr;
+		char* DriverName = nullptr;
+		if (pCar)
+		{
+			DriverInfo = (DWORD*)pCar[5];
+			if (DriverInfo)
+			{
+				DriverName = (char*)DriverInfo + 0x90C;
+			}
+		}
+		else if (*(int*)TheGameFlowManager == 3) // // TheGameFlowManager->mCurrentState, no Car in FE
+		{
+			DriverName = GetProfileName();
+		}
+
+		if (!DriverName)
+		{
+			DriverName = RandomizeLicensePlate(r);
+		}
+
+		strcpy(buf, DriverName); // Copy driver name so we don't accidentally modify the original string
+		strupr(buf); // Convert to uppercase
+
+		int len = strlen(buf);
+		int i = 0;
+		if (len < r) i = (r - len) / 2;
+
+		for (int q = 0; q < NUM_LICENSE_PLATE_TEXTURES - 3; i++, q++)
+		{
+			if (!buf[q]) break;
+
+			if ((buf[q] >= '0' && buf[q] <= '9')
+				|| (buf[q] >= 'A' && buf[q] <= 'Z'))
+			{
+				sprintf(texbuf, "LP_CHAR_%c", buf[q]);
+			}
+			else // If not a letter or number
+			{
+				buf[q] = '-'; // Replace with dash
+				sprintf(texbuf, "LP_CHAR_DASH");
+			}
+
+			LicensePlateReplacementTextureTable[i + 3].hNewNameHash = bStringHash(texbuf); // 3-11 = chars
+		}
+	}
+
 	void Init()
 	{
 		ApplyExhaustFlameColor();
 		ApplyTireSmokeColor();
 
 		GetTireTextureInfo();
+
+		InitLicensePlateReplacementTextureTable();
+		AssignLicensePlate();
 	}
-};
+ };

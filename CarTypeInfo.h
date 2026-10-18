@@ -2,140 +2,119 @@
 
 #include "stdio.h"
 #include "InGameFunctions.h"
-#include "Helpers.h"
 
-DWORD GetCarTypeLogoHash(int type, bool manu)
+struct CarTypeInfo
 {
-	DWORD result = 0;
-	int BuildRegion = GetBuildRegion();
-	char const *CarTypeName = (char const*)CarConfigs[type].CarTypeInfo;
-	DWORD CarTypeNameHash = bStringHash(CarTypeName);
+	char CarTypeName[32];
+	char BaseModelName[32];
+	char GeometryFilename[32];
+	char GeometryLZCFilename[32];
+	char field_0x080[64]; // "\0"
+	char ManufacturerName[16];
+	unsigned int CarTypeNameHash;
+	float HeadlightFOV;
+	char padHighPerformance;
+	char NumAvailableSkinNumbers;
+	char WhatGame;
+	char ConvertableFlag;
+	char WheelOuterRadius;
+	char WheelInnerRadiusMin;
+	char WheelInnerRadiusMax;
+	char pad0;
+	bVector3 HeadlightPosition;
+	bVector3 DriverRenderingOffset;
+	bVector3 InCarSteeringWheelRenderingOffset;
+	CompleatCarPhysicsInfo PhysicsInfo;
+	CarCameraInfo Camera;
+	DWORD field_0x7F0;
+	DWORD field_0x7F4;
+	DWORD field_0x7F8;
+	DWORD field_0x7FC;
+	DWORD field_0x800;
+	DWORD field_0x804;
+	DWORD field_0x808;
+	DWORD field_0x80C;
+	DWORD field_0x810;
+	DWORD field_0x814;
+	DWORD field_0x818;
+	DWORD field_0x81C;
+	DWORD field_0x820;
+	DWORD field_0x824;
+	DWORD field_0x828;
+	DWORD field_0x82C;
+	DWORD field_0x830;
+	DWORD field_0x834;
+	DWORD field_0x838;
+	DWORD field_0x83C;
+	int Index;
+	CarUsageType UsageType;
+	int field_0x848;
+	unsigned int DefaultBasePaint;
+	unsigned int DefaultBasePaint2;
+	BYTE MaxInstances[5];
+	BYTE KeepLoaded[5];
+	short PaddingInt16_0;
+	float MinTimeBetweenUses[5];
+	int DefaultSkinNumber; // maybe? based on MW and C
+	int field_0x878;
+	int cost;
+	BYTE AvailableSkinNumbers[10]; // 1, 0, 0, ...
+	short IsSUV; // 0
+	int Skinnable; // 1
 
-	if (manu)
+	unsigned int GetCarTypeNameHash()
 	{
-		char const* CarManuName = CarTypeInfo_GetManufacturerName(CarConfigs[type].CarTypeInfo);
-		result = FEngHashString("CARSELECT_MANUFACTURER_%s", CarManuName);
-		if (IsTraffic(type)) return FEngHashString("CARSELECT_MANUFACTURER_TRAFFIC_%s", CarManuName);
-
-		if (IsBuildRegionEurope()) // EU
-		{
-			switch (CarTypeNameHash)
-			{
-			case CT_bStringHash("CORSA"):
-				return GetCurrentLanguage() ? CT_bStringHash("CARSELECT_MANUFACTURER_OPEL") : result;
-				break;
-			}
-		}
-		else
-		{
-			if (BuildRegion == 3)
-			{
-				switch (CarTypeNameHash)
-				{
-				case CT_bStringHash("G35"):
-					return CT_bStringHash("CARSELECT_MANUFACTURER_NISSAN");
-					break;
-				case CT_bStringHash("IS300"):
-					return CT_bStringHash("CARSELECT_MANUFACTURER_TOYOTA");
-					break;
-				}
-			}
-
-			//if (CarTypeNameHash == CT_bStringHash("CORSA")) return CT_bStringHash("CARSELECT_MANUFACTURER_OPEL");
-		}
-	}
-	else
-	{
-		result = FEngHashString("SECONDARY_LOGO_%s", CarTypeName);
-		if (IsTraffic(type)) return FEngHashString("SECONDARY_LOGO_TRAFFIC_%s", CarTypeName);
-
-		if (!BuildRegion)
-		{
-			switch (CarTypeNameHash)
-			{
-			case CT_bStringHash("MIATA"):
-				return result;
-				break;
-			case CT_bStringHash("TIBURON"):
-				return result;
-				break;
-			}
-		}
-
-		if (IsBuildRegionEurope()) // EU
-		{
-			switch (CarTypeNameHash)
-			{
-			case CT_bStringHash("MIATA"):
-				return CT_bStringHash("SECONDARY_LOGO_MX5");
-				break;
-			case CT_bStringHash("TIBURON"):
-				return CT_bStringHash("SECONDARY_LOGO_COUPE");
-				break;
-			case CT_bStringHash("CORSA"):
-				return GetCurrentLanguage() ? CT_bStringHash("SECONDARY_LOGO_OPEL_CORSA") : result;
-				break;
-			}
-		}
-
-		if (BuildRegion == 2)
-		{
-			switch (CarTypeNameHash)
-			{
-			case CT_bStringHash("MIATA"):
-				return CT_bStringHash("SECONDARY_LOGO_MX5");
-				break;
-			case CT_bStringHash("TIBURON"):
-				return CT_bStringHash("SECONDARY_LOGO_TUSCANI");
-				break;
-			}
-		}
-		else
-		{
-			if (BuildRegion == 3)
-			{
-				switch (CarTypeNameHash)
-				{
-				case CT_bStringHash("MIATA"):
-					return CT_bStringHash("SECONDARY_LOGO_MIATA_ROADSTER");
-					break;
-				case CT_bStringHash("COROLLA"):
-					return CT_bStringHash("SECONDARY_LOGO_TRUENO");
-					break;
-				case CT_bStringHash("IS300"):
-					return CT_bStringHash("SECONDARY_LOGO_ALTEZZA");
-					break;
-				case CT_bStringHash("G35"):
-					return CT_bStringHash("SECONDARY_LOGO_SKYLINE_JAPAN");
-					break;
-				case CT_bStringHash("350Z"):
-					return CT_bStringHash("SECONDARY_LOGO_FAIRLADYZ");
-					break;
-				case CT_bStringHash("CORSA"):
-					return CT_bStringHash("SECONDARY_LOGO_OPEL_CORSA");
-					break;
-				case CT_bStringHash("TIBURON"):
-					return CT_bStringHash("SECONDARY_LOGO_COUPE");
-					break;
-				}
-			}
-			else
-			{
-				switch (CarTypeNameHash)
-				{
-				case CT_bStringHash("MIATA"):
-					return CT_bStringHash("SECONDARY_LOGO_MX5");
-					break;
-				case CT_bStringHash("TIBURON"):
-					return CT_bStringHash("SECONDARY_LOGO_COUPE");
-					break;
-				}
-			}
-		}
-
-		//if (CarTypeNameHash == CT_bStringHash("CORSA")) return CT_bStringHash("SECONDARY_LOGO_OPEL_CORSA");
-
+		return CarTypeNameHash;
 	}
 
-	return result;
+	char const *GetManufacturerName()
+	{
+		return ManufacturerName;
+	}
+
+	int GetNumAvailableSkins()
+	{
+		if (UsageType == CAR_USAGE_TYPE_COP) return 1;
+		return NumAvailableSkinNumbers;
+	}
+
+	bool IsRacer()
+	{
+		return UsageType == CAR_USAGE_TYPE_RACING;
+	}
+
+	bool IsCop()
+	{
+		return UsageType == CAR_USAGE_TYPE_COP;
+	}
+
+	bool IsTraffic()
+	{
+		return UsageType == CAR_USAGE_TYPE_TRAFFIC;
+	}
+
+	bool GetIsSUV()
+	{
+		return IsSUV != 0;
+	}
+
+	bool IsSkinnable()
+	{
+		return Skinnable != 0;
+	}
+
+	bool SetSkinnable(bool value)
+	{
+		Skinnable = value ? 1 : 0;
+		return IsSkinnable();
+	}
+};
+
+CarTypeInfo* CarTypeInfoArray;
+
+/*
+CarTypeInfo* GetCarTypeInfo(int CarTypeID)
+{
+	return &CarTypeInfoArray[CarTypeID];
 }
+*/

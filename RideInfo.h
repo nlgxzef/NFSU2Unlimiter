@@ -620,39 +620,11 @@ DWORD* FindPartWithLevel(int CarType, unsigned int slot_id, int upgrade_level)
     return result;
 }
 
-void __fastcall RideInfo_SyncVisualPartsWithPhysics_Hook(DWORD* RideInfo, void* EDX_Unused, bool perf, bool random)
-{
-    if (!RideInfo || ((uintptr_t)RideInfo & 3)) return;
-
-    int CarType = *RideInfo;
-    if (CarType < 0 || CarType >= CarCount) return;
-
-    MainSection& M = CarConfigs[CarType].Main;
-
-    // Snapshot the brake slots, let the game function run, then put them back if brakes are meant
-    // to be chosen by hand. Aerodynamics is not in this list: it writes into RidePhysicsInfo
-    // rather than the parts array, so it stays on the master flag.
-    DWORD SavedFrontBrake = RideInfo[356 + CARSLOTID_FRONT_BRAKE];
-    DWORD SavedRearBrake = RideInfo[356 + CARSLOTID_REAR_BRAKE];
-
-    if (M.SyncVisualPartsWithPhysics)
-        RideInfo_SyncVisualPartsWithPhysics(RideInfo, perf, random);
-
-    if (!M.SyncBrakesWithPhysics)
-    {
-        RideInfo[356 + CARSLOTID_FRONT_BRAKE] = SavedFrontBrake;
-        RideInfo[356 + CARSLOTID_REAR_BRAKE] = SavedRearBrake;
-
-        MirrorFrontBrakeToRear(RideInfo);
-    }
-}
-
 DWORD __fastcall RideInfo_GetStockPartNameHash(DWORD* RideInfo, void* EDX_Unused, int CarSlotID)
 {
-    /*return CarConfigs[RideInfo[0]].StockParts.CustomStockParts
+    return CarConfigs[RideInfo[0]].StockParts.CustomStockParts
         ? CarConfigs[RideInfo[0]].StockParts.Parts[CarSlotID]
-        : -1;*/
-	return -1; // TODO: Implement custom stock parts in ini files
+        : -1;
 }
 
 void __fastcall RideInfo_SetStockParts(DWORD* RideInfo, void* EDX_Unused, int use_paint_2)
@@ -662,7 +634,7 @@ void __fastcall RideInfo_SetStockParts(DWORD* RideInfo, void* EDX_Unused, int us
     int CarType = *RideInfo;
     if (CarType < 0 || CarType >= CarCount) return;
 
-	DWORD* cti = GetCarTypeInfo(CarType);
+    CarTypeInfo* cti = &CarTypeInfoArray[RideInfo[0]];
 
     DWORD DefaultVinylColorHashes[] = {
         CT_bStringHash("VINYL_L1_COLOR09"),
@@ -682,7 +654,7 @@ void __fastcall RideInfo_SetStockParts(DWORD* RideInfo, void* EDX_Unused, int us
             switch (i)
             {
             case CARSLOTID_BASE_PAINT:
-				PartNameHash = use_paint_2 ? cti[0x850 / 4] : cti[0x84C / 4];
+                PartNameHash = use_paint_2 ? cti->DefaultBasePaint2 : cti->DefaultBasePaint;
                 part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
                 if (part) RideInfo[356 + i] = (DWORD)part;
                 else // If the paint is invalid
@@ -743,16 +715,269 @@ void __fastcall RideInfo_SetStockParts(DWORD* RideInfo, void* EDX_Unused, int us
 
     for (int i = CARSLOTID_VINYL_COLOUR0_0; i < CARSLOTID_VINYL_COLOUR3_3; ++i)
     {
-		PartNameHash = DefaultVinylColorHashes[CurrentVinylColor];
+        PartNameHash = RideInfo_GetStockPartNameHash(RideInfo, EDX_Unused, i);
+        if (PartNameHash == -1) PartNameHash = DefaultVinylColorHashes[CurrentVinylColor];
+
 		RideInfo[356 + i] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, i, PartNameHash, 0, -1);
         RideInfo_UpdatePartsEnabled(RideInfo, EDX_Unused);
 
 		CurrentVinylColor = (CurrentVinylColor + 1) % 4;
     }
+}
 
-    //RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_WHEEL_MANUFACTURER, 0);
-    //RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_MISC, 0);
-    
+void(__thiscall* RideInfo_BuildRandomRide_Game)(DWORD* RideInfo, int random) = (void(__thiscall*)(DWORD*, int))0x6374B0;
+void(__thiscall* RideInfo_SetRandomPart)(DWORD* RideInfo, int slot, int level) = (void(__thiscall*)(DWORD*, int, int))0x6371A0;
+void __fastcall RideInfo_BuildRandomRide(DWORD* RideInfo, void *EDX_Unused, int random)
+{
+    switch (CarConfigs[RideInfo[0]].RandomParts.CustomRandomParts)
+    {
+    case 1: // Skip vanilla randomization
+        break;
+    default:
+        RideInfo_BuildRandomRide_Game(RideInfo, random);
+        break;
+    }
+
+    if (CarConfigs[RideInfo[0]].RandomParts.CustomRandomParts)
+    {
+        int RandomRearRimProbability = bRandom(100);
+
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_FRONT_BUMPER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_FRONT_BUMPER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_REAR_BUMPER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_REAR_BUMPER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_SKIRT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_SKIRT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_FENDER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_FENDER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_QUARTER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_QUARTER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_SPOILER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_SPOILER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HOOD]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HOOD, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_ENGINE] && !CarConfigs[RideInfo[0]].Main.SyncVisualPartsWithPhysics) RideInfo_SetRandomPart(RideInfo, CARSLOTID_ENGINE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_TRUNK]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_TRUNK, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_ROOF]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_ROOF, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_BASE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_BASE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_TOP]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_TOP, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HEADLIGHT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HEADLIGHT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_BRAKELIGHT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_BRAKELIGHT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_WING_MIRROR]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_WING_MIRROR, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_EXHAUST]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_EXHAUST, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_FRONT_WHEEL])
+        {
+            RideInfo_SetRandomPart(RideInfo, CARSLOTID_FRONT_WHEEL, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_REAR_WHEEL] && RandomRearRimProbability < CarConfigs[RideInfo[0]].RandomParts.RandomRearRimProbability)
+            {
+                RideInfo_SetRandomPart(RideInfo, CARSLOTID_REAR_WHEEL, -1);
+            }
+            else
+            {
+                RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_REAR_WHEEL, RideInfo_GetPart(RideInfo, CARSLOTID_FRONT_WHEEL));
+			}
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_FRONT_BRAKE] && !CarConfigs[RideInfo[0]].Main.SyncBrakesWithPhysics)
+        {
+            RideInfo_SetRandomPart(RideInfo, CARSLOTID_FRONT_BRAKE, -1);
+            RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_REAR_BRAKE, RideInfo_GetPart(RideInfo, CARSLOTID_FRONT_BRAKE));
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_WIDE_BODY]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_WIDE_BODY, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DAMAGE_FRONT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DAMAGE_FRONT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DAMAGE_REAR]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DAMAGE_REAR, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DAMAGE_LEFT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DAMAGE_LEFT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DAMAGE_RIGHT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DAMAGE_RIGHT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DAMAGE_TOP]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DAMAGE_TOP, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DOOR_PANEL_LEFT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DOOR_PANEL_LEFT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DOOR_PANEL_RIGHT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DOOR_PANEL_RIGHT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DOOR_SILL_LEFT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DOOR_SILL_LEFT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DOOR_SILL_RIGHT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DOOR_SILL_RIGHT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HOOD_UNDER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HOOD_UNDER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_TRUNK_UNDER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_TRUNK_UNDER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_BASE_PAINT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_BASE_PAINT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_SPOILER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_SPOILER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_ROOF]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_ROOF, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_MIRROR]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_MIRROR, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_RIM]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_RIM, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_SPINNER]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_SPINNER, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_BRAKE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_BRAKE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_ENGINE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_ENGINE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_AUDIO]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_AUDIO, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_PAINT_EXHAUST]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_PAINT_EXHAUST, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_LAYER0])
+        {
+            RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_LAYER0, -1);
+
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR0_0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR0_0, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR0_1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR0_1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR0_2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR0_2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR0_3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR0_3, -1);
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_LAYER1]) 
+        {
+            RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_LAYER1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR1_0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR1_0, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR1_1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR1_1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR1_2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR1_2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR1_3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR1_3, -1);
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_LAYER2])
+        {
+           RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_LAYER2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR2_0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR2_0, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR2_1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR2_1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR2_2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR2_2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR2_3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR2_3, -1);
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_LAYER3])
+        {
+            RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_LAYER3, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR3_0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR3_0, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR3_1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR3_1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR3_2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR3_2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_VINYL_COLOUR3_3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_VINYL_COLOUR3_3, -1);
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX0, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX1, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX2, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX3, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX4, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX5, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX6, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_FRONT_WINDOW_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_FRONT_WINDOW_TEX7, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX0, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX1, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX2, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX3, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX4, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX5, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX6, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_REAR_WINDOW_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_REAR_WINDOW_TEX7, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX0, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX1, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX2, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX3, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX4, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX5, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX6, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_HOOD_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_HOOD_TEX7, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX0, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX1, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX2, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX3, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX4, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX5, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX6, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_DOOR_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX7, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.MatchSideDecals)
+        {
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX0, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX0));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX1, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX1));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX2, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX2));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX3, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX3));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX4, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX4));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX5, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX5));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX6, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX6));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_DOOR_TEX7, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_DOOR_TEX7));
+        }
+        else
+        {
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX0, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX3, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX4, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX5, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX6, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_DOOR_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_DOOR_TEX7, -1);
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX0, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX1, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX2, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX3, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX4, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX5, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX6, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_LEFT_QUARTER_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX7, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.MatchSideDecals)
+        {
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX0, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX0));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX1, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX1));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX2, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX2));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX3, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX3));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX4, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX4));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX5, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX5));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX6, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX6));
+			RideInfo_SetPart(RideInfo, EDX_Unused, CARSLOTID_DECAL_RIGHT_QUARTER_TEX7, RideInfo_GetPart(RideInfo, CARSLOTID_DECAL_LEFT_QUARTER_TEX7));
+        }
+        else
+        {
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX0]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX0, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX1]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX1, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX2]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX2, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX3]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX3, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX4]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX4, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX5]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX5, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX6]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX6, -1);
+            if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DECAL_RIGHT_QUARTER_TEX7]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DECAL_RIGHT_QUARTER_TEX7, -1);
+        }
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_CUSTOM_HUD]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_CUSTOM_HUD, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HUD_BACKING_COLOUR]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HUD_BACKING_COLOUR, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HUD_NEEDLE_COLOUR]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HUD_NEEDLE_COLOUR, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HUD_CHARACTER_COLOUR]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HUD_CHARACTER_COLOUR, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_NEON]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_NEON, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_NEON_ENGINE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_NEON_ENGINE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_NEON_CABIN]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_NEON_CABIN, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_CABIN_NEON_FRAME]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_CABIN_NEON_FRAME, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_NEON_TRUNK]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_NEON_TRUNK, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_WINDOW_TINT]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_WINDOW_TINT, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HEADLIGHT_BULB]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HEADLIGHT_BULB, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_NOS_PURGE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_NOS_PURGE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_UL_EXHAUST_FLAME]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_UL_EXHAUST_FLAME, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_UL_TIRE_SMOKE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_UL_TIRE_SMOKE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_HYDRAULICS]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_HYDRAULICS, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_TRUNK_AUDIO]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_TRUNK_AUDIO, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_DOOR_STYLE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_DOOR_STYLE, -1);
+        if (CarConfigs[RideInfo[0]].RandomParts.Parts[CARSLOTID_LICENSE_PLATE]) RideInfo_SetRandomPart(RideInfo, CARSLOTID_LICENSE_PLATE, -1);
+	}
+}
+
+void __fastcall RideInfo_SyncBrakesWithPhysics(DWORD* RideInfo, void* EDX_Unused, int CarType)
+{
+    const BYTE* Installed = (const BYTE*)RideInfo + 0x2F0 + 0x50;
+
+    int Level = Installed[PERF_PART_BR_CROSS_DRILLED_ROTORS] 
+        ? 1 : Installed[PERF_PART_BR_LARGE_DIAMETER_ROTORS]
+        ? 2 : Installed[PERF_PART_BR_CROSS_DRILLED_AND_SLOTTED_ROTORS]
+        ? 3 : 0;
+
+    DWORD* Brake = FindPartWithLevel(CarType, CARSLOTID_FRONT_BRAKE, Level);
+    if (!Brake) return;
+
+    RideInfo[356 + CARSLOTID_FRONT_BRAKE] = (DWORD)Brake;
+    RideInfo_UpdatePartsEnabled(RideInfo, EDX_Unused);
+}
+
+void __fastcall RideInfo_SyncVisualPartsWithPhysics_Hook(DWORD* RideInfo, void* EDX_Unused, bool perf, bool random)
+{
+    if (!RideInfo || ((uintptr_t)RideInfo & 3)) return;
+
+    int CarType = *RideInfo;
+    if (CarType < 0 || CarType >= CarCount) return;
+
+    MainSection& M = CarConfigs[CarType].Main;
+
+    // Snapshot the brake slots
+    DWORD SavedFrontBrake = RideInfo[356 + CARSLOTID_FRONT_BRAKE];
+    DWORD SavedRearBrake = RideInfo[356 + CARSLOTID_REAR_BRAKE];
+
+    if (M.SyncVisualPartsWithPhysics) RideInfo_SyncVisualPartsWithPhysics(RideInfo, perf, random);
+    else if (random) RideInfo_BuildRandomRide(RideInfo, EDX_Unused, random); // only randomize the parts, not the physics
+
+    if (M.SyncBrakesWithPhysics)
+    {
+		RideInfo_SyncBrakesWithPhysics(RideInfo, EDX_Unused, CarType);
+    }
+	else // restore the brake slots to their original values
+    {
+        RideInfo[356 + CARSLOTID_FRONT_BRAKE] = SavedFrontBrake;
+        RideInfo[356 + CARSLOTID_REAR_BRAKE] = SavedRearBrake;
+
+        MirrorFrontBrakeToRear(RideInfo);
+    }
 }
 
 DWORD g_displayHUDprefix = CT_bStringHash("3RDPERSON_");
@@ -800,9 +1025,10 @@ char const* DummyWheelRear = "DUMMY_WHEEL_REAR%d";
 void __fastcall RideInfo_SetCompositeNameHash(DWORD* RideInfo, void *EDX_Unused, int id)
 {
     char buf[64]; // [esp+8h] [ebp-40h] BYREF
+    CarTypeInfo* cti = &CarTypeInfoArray[RideInfo[0]];
 
     bSPrintf(buf, "DUMMY_SKIN%d", id);
-	RideInfo[353] = IsSkinnable(RideInfo[0]) ? bStringHash(buf) : 0;
+	RideInfo[353] = cti->IsSkinnable() ? bStringHash(buf) : 0;
     bSPrintf(buf, "DUMMY_WHEEL%d", id);
     RideInfo[354] = bStringHash(buf);
     bSPrintf(buf, RideInfo_HasDifferentWheels(RideInfo) ? DummyWheelRear : "DUMMY_SPINNER%d", id);

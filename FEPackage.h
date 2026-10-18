@@ -1,6 +1,5 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
-#include "Helpers.h"
 #include "includes\ini.h"
 
 char ObjectName[64], ObjectPrefix[64];
