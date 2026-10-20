@@ -178,7 +178,15 @@ bool IsRimAvailable(int CarTypeID, DWORD* CarPart, DWORD BrandNameHash)
     if ((*((BYTE*)CarPart + 5) & 0xE0) != 0 || (BrandNameHash != CT_bStringHash("STOCK")))
         IsStock = 0;
 
-    if (CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("BRAND_NAME"), 0) == BrandNameHash) // "BRAND_NAME"
+    DWORD PartBrandNameHash = CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("BRAND_NAME"), 0);
+    DWORD CustomBrandNameHash = RimBrands[0].BrandNameHash;
+    bool MatchesFilter = 0;
+
+    if (BrandNameHash == CT_bStringHash("") || BrandNameHash == CustomBrandNameHash)
+        MatchesFilter = (PartBrandNameHash == CT_bStringHash("") || PartBrandNameHash == CustomBrandNameHash);
+    else MatchesFilter = PartBrandNameHash == BrandNameHash;
+
+    if (MatchesFilter)
     {
         RimOuterRadius = *(BYTE*)((BYTE*)CarTypeInfo + 0xDC);
         if ((CarPart_GetAppliedAttributeUParam(CarPart, CT_bStringHash("OUTER_RADIUS"), 0) == RimOuterRadius) || (IsNoRimSize(BrandNameHash)) || RemoveRimSizeRestrictions)

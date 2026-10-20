@@ -199,6 +199,15 @@ bool IsMenuEmpty_Specialties(int CarTypeID)
 	return 1;
 }
 
+int GetMatchingDefaultRimBrand(DWORD BrandNameHash)
+{
+	for (int i = 0; i <= DefaultRimBrandCount; i++)
+	{
+		if (bStringHash(DefaultRimBrandNames[i]) == BrandNameHash) return i;
+	}
+	return 1; // 0 is custom
+}
+
 char* GetDefaultRimBrandName(int ID)
 {
 	if (ID > DefaultRimBrandCount) return (char*)"";
@@ -229,6 +238,15 @@ int GetDefaultRimBrandAvailableForSUVs(int ID)
 	else return DefaultRimBrandAvailableForSUVs[ID];
 }
 
+int GetMatchingDefaultVinylGroupIndex(int id)
+{
+	for (int i = 0; i <= DefaultVinylGroupCount; i++)
+	{
+		if (DefaultVinylGroupIndexes[i] == id) return i;
+	}
+	return 1; // 0 is custom
+}
+
 int GetDefaultVinylGroupIndex(int ID)
 {
 	if (ID > DefaultVinylGroupCount) return 1;
@@ -245,6 +263,15 @@ char* GetDefaultVinylGroupString(int ID)
 {
 	if (ID > DefaultVinylGroupCount) return (char*)"";
 	else return DefaultVinylGroupStrings[ID];
+}
+
+int GetMatchingDefaultPaintBrand(DWORD BrandNameHash)
+{
+	for (int i = 0; i <= DefaultPaintBrandCount; i++)
+	{
+		if (bStringHash(DefaultPaintBrandNames[i]) == BrandNameHash) return i;
+	}
+	return 1; // 0 is custom
 }
 
 char* GetDefaultPaintBrandName(int ID)
@@ -307,6 +334,11 @@ int GetDefaultShowTrunkUnderInFE(int CarType)
 	}
 
 	return 0;
+}
+
+int GetDefaultLinkRearWindowDecalToTrunk(int CarType)
+{
+	return GetDefaultShowTrunkUnderInFE(CarType);
 }
 
 int GetDefaultRemoveCentreBrakeWithCustomSpoiler(int CarType)

@@ -1431,3 +1431,16 @@ void InitCarSoundTuner()
 		if (btn == IDNO) SetExitGameFlag(); // ExitTheGameFlag
 	}
 }
+
+constexpr int SoundHeapSize = 16 * 1024 * 1024;
+
+void InitSoundHeap()
+{
+	constexpr int VanillaSoundHeapMask = 0x3FC000; // 4 MB less the 16 KB that gets added back
+	constexpr int SoundHeapSizeAdd = 0x4000;
+
+	// 'and eax, imm32', checked so another executable build is left alone
+	if (injector::ReadMemory<BYTE>(0x4859B9, true) != 0x25 || injector::ReadMemory<int>(0x4859BA, true) != VanillaSoundHeapMask) return;
+
+	injector::WriteMemory<int>(0x4859BA, SoundHeapSize - SoundHeapSizeAdd, true);
+}

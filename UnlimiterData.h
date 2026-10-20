@@ -40,6 +40,7 @@ void LoadCarConfigs()
 	// CarRenderInfo
 	DefaultCarConfig.RenderInfo.LinkLicensePlateToTrunk = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkLicensePlateToTrunk", GetDefaultLinkLicensePlateToTrunk(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.ShowTrunkUnderInFE = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "ShowTrunkUnderInFE", GetDefaultShowTrunkUnderInFE(ReplacementCar)) != 0;
+	DefaultCarConfig.RenderInfo.LinkRearWindowDecalToTrunk = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkRearWindowDecalToTrunk", GetDefaultLinkRearWindowDecalToTrunk(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.RemoveCentreBrakeWithCustomSpoiler = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", GetDefaultRemoveCentreBrakeWithCustomSpoiler(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.HasSunroof = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "HasSunroof", GetDefaultHasSunroof(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.LinkSpoiler = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkSpoiler", 0);
@@ -960,6 +961,7 @@ void LoadCarConfigs()
 		// CarRenderInfo
 		ACarConfig.RenderInfo.LinkLicensePlateToTrunk = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkLicensePlateToTrunk", GetDefaultLinkLicensePlateToTrunk(i)) != 0;
 		ACarConfig.RenderInfo.ShowTrunkUnderInFE = mINI_ReadInteger(CarINI, "CarRenderInfo", "ShowTrunkUnderInFE", GetDefaultShowTrunkUnderInFE(i)) != 0;
+		ACarConfig.RenderInfo.LinkRearWindowDecalToTrunk = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkRearWindowDecalToTrunk", GetDefaultLinkRearWindowDecalToTrunk(i)) != 0;
 		ACarConfig.RenderInfo.RemoveCentreBrakeWithCustomSpoiler = mINI_ReadInteger(CarINI, "CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", GetDefaultRemoveCentreBrakeWithCustomSpoiler(i)) != 0;
 		ACarConfig.RenderInfo.HasSunroof = mINI_ReadInteger(CarINI, "CarRenderInfo", "HasSunroof", GetDefaultHasSunroof(i)) != 0;
 		ACarConfig.RenderInfo.LinkSpoiler = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkSpoiler", DefaultCarConfig.RenderInfo.LinkSpoiler);
@@ -2019,14 +2021,15 @@ void LoadRimBrands()
 
 		SetRimBrandName(ARimBrand, mINI_ReadString(RimBrandsINI, RimBrandID, "BrandName", GetDefaultRimBrandName(i)));
 		ARimBrand.BrandNameHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "BrandName", GetDefaultRimBrandName(i));
-		ARimBrand.StringHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "String", GetDefaultRimBrandString(i));
-		ARimBrand.TextureHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "Texture", GetDefaultRimBrandTexture(i));
+		int d = GetMatchingDefaultRimBrand(ARimBrand.BrandNameHash);
+		ARimBrand.StringHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "String", GetDefaultRimBrandString(d));
+		ARimBrand.TextureHash = mINI_ReadHashS(RimBrandsINI, RimBrandID, "Texture", GetDefaultRimBrandTexture(d));
 		ARimBrand.NoRimSize = mINI_ReadInteger(RimBrandsINI, RimBrandID, "NoRimSize", i ? 0 : 1) != 0;
 		ARimBrand.HideBrandName = mINI_ReadInteger(RimBrandsINI, RimBrandID, "HideBrandName", 0) != 0;
 		ARimBrand.AvailableForRegularCars = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForRegularCars", 
-			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Car", GetDefaultRimBrandAvailableForRegularCars(i))) != 0;
+			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Car", GetDefaultRimBrandAvailableForRegularCars(d))) != 0;
 		ARimBrand.AvailableForSUVs = mINI_ReadInteger(RimBrandsINI, RimBrandID, "AvailableForSUVs", 
-			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Suv", GetDefaultRimBrandAvailableForSUVs(i))) != 0;
+			mINI_ReadInteger(RimBrandsINI, RimBrandID, "Suv", GetDefaultRimBrandAvailableForSUVs(d))) != 0;
 
 		RimBrands_temp.push_back(ARimBrand); // Add to temp list
 	}
@@ -2125,8 +2128,9 @@ void LoadVinylGroups()
 		sprintf(VinylBrandID, "Group%d", i);
 
 		AVinylGroup.Index = mINI_ReadInteger(VinylGroupsINI, VinylBrandID, "Index", GetDefaultVinylGroupIndex(i));
-		AVinylGroup.TextureHash = mINI_ReadHashS(VinylGroupsINI, VinylBrandID, "Texture", GetDefaultVinylGroupTexture(i));
-		AVinylGroup.StringHash = mINI_ReadHashS(VinylGroupsINI, VinylBrandID, "String", GetDefaultVinylGroupString(i));
+		int d = GetMatchingDefaultVinylGroupIndex(AVinylGroup.Index);
+		AVinylGroup.TextureHash = mINI_ReadHashS(VinylGroupsINI, VinylBrandID, "Texture", GetDefaultVinylGroupTexture(d));
+		AVinylGroup.StringHash = mINI_ReadHashS(VinylGroupsINI, VinylBrandID, "String", GetDefaultVinylGroupString(d));
 		sprintf(AVinylGroup.CameraInfoName, mINI_ReadString(VinylGroupsINI, VinylBrandID, "CameraInfo"));
 
 		VinylGroups_temp.push_back(AVinylGroup); // Add to temp list
@@ -2157,7 +2161,7 @@ void LoadVinylGroups()
 				// If we already have a grup with the same hash, overwrite it
 				bool found = 0;
 
-				for (int k = 0; k < VinylGroups_temp.size(); k++)
+				for (int k = 1; k < VinylGroups_temp.size(); k++)
 				{
 					if (VinylGroups_temp[k].Index == AVinylGroup.Index) // overwrite
 					{
@@ -2212,14 +2216,15 @@ void LoadPaintGroups()
 		sprintf(PaintBrandID, "Group%d", i);
 
 		APaintGroup.BrandNameHash = mINI_ReadHashS(PaintGroupsINI, PaintBrandID, "BrandName", GetDefaultPaintBrandName(i));
-		APaintGroup.StringHash = mINI_ReadHashS(PaintGroupsINI, PaintBrandID, "String", GetDefaultPaintBrandString(i));
-		APaintGroup.AvailableForBody = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForBody", GetDefaultPaintBrandAvailableForBody(i)) != 0;
-		APaintGroup.AvailableForRims = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForRims", GetDefaultPaintBrandAvailableForRims(i)) != 0;
-		APaintGroup.AvailableForBrakes = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForBrakes", GetDefaultPaintBrandAvailableForBrakes(i)) != 0;
-		APaintGroup.AvailableForHoses = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForHoses", GetDefaultPaintBrandAvailableForHoses(i)) != 0;
-		APaintGroup.AvailableForTrunk = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForTrunk", GetDefaultPaintBrandAvailableForTrunk(i)) != 0;
-		APaintGroup.AvailableForMuffler = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForMuffler", GetDefaultPaintBrandAvailableForMuffler(i)) != 0;
-		APaintGroup.AvailableForVinyl = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForVinyl", GetDefaultPaintBrandAvailableForVinyl(i)) != 0;
+		int d = GetMatchingDefaultPaintBrand(APaintGroup.BrandNameHash);
+		APaintGroup.StringHash = mINI_ReadHashS(PaintGroupsINI, PaintBrandID, "String", GetDefaultPaintBrandString(d));
+		APaintGroup.AvailableForBody = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForBody", GetDefaultPaintBrandAvailableForBody(d)) != 0;
+		APaintGroup.AvailableForRims = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForRims", GetDefaultPaintBrandAvailableForRims(d)) != 0;
+		APaintGroup.AvailableForBrakes = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForBrakes", GetDefaultPaintBrandAvailableForBrakes(d)) != 0;
+		APaintGroup.AvailableForHoses = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForHoses", GetDefaultPaintBrandAvailableForHoses(d)) != 0;
+		APaintGroup.AvailableForTrunk = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForTrunk", GetDefaultPaintBrandAvailableForTrunk(d)) != 0;
+		APaintGroup.AvailableForMuffler = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForMuffler", GetDefaultPaintBrandAvailableForMuffler(d)) != 0;
+		APaintGroup.AvailableForVinyl = mINI_ReadInteger(PaintGroupsINI, PaintBrandID, "AvailableForVinyl", GetDefaultPaintBrandAvailableForVinyl(d)) != 0;
 
 		PaintGroups_temp.push_back(APaintGroup); // Add to temp list
 	}
@@ -2254,7 +2259,7 @@ void LoadPaintGroups()
 				// If we already have a grup with the same hash, overwrite it
 				bool found = 0;
 
-				for (int k = 0; k < PaintGroups_temp.size(); k++)
+				for (int k = 1; k < PaintGroups_temp.size(); k++)
 				{
 					if (PaintGroups_temp[k].BrandNameHash == APaintGroup.BrandNameHash) // overwrite
 					{

@@ -693,7 +693,7 @@ int Init()
 	injector::MakeRangedNOP(0x6359AC, 0x6359B2, true);
 	injector::MakeJMP(0x6359AC, CarRenderInfo_GetCabinNeonModelCodeCave, true); // LinkCabinNeonToRoof, CarRenderInfo::UpdateCarParts
 	injector::MakeCALL(0x62331B, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
-	injector::MakeCALL(0x623479, ShowTrunkUnderInFE, true); // ShowTrunkUnderInFE
+	injector::MakeCALL(0x623479, LinkRearWindowDecalToTrunk, true); // LinkRearWindowDecalToTrunk
 	//injector::MakeCALL(0x615817, RemoveCentreBrakeWithCustomSpoiler, true); // RemoveCentreBrakeWithCustomSpoiler
 	injector::MakeJMP(0x615817, RemoveCentreBrakeWithCustomSpoilerCodeCave, true); // RemoveCentreBrakeWithCustomSpoiler
 	//injector::MakeCALL(0x623155, HasSunroof, true);
@@ -772,6 +772,7 @@ int Init()
 	injector::WriteMemory<BYTE>(0x486531, BigFileVFSHandlePoolSize, true);
 	injector::WriteMemory<BYTE>(0x486541, BigFileVFSHandlePoolSize, true);
 	InitBigFileVFS();
+	InitSoundHeap();
 
 	if (CarSoundTunerEnabled)
 	{

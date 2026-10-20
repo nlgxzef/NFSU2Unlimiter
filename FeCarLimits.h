@@ -194,7 +194,7 @@ void __fastcall DefaultStockCars(FEPlayerCarDB* player1, int, int)
 			if (stockCars <= 0x30) continue;                 // the game's own array holds these
 
 			Pending e;
-			e.Hash = FEngHashString("STOCK_%s", carTypeInfo);
+			e.Hash = FEngHashString("STOCK_%s", carTypeInfo.CarTypeName);
 			e.Type = i;
 
 

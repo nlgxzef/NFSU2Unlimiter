@@ -34,6 +34,11 @@ int ShowTrunkUnderInFE(int CarTypeID)
 	return CarConfigs[CarTypeID].RenderInfo.ShowTrunkUnderInFE;
 }
 
+int LinkRearWindowDecalToTrunk(int CarTypeID)
+{
+	return CarConfigs[CarTypeID].RenderInfo.LinkRearWindowDecalToTrunk;
+}
+
 DWORD DoRemoveCentreBrakeWithCustomSpoiler = 0x615823;
 DWORD DontRemoveCentreBrakeWithCustomSpoiler = 0x61582B;
 

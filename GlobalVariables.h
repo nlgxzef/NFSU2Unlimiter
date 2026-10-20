@@ -367,6 +367,7 @@ struct CarRenderInfoSection
 {
 	bool LinkLicensePlateToTrunk;
 	bool ShowTrunkUnderInFE;
+	bool LinkRearWindowDecalToTrunk;
 	bool RemoveCentreBrakeWithCustomSpoiler;
 	bool HasSunroof;
 	bool LinkSpoiler;
