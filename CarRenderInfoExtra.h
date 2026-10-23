@@ -157,12 +157,16 @@ struct CarRenderInfoExtra
 	void InitLicensePlateReplacementTextureTable()
 	{
 		DWORD PlateTextureHash = 0;
+		DWORD PlateFrameTextureHash = 0;
+		DWORD PlateStickersTextureHash = 0;
 
 		// Get plate part first
 		DWORD* Part = RideInfo_GetPart(pRideInfo, CARSLOTID_LICENSE_PLATE);
 		if (Part)
 		{
 			PlateTextureHash = CarPart_GetTextureName(Part);
+			PlateFrameTextureHash = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME_FRAME"), 0);
+			PlateStickersTextureHash = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME_STICKERS"), 0);
 		}
 		
 		// Initialize with empty table
@@ -172,13 +176,15 @@ struct CarRenderInfoExtra
 			LicensePlateReplacementTextureTable[i].hNewNameHash = CT_bStringHash("DEFAULTALPHA");
 			LicensePlateReplacementTextureTable[i].pTextureInfo = (DWORD*)0xFFFFFFFF;
 			LicensePlateReplacementTextureTable[i].ppReplacedTextureInfo = 0;
-
-			if (i == 0)
-			{
-				LicensePlateReplacementTextureTable[i].hNewNameHash = 
-					PlateTextureHash ? PlateTextureHash : DefaultLicensePlateReplacementTextures[i];
-			}
 		}
+
+		// Set up background, frame and stickers
+		LicensePlateReplacementTextureTable[0].hNewNameHash =
+			PlateTextureHash ? PlateTextureHash : DefaultLicensePlateReplacementTextures[0];
+		LicensePlateReplacementTextureTable[1].hNewNameHash =
+			PlateFrameTextureHash ? PlateFrameTextureHash : DefaultLicensePlateReplacementTextures[1];
+		LicensePlateReplacementTextureTable[2].hNewNameHash =
+			PlateStickersTextureHash ? PlateStickersTextureHash : DefaultLicensePlateReplacementTextures[2];
 
 		// Attach this table to the license plate model
 		for (int i = 0; i < 8; i++)
@@ -237,6 +243,7 @@ struct CarRenderInfoExtra
 	void AssignLicensePlate()
 	{
 		int NumMorphTargets = 0;
+		DWORD CharPrefix = 0;
 		char buf[64];
 		char texbuf[64];
 		
@@ -244,6 +251,7 @@ struct CarRenderInfoExtra
 		if (Part)
 		{
 			NumMorphTargets = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("MORPHTARGET_NUM"), 0);
+			CharPrefix = CarPart_GetAppliedAttributeUParam(Part, CT_bStringHash("TEXTURE_NAME_CHAR_PREFIX"), CT_bStringHash("LP_CHAR"));
 		}
 
 		if (!NumMorphTargets) return; // No need to assign, the plate is not customizable
@@ -284,15 +292,15 @@ struct CarRenderInfoExtra
 			if ((buf[q] >= '0' && buf[q] <= '9')
 				|| (buf[q] >= 'A' && buf[q] <= 'Z'))
 			{
-				sprintf(texbuf, "LP_CHAR_%c", buf[q]);
+				sprintf(texbuf, "_%c", buf[q]);
 			}
 			else // If not a letter or number
 			{
 				buf[q] = '-'; // Replace with dash
-				sprintf(texbuf, "LP_CHAR_DASH");
+				sprintf(texbuf, "_DASH");
 			}
 
-			LicensePlateReplacementTextureTable[i + 3].hNewNameHash = bStringHash(texbuf); // 3-11 = chars
+			LicensePlateReplacementTextureTable[i + 3].hNewNameHash = bStringHash2(texbuf, CharPrefix); // 3-11 = chars
 		}
 	}
 

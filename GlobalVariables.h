@@ -57,6 +57,7 @@
 #define TheGameFlowManager 0x8654A4
 #define PlayerCash 0x861E74
 #define __PaintMenuState 0x8389A0 // unofficial name
+#define _RenderFECarFlares 0x8A1C68
 
 char AttachmentString[64];
 char AttachmentDefaultString[64];

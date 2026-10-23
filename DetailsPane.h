@@ -338,7 +338,11 @@ void SetDetailsPaneVisibility(char const* PackageName, bool visible)
 	DWORD* DetailsGroupObj = (DWORD*)FEngFindObject(DetailsGroup.PackageName, CT_bStringHash("DETAILS_GROUP"));
 	if (DetailsGroupObj)
 	{
-		if (visible) FEngSetVisible(DetailsGroupObj);
+		if (visible)
+		{
+			FEngSetVisible(DetailsGroupObj);
+			FEngSetScript_Obj(DetailsGroupObj, "SHOW", 0);
+		}
 		else FEngSetInvisible(DetailsGroupObj);
 
 		DetailsGroup.Visible = visible;

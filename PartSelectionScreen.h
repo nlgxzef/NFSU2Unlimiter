@@ -14,7 +14,13 @@ void __fastcall PartSelectionScreen_DoSpecialScroll(DWORD* PartSelectionScreen, 
     {
         if (dword_838990 == 0)
         {
-            GetAndDoFEPartAnim(CategoryNode[3], on, 1.0f);
+            int CarSlotID = CategoryNode[3];
+            GetAndDoFEPartAnim(CarSlotID, on, 1.0f);
+
+            if (!on && (CarSlotID == CARSLOTID_HEADLIGHT || CarSlotID == CARSLOTID_BRAKELIGHT))
+            {
+                *(bool*)_RenderFECarFlares = on;
+            }
         }
     }
 }
@@ -1211,50 +1217,61 @@ FinishMenu:
 void __fastcall PartSelectionScreen_NotificationMessage(DWORD* PartSelectionScreen, void* EDX_Unused, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2)
 {
     DWORD* v5 = nullptr;
-    DWORD* v7 = (DWORD*)PartSelectionScreen[22];
+    DWORD* CategoryNode = (DWORD*)PartSelectionScreen[22];
+    int CarSlotID = CategoryNode[3];
 
     if ((message == 0xC407210 || message == 0x406415E3) && 
-        (dword_838990 == 0 && v7[3] == 29))
+        (dword_838990 == 0 && CarSlotID == CARSLOTID_FRONT_WHEEL))
     {
         if (SeparateRims)
         {
             DialogInterface_ShowThreeButtons((char const*)PartSelectionScreen[1], "GenericDialog_ThreeButton.fng",
-                CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),
-                CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"),
-                CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"),
-                CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"),
-                CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"),
-                CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"),
+                CT_bStringHash("CUSTOMIZE_FRONT_WHEEL"),
+                CT_bStringHash("CUSTOMIZE_REAR_WHEEL"),
+                CT_bStringHash("CUSTOMIZE_ALL_WHEELS"),
+                CT_bStringHash("CUSTOMIZE_FRONT_WHEEL"),
+                CT_bStringHash("CUSTOMIZE_REAR_WHEEL"),
+                CT_bStringHash("CUSTOMIZE_ALL_WHEELS"),
                 0xB4EDEB6D,
                 1,
                 2,
-                CT_bStringHash((char*)"CUSTOMIZE_CHOOSE_FRONT_REAR_WHEEL"));
+                CT_bStringHash("CUSTOMIZE_CHOOSE_FRONT_REAR_WHEEL"));
             return;
         }
         else goto CustomizeAllWheels;
         
     }
-    else if (message == CT_bStringHash((char*)"CUSTOMIZE_FRONT_WHEEL"))
+    else if (message == CT_bStringHash("CUSTOMIZE_FRONT_WHEEL"))
     {
         RimsToCustomize = 1;
         PartSelectionScreen_StartBrowsingWheels(PartSelectionScreen);
         MakeFrontendSound(8, PartSelectionScreen[12]);
     }
-    else if (message == CT_bStringHash((char*)"CUSTOMIZE_REAR_WHEEL"))
+    else if (message == CT_bStringHash("CUSTOMIZE_REAR_WHEEL"))
     {
         RimsToCustomize = -1;
         PartSelectionScreen_StartBrowsingWheels(PartSelectionScreen);
         MakeFrontendSound(8, PartSelectionScreen[12]);
     }
-    else if (message == CT_bStringHash((char*)"CUSTOMIZE_ALL_WHEELS"))
+    else if (message == CT_bStringHash("CUSTOMIZE_ALL_WHEELS"))
     {
     CustomizeAllWheels:
         RimsToCustomize = 0;
         PartSelectionScreen_StartBrowsingWheels(PartSelectionScreen);
         MakeFrontendSound(8, PartSelectionScreen[12]);
     }
+    else if (message == CT_bStringHash("PAD_BUTTON1"))
+    {
+        if (CarSlotID == CARSLOTID_HEADLIGHT || CarSlotID == CARSLOTID_BRAKELIGHT)
+        {
+            *(bool*)_RenderFECarFlares = !*(bool*)_RenderFECarFlares;
+        }
+        
+        goto Game;
+    }
     else
     {
+        Game:
         PartSelectionScreen_NotificationMessage_Game(PartSelectionScreen, message, fe_obj, param1, param2);
     }
     /*

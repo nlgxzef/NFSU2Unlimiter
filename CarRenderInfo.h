@@ -800,23 +800,30 @@ void CarRenderInfo_SetLightState(DWORD* CarRenderInfo, int LightID, bool on)
 
 	if (extra)
 	{
-		if (LightID == -1 && TheCar)
+		if (LightID == -1)
 		{
-			// Headlights
-			if (((BYTE*)TheCar)[2365]) extra->OnLights |= LIGHT_HEADLIGHTS;
-			else extra->OnLights &= ~LIGHT_HEADLIGHTS;
+			if (TheCar) // Read from Car struct
+			{
+				// Headlights
+				if (((BYTE*)TheCar)[2365]) extra->OnLights |= LIGHT_HEADLIGHTS;
+				else extra->OnLights &= ~LIGHT_HEADLIGHTS;
 
-			// Brakelights
-			if (((BYTE*)TheCar)[2372]) extra->OnLights |= LIGHT_BRAKELIGHTS;
-			else extra->OnLights &= ~LIGHT_BRAKELIGHTS;
+				// Brakelights
+				if (((BYTE*)TheCar)[2372]) extra->OnLights |= LIGHT_BRAKELIGHTS;
+				else extra->OnLights &= ~LIGHT_BRAKELIGHTS;
 
-			// Reverse lights
-			if (TheCar[308] == 0) extra->OnLights |= LIGHT_REVERSE; // Gear == 0 (reverse)
-			else extra->OnLights &= ~LIGHT_REVERSE;
+				// Reverse lights
+				if (TheCar[308] == 0) extra->OnLights |= LIGHT_REVERSE; // Gear == 0 (reverse)
+				else extra->OnLights &= ~LIGHT_REVERSE;
 
-			// Flashers
-			if (Car_IsBlinking(TheCar)) extra->OnLights |= (LIGHT_LSIGNAL + LIGHT_RSIGNAL); // blinking (reset)
-			else extra->OnLights &= ~(LIGHT_LSIGNAL + LIGHT_RSIGNAL);
+				// Flashers
+				if (Car_IsBlinking(TheCar)) extra->OnLights |= (LIGHT_LSIGNAL + LIGHT_RSIGNAL); // blinking (reset)
+				else extra->OnLights &= ~(LIGHT_LSIGNAL + LIGHT_RSIGNAL);
+			}
+			else // FE??
+			{
+				extra->OnLights |= LIGHT_HEADLIGHTS + LIGHT_BRAKELIGHTS;
+			}
 		}
 		else
 		{

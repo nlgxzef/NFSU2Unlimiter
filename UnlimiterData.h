@@ -40,7 +40,7 @@ void LoadCarConfigs()
 	// CarRenderInfo
 	DefaultCarConfig.RenderInfo.LinkLicensePlateToTrunk = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkLicensePlateToTrunk", GetDefaultLinkLicensePlateToTrunk(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.ShowTrunkUnderInFE = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "ShowTrunkUnderInFE", GetDefaultShowTrunkUnderInFE(ReplacementCar)) != 0;
-	DefaultCarConfig.RenderInfo.LinkRearWindowDecalToTrunk = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkRearWindowDecalToTrunk", GetDefaultLinkRearWindowDecalToTrunk(ReplacementCar)) != 0;
+	DefaultCarConfig.RenderInfo.LinkRearWindowDecalToTrunk = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkRearWindowDecalToTrunk", DefaultCarConfig.RenderInfo.ShowTrunkUnderInFE) != 0;
 	DefaultCarConfig.RenderInfo.RemoveCentreBrakeWithCustomSpoiler = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", GetDefaultRemoveCentreBrakeWithCustomSpoiler(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.HasSunroof = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "HasSunroof", GetDefaultHasSunroof(ReplacementCar)) != 0;
 	DefaultCarConfig.RenderInfo.LinkSpoiler = mINI_ReadInteger(GeneralINI, "CarRenderInfo", "LinkSpoiler", 0);
@@ -961,7 +961,7 @@ void LoadCarConfigs()
 		// CarRenderInfo
 		ACarConfig.RenderInfo.LinkLicensePlateToTrunk = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkLicensePlateToTrunk", GetDefaultLinkLicensePlateToTrunk(i)) != 0;
 		ACarConfig.RenderInfo.ShowTrunkUnderInFE = mINI_ReadInteger(CarINI, "CarRenderInfo", "ShowTrunkUnderInFE", GetDefaultShowTrunkUnderInFE(i)) != 0;
-		ACarConfig.RenderInfo.LinkRearWindowDecalToTrunk = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkRearWindowDecalToTrunk", GetDefaultLinkRearWindowDecalToTrunk(i)) != 0;
+		ACarConfig.RenderInfo.LinkRearWindowDecalToTrunk = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkRearWindowDecalToTrunk", ACarConfig.RenderInfo.ShowTrunkUnderInFE) != 0;
 		ACarConfig.RenderInfo.RemoveCentreBrakeWithCustomSpoiler = mINI_ReadInteger(CarINI, "CarRenderInfo", "RemoveCentreBrakeWithCustomSpoiler", GetDefaultRemoveCentreBrakeWithCustomSpoiler(i)) != 0;
 		ACarConfig.RenderInfo.HasSunroof = mINI_ReadInteger(CarINI, "CarRenderInfo", "HasSunroof", GetDefaultHasSunroof(i)) != 0;
 		ACarConfig.RenderInfo.LinkSpoiler = mINI_ReadInteger(CarINI, "CarRenderInfo", "LinkSpoiler", DefaultCarConfig.RenderInfo.LinkSpoiler);
