@@ -3,6 +3,8 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
 
+bool(*bFileExists)(char const* file) = (bool(*)(char const*))0x57CAC0;
+
 struct CarTypeInfo
 {
 	char CarTypeName[32];
@@ -107,6 +109,11 @@ struct CarTypeInfo
 	{
 		Skinnable = value ? 1 : 0;
 		return IsSkinnable();
+	}
+
+	bool HasArtworkOnDisc()
+	{
+		return this->GeometryFilename[0] && bFileExists(this->GeometryFilename);
 	}
 };
 

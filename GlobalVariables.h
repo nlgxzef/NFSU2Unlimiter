@@ -1301,6 +1301,30 @@ DWORD DefaultPerformancePartHashes[]
 	CT_bStringHash("SC_STAGE_3_SUPERCHARGER_KIT")
 };
 
+int DefaultUnlockedAtBootQuickRaceNorthAmerica[]
+{
+	0,	// PEUGOT
+	1,	// FOCUS
+	2,	// COROLLA
+	5,	// CIVIC
+	10,	// ESCALADE
+	25, // GTO
+	28, // LANCEREVO8
+	22  // 350Z
+};
+
+int DefaultUnlockedAtBootQuickRaceRestOfWorld[]
+{
+	0,	// PEUGOT
+	1,	// FOCUS
+	2,	// COROLLA
+	7,	// CORSA
+	10,	// ESCALADE
+	25,	// GTO
+	28,	// LANCEREVO8
+	22	// 350Z
+};
+
 int EUExclusiveCars[]
 {
 	7, // CORSA

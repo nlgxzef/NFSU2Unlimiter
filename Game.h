@@ -1,12 +1,36 @@
 #pragma once
 
+bool AddToCarPickerArray(BYTE* CarPickerArray, int Count, BYTE CarTypeID)
+{
+	bool result = 0;
+
+	if (CarTypeID < 0 || CarTypeID >= CarCount) return result; // Invalid car type ID
+	if (Count >= 255 || CarTypeID >= 255) return result; // It's a BYTE array with 256 elements.
+
+	int i = 0;
+
+	for (i = 0; i < Count; i++)
+	{
+		if (CarPickerArray[i] == CarTypeID) return result; // Already present
+	}
+
+	if (CarTypeInfoArray[CarTypeID].HasArtworkOnDisc())
+	{
+		CarPickerArray[Count] = CarTypeID;
+		result = 1; // Added
+	}
+
+	return result;
+}
+
 void FillCarPickerArrays()
 {
 	bool UnlockRegionalCars = 0;
+	bool bAdded = 0;
 
-	int RandomCarCount = injector::ReadMemory<int>(0x4FEB9D, true);
-	int RandomSUVCount = injector::ReadMemory<int>(0x4FEBDB, true);
-	int InitiallyUnlockedCarCount = 8;
+	int VanillaRandomCarCount = injector::ReadMemory<int>(0x4FEB9D, true);
+	int VanillaRandomSUVCount = injector::ReadMemory<int>(0x4FEBDB, true);
+	int RandomCarCount = 0, RandomSUVCount = 0, InitiallyUnlockedCarCount = 8;
 
 	// Check if Extra Options is present. If so, read UnlockRegionalCars value from its config file.
 	if (GetModuleHandleA("NFSU2ExtraOptions.asi"))
@@ -19,35 +43,73 @@ void FillCarPickerArrays()
 		UnlockRegionalCars = mINI_ReadInteger(Settings, "Gameplay", "UnlockRegionalCars", 1) != 0;
 	}
 
-	// Read current arrays
-	for (int i = 0; i < RandomCarCount; i++)
+	// Read vanilla arrays and check Unlimiter config
+	for (int i = 0; i < VanillaRandomCarCount; i++)
 	{
-		RandomlyChooseableCarConfigsNorthAmerica[i] = injector::ReadMemory<BYTE>(0x7F6DA4 + i, true);
-		RandomlyChooseableCarConfigsRestOfWorld[i] = injector::ReadMemory<BYTE>(0x7F6DC0 + i, true);
+		// NA
+		BYTE CarTypeID = injector::ReadMemory<BYTE>(0x7F6DA4 + i, true);
+		if (CanCarBeDrivenByAI(CarTypeID) && IsRacer(CarTypeID) && !IsSUV(CarTypeID))
+		{
+			AddToCarPickerArray(RandomlyChooseableCarConfigsNorthAmerica, RandomCarCount, CarTypeID);
+		}
+
+		// ROW
+		CarTypeID = injector::ReadMemory<BYTE>(0x7F6DC0 + i, true);
+		if (CanCarBeDrivenByAI(CarTypeID) && IsRacer(CarTypeID) && !IsSUV(CarTypeID))
+		{
+			bAdded = AddToCarPickerArray(RandomlyChooseableCarConfigsRestOfWorld, RandomCarCount, CarTypeID);
+			if (bAdded) RandomCarCount++;
+		}
 	}
 
-	for (int i = 0; i < RandomSUVCount; i++) RandomlyChooseableSUVs[i] = injector::ReadMemory<BYTE>(0x7F6DDC + i, true);
+	for (int i = 0; i < VanillaRandomSUVCount; i++)
+	{
+		BYTE CarTypeID = injector::ReadMemory<BYTE>(0x7F6DDC + i, true);
 
-	// Add regional cars
+		if (CanCarBeDrivenByAI(CarTypeID) && IsRacer(CarTypeID) && IsSUV(CarTypeID))
+		{
+			bAdded = AddToCarPickerArray(RandomlyChooseableSUVs, RandomSUVCount, CarTypeID);
+			if (bAdded) RandomSUVCount++;
+		}
+	}
+
+	// Add regional cars, respect Extra Options setting
 	if (UnlockRegionalCars)
 	{
 		for (int i = 0; i < 2; i++)
 		{
-			RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = EUExclusiveCars[i];
-			RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = USExclusiveCars[i];
+			// NA
+			BYTE CarTypeID = EUExclusiveCars[i];
+			if (CanCarBeDrivenByAI(CarTypeID) && IsRacer(CarTypeID))
+			{
+				AddToCarPickerArray(RandomlyChooseableCarConfigsNorthAmerica, RandomCarCount, CarTypeID);
+			}
+
+			// ROW
+			CarTypeID = USExclusiveCars[i];
+			if (CanCarBeDrivenByAI(CarTypeID) && IsRacer(CarTypeID))
+			{
+				bAdded = AddToCarPickerArray(RandomlyChooseableCarConfigsRestOfWorld, RandomCarCount, CarTypeID);
+				if (bAdded) RandomCarCount++;
+			}
 		}
 	}
 
-	// Add add-on cars
-	for (int i = 46; i < CarCount; i++)
+	// Add other cars
+	for (int i = 0; i < CarCount; i++)
 	{
-		if (CanCarBeDrivenByAI(i) && (IsRacer(i)))
+		if (CanCarBeDrivenByAI(i) && IsRacer(i) && !IsRegionExclusive(i))
 		{
-			if (IsSUV(i)) RandomlyChooseableSUVs[RandomSUVCount++] = i;
+			if (IsSUV(i))
+			{
+				bAdded = AddToCarPickerArray(RandomlyChooseableSUVs, RandomSUVCount, i);
+				if (bAdded) RandomSUVCount++;
+			}
 			else
 			{
-				RandomlyChooseableCarConfigsNorthAmerica[RandomCarCount] = i;
-				RandomlyChooseableCarConfigsRestOfWorld[RandomCarCount++] = i;
+				AddToCarPickerArray(RandomlyChooseableCarConfigsNorthAmerica, RandomCarCount, i);
+				bAdded = AddToCarPickerArray(RandomlyChooseableCarConfigsRestOfWorld, RandomCarCount, i);
+				if (bAdded) RandomCarCount++;
 			}
 		}
 	}
@@ -118,7 +180,7 @@ void FixComputeMiscStats()
 	// Fill the rest of the cars
 	for (int i = 46, j = 0; i < CarCount; i++, j++)
 	{
-		if (j > 45)
+		if (j > 31) // latest stock racer car
 		{
 			j = 0;
 		}

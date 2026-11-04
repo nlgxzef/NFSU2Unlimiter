@@ -237,6 +237,7 @@ char const* GetCameraInfoForVinylGroup(unsigned int group)
 CameraInfo* GetPartCameraInfo(int CarTypeID, int CarSlotID)
 {
 	if (!UseCameraInfo) return 0;
+	if (CarTypeID < 0 || CarTypeID >= CarCount) return 0;
 
 	// Change car slot ID if we use a common camera info for this part
 	switch (CarSlotID)
@@ -315,6 +316,7 @@ CameraInfo* GetPartCameraInfo(int CarTypeID, int CarSlotID)
 CameraInfo* GetVinylCameraInfo(int CarTypeID, DWORD* TheCarPart)
 {
 	if (!UseCameraInfo) return 0;
+	if (CarTypeID < 0 || CarTypeID >= CarCount) return 0;
 
 	int CarSlotID = CARSLOTID_VINYL_LAYER0; // Get the CarSlotID from the part data
 	int VinylGroupIndex = *((BYTE*)TheCarPart + 5) & 0x1F; // Get the CarSlotID from the part data
@@ -354,6 +356,7 @@ CameraInfo* GetVinylCameraInfo(int CarTypeID, DWORD* TheCarPart)
 StaticCameraInfo* GetStaticCameraInfo(int CarTypeID)
 {
 	if (!UseCameraInfo) return 0;
+	if (CarTypeID < 0 || CarTypeID >= CarCount) return 0;
 
 	// Check if we have car-specific static camera info
 	char CameraInfoName[MAX_PATH];

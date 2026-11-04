@@ -621,6 +621,18 @@ void __fastcall CarRenderInfo_UpdateWheelYRenderOffset(DWORD* CarRenderInfo, voi
 	{
 		memset(CarRenderInfo + 256, 0, 0x20u);
 	}
+
+	// Brake position markers
+	int MinLodLevel = 0; //CarRenderInfo[1418]; (MW)
+	eModel* front_wheel_model = (eModel*)CarRenderInfo[CRI_Loc_Models + MinLodLevel + CARSLOTID_FRONT_WHEEL * 8];
+	eModel* rear_wheel_model = (eModel*)CarRenderInfo[CRI_Loc_Models + MinLodLevel + CARSLOTID_REAR_WHEEL * 8];
+	ePositionMarker* front_position_marker = front_wheel_model ? eModel_GetPostionMarker((DWORD*)front_wheel_model, CT_bStringHash("MARKER_BRAKE")) : 0;
+	ePositionMarker * rear_position_marker = rear_wheel_model ? eModel_GetPostionMarker((DWORD*)rear_wheel_model, CT_bStringHash("MARKER_BRAKE")) : 0;
+
+	float* WheelBrakeMarkerY = (float*)(CarRenderInfo + 268);
+
+	WheelBrakeMarkerY[0] = front_position_marker != nullptr ? front_position_marker->Matrix.v3.y : 0.0f; // 268
+	WheelBrakeMarkerY[1] = rear_position_marker != nullptr ? rear_position_marker->Matrix.v3.y : 0.0f; // 269
 }
 
 DWORD GetNeonTextureInfo(DWORD name_hash, int return_default_texture_if_not_found, int include_unloaded_textures)
@@ -2540,6 +2552,9 @@ DWORD * __fastcall CarRenderInfo_ctor_Hook(DWORD *CarRenderInfo, void* EDX_Unuse
 	// Allocate extra data for CarRenderInfo
 	CarRenderInfoExtra* extra = new CarRenderInfoExtra(CarRenderInfo, RideInfo, Car);
 	CarRenderInfo[CRI_Loc_Extra] = (DWORD)extra;
+
+	// Fix neon crash at 0x6388D1
+	CarRenderInfo[209] = 0;
 	
 	// Call the original constructor
 	DWORD *result = hb_CarRenderInfo_ctor.fun(CarRenderInfo, EDX_Unused ,RideInfo, Car);

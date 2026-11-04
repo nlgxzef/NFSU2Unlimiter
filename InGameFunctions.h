@@ -233,6 +233,7 @@ int(*CompositeWheel)(DWORD* ride_info, DWORD dest_namehash, DWORD src_namehash, 
 bool(*PartsCategoryRimsIsLocked)() = (bool(*)())0x539C20;
 bool(*Player_IsHudKPH)() = (bool(*)())0x5EA8B0;
 ePositionMarker* (__thiscall* eModel_GetPositionMarker)(DWORD* eModel, ePositionMarker* previous) = (ePositionMarker * (__thiscall*)(DWORD*, ePositionMarker*))0x48D8A0;
+ePositionMarker* (__thiscall* eModel_GetPostionMarker)(DWORD* eModel, DWORD NameHash) = (ePositionMarker * (__thiscall*)(DWORD*, DWORD))0x48D8F0;
 ePositionMarker* (__thiscall* eSolid_GetPositionMarker)(DWORD* eSolid, DWORD NameHash) = (ePositionMarker * (__thiscall*)(DWORD*, DWORD))0x488FA0;
 void(__thiscall* eModel_ReplaceLightMaterial_Game)(DWORD* eModel, int NameHash, int LightMaterial) = (void(__thiscall*)(DWORD*, int, int))0x48D860;
 void* (__cdecl* GetTextureInfo)(DWORD NameHash, int return_default_texture_if_not_found, int include_unloaded_textures) = (void* (__cdecl*)(DWORD, int, int))0x4901D0;

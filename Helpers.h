@@ -59,7 +59,20 @@ bool IsSkinnable(BYTE CarTypeID)
 bool IsInitiallyUnlocked(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
-	return CarConfigs[CarTypeID].Main.InitiallyUnlocked == 1 || AllNewCarsInitiallyUnlocked;
+	return CarConfigs[CarTypeID].Main.InitiallyUnlocked == 1 || (CarTypeID >= 46 && AllNewCarsInitiallyUnlocked);
+}
+
+bool IsRegionExclusive(BYTE CarTypeID)
+{
+	if (CarTypeID >= CarCount) return 0;
+	
+	for (int i = 0; i < 2; i++)
+	{
+		if (CarTypeID == USExclusiveCars[i] || CarTypeID == EUExclusiveCars[i])
+			return 1;
+	}
+
+	return 0;
 }
 
 bool CanCarBeDrivenByAI(BYTE CarTypeID)

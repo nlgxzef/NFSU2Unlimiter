@@ -1225,6 +1225,15 @@ void __fastcall PartSelectionScreen_NotificationMessage(DWORD* PartSelectionScre
     {
         if (SeparateRims)
         {
+            DWORD* FrontRim = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_FRONT_WHEEL);
+            DWORD* RearRim = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_REAR_WHEEL);
+
+            bool IsFrontSpinner = FrontRim ? CarPart_GetAppliedAttributeUParam(FrontRim, CT_bStringHash("BRAND_NAME"), 0) == CT_bStringHash("SPINNER") : 0;
+            bool IsRearSpinner = RearRim ? CarPart_GetAppliedAttributeUParam(RearRim, CT_bStringHash("BRAND_NAME"), 0) == CT_bStringHash("SPINNER") : 0;
+            
+            if (IsFrontSpinner || IsRearSpinner)
+                goto CustomizeAllWheels;
+
             DialogInterface_ShowThreeButtons((char const*)PartSelectionScreen[1], "GenericDialog_ThreeButton.fng",
                 CT_bStringHash("CUSTOMIZE_FRONT_WHEEL"),
                 CT_bStringHash("CUSTOMIZE_REAR_WHEEL"),

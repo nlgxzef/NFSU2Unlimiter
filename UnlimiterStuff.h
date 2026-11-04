@@ -445,6 +445,7 @@ int Init()
 		
 	// Apply attributes by hooking CarRenderInfo functions
 	injector::MakeCALL(0x639091, CarRenderInfo_UpdateWheelYRenderOffset, true); // CarRenderInfo::CarRenderInfo
+	injector::MakeRangedNOP(0x639096, 0x639108, true); // CarRenderInfo::CarRenderInfo, brake code moved into UpdateWheelYRenderOffset
 	injector::MakeCALL(0x61ACD0, CarRenderInfo_RenderNeon, true); // RenderFrontEndCarNeon
 	injector::MakeCALL(0x61B26E, CarRenderInfo_RenderNeon, true); // RenderCarNeon
 	//injector::MakeJMP(0x61548A, CarRenderInfoAttributesCodeCave, true); // CarRenderInfo::UpdateCarReplacementTextures
@@ -789,6 +790,15 @@ int Init()
 		{
 			Settings["Sound"]["UpgradeFromLegacyCST"] = std::to_string(0); // Disable after upgrade
 			NFSU2UnlimiterSettingsINIFile.write(Settings, true);
+		}
+
+		if (UseLegacyCSTData)
+		{
+			Settings["Sound"]["UseLegacyCSTData"] = std::to_string(1); // Enable legacy CST data from ini
+			Settings["Sound"]["SkipLegacyCSTCheck"] = std::to_string(1); // Enable skip legacy CST check
+			NFSU2UnlimiterSettingsINIFile.write(Settings, true);
+
+			DisableLegacyCarSoundTuner(); // Also disable Legacy CST to avoid collisions
 		}
 	}
 

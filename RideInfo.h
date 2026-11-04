@@ -132,7 +132,9 @@ bool RideInfo_HasDifferentWheels(DWORD* RideInfo)
 	CarPart* FrontWheel = (CarPart*)RideInfo[356 + CARSLOTID_FRONT_WHEEL];
 	CarPart* RearWheel = (CarPart*)RideInfo[356 + CARSLOTID_REAR_WHEEL];
 
-	return FrontWheel && RearWheel && (FrontWheel != RearWheel);
+    if (!FrontWheel && !RearWheel) return true; // if empty ride
+
+	return FrontWheel != RearWheel;
 }
 
 bool __fastcall RideInfo_TrunkAudioSlotAvailable(DWORD* RideInfo, void* EDX_Unused, int CarSlotID)

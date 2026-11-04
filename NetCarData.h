@@ -1,6 +1,9 @@
 #pragma once
 
 #include "stdafx.h"
+#include "stdio.h"
+#include <stdarg.h>
+#include <filesystem>
 #include "GlobalVariables.h"
 
 // A car sent over the network, read by a game whose car or part count is not the sender's.
@@ -272,9 +275,78 @@ int __fastcall NetCar_Read(DWORD* Quantizers, void* EDX_Unused, DWORD* RideInfo,
 	return Result;
 }
 
+// The lobby lists its players from rows of 0x930 bytes (sub_4D2150, taken from the pool without being
+// cleared), and each row keeps a RideInfo at +0x20 that sub_58E450 fills by reading the player's "C" key
+// with sub_5854C0. That returns 0 when the key does not start with format 28h and -1 when its length is
+// not the one it announces (a key that did not fit the 511 characters the sender has room for would be
+// cut), and sub_58E450 says yes either way. The row then holds whatever the pool block held last, the
+// car preview opens on it, and its car type is 0xEEEEEEEE or a piece of text. Wherever a key cannot be
+// read the row now gets the replacement car, and what the key looked like goes to
+// UnlimiterData\_NetCarLobby.txt so that it can be seen why. No file means every key read fine.
+int(__thiscall* LobbyReadCar_Game)(DWORD* This, DWORD* RideInfo, DWORD* Player) = (int(__thiscall*)(DWORD*, DWORD*, DWORD*))0x5854C0;
+
+constexpr int LobbyCarKeyOffset = 0x12C;  // the "C" key within a player record
+constexpr int LobbyCarKeyBytes = 0x204;   // what sub_5854C0 copies out of it
+constexpr int LobbyCarRenderUsage = 0x2A; // the last argument it gives the reader
+int LobbyCarLogged = 0;
+
+void NetCarLobbyLine(const char* fmt, ...)
+{
+	auto Path = CurrentWorkingDirectory / "UnlimiterData" / "_NetCarLobby.txt";
+	FILE* f = fopen(Path.string().c_str(), "a");
+
+	if (!f) return;
+
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(f, fmt, args);
+	va_end(args);
+
+	fclose(f);
+}
+
+int __fastcall LobbyReadCar(DWORD* This, void* EDX_Unused, DWORD* RideInfo, DWORD* Player)
+{
+	int Result = LobbyReadCar_Game(This, RideInfo, Player);
+
+	if (!RideInfo || (Result == 1 && (int)RideInfo[0] >= 0 && (int)RideInfo[0] < CarCount)) return Result;
+
+	if (LobbyCarLogged < 50)
+	{
+		LobbyCarLogged++;
+
+		const char* Key = (const char*)Player + LobbyCarKeyOffset;
+		char Head[16] = {};
+		int Length = 0;
+
+		if (Player && !IsBadReadPtr(Key, LobbyCarKeyBytes))
+		{
+			while (Length < LobbyCarKeyBytes && Key[Length]) Length++;
+
+			for (int i = 0; i < 12 && i < Length; i++)
+				Head[i] = (Key[i] >= 0x20 && Key[i] < 0x7F) ? Key[i] : '?';
+		}
+
+		NetCarLobbyLine("key not read: returned %d, car type %d of %d, key %d characters, starts \"%s\", %d part bits here\n",
+			Result, (int)RideInfo[0], CarCount, Length, Head, *(int*)(NETCAR_QUANT_PART + NETCAR_QUANT_BITS));
+	}
+
+	RideInfo_Init_Game(RideInfo, (ReplacementCar >= 0 && ReplacementCar < CarCount) ? ReplacementCar : 1, LobbyCarRenderUsage, 0, 0);
+	RideInfo_SetCompositeNameHash_Game(RideInfo, LobbyCarRenderUsage);
+	RideInfo_SetStockParts(RideInfo, nullptr, 0);
+
+	return Result;
+}
+
 void InitNetCarData()
 {
+	std::error_code ErrorCode;
+	std::filesystem::remove(CurrentWorkingDirectory / "UnlimiterData" / "_NetCarLobby.txt", ErrorCode);
+
 	injector::MakeJMP(0x584020, NetStream_ReadBytes, true);
+
+	injector::MakeCALL(0x58E4BC, LobbyReadCar, true); // sub_58E450, the player's own key
+	injector::MakeCALL(0x58E51F, LobbyReadCar, true); // sub_58E450, another player's
 
 	injector::MakeCALL(0x585622, NetCar_Read, true); // sub_5854C0, the lobby's "C" key
 	injector::MakeCALL(0x5F982B, NetCar_Read, true); // sub_5F97D0, a race start

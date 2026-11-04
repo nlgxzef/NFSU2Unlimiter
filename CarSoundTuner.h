@@ -1314,11 +1314,13 @@ void CheckAndConvertLegacyData()
 		{
 			int btn = MessageBoxA(NULL,
 				"Legacy Car Sound Tuner detected.\n"
-				"Do you want to convert legacy data to Unlimiter data?",
+				"Do you want to convert legacy data to Unlimiter data?\n\n"
+				"Choose No to keep using legacy data.",
 				"NFSU2 Unlimiter",
 				MB_ICONQUESTION | MB_YESNO);
 
 			if (btn == IDYES) ConvertFromLegacyCST = 1;
+			else UseLegacyCSTData = 1;
 		}
 	}
 }
