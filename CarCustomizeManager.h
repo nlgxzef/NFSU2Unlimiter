@@ -27,8 +27,8 @@ bool __fastcall CarCustomizeManager_AreBrakesPaintable(DWORD* CarCustomizeManage
     if (!CarPart_GetAppliedAttributeUParam(FPart, CT_bStringHash("UNPAINTABLE"), 1)
         || !CarPart_GetAppliedAttributeUParam(RPart, CT_bStringHash("UNPAINTABLE"), 1)) return true;
 
-    return (unsigned __int8)(*((BYTE*)FPart + 5) >> 5) > 2u // FRONT_BRAKE
-        || (unsigned __int8)(*((BYTE*)RPart + 5) >> 5) > 2u; // REAR_BRAKE
+    return (unsigned __int8)(*((BYTE*)FPart + 5) >> 5) > 0 // FRONT_BRAKE
+        || (unsigned __int8)(*((BYTE*)RPart + 5) >> 5) > 0; // REAR_BRAKE
 }
 
 DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, void* EDX_Unused, int CarSlotID, int LayoutID)

@@ -253,7 +253,7 @@ void SetOtherIcons(DWORD* CarPart)
 
 		for (int i = CARSLOTID_TRUNK_AUDIO_COMP_11; i >= CARSLOTID_TRUNK_AUDIO_COMP_0; i--)
 		{
-			if (CarPart_TrunkAudioSlotAvailable(CarPart, 0, i))
+			if (CarPart_TrunkAudioSlotAvailable((struct CarPart*)CarPart, 0, i))
 			{
 				DetailsGroup.NumSlots = i - CARSLOTID_TRUNK_AUDIO_COMP_0 + 1;
 				break;

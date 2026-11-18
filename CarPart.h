@@ -19,31 +19,35 @@ struct CarPart
 
 #pragma pack(pop)
 
-float __fastcall CarPart_GetAppliedAttributeFParam(DWORD* _CarPart, void* EDX_Unused, DWORD namehash, float default_value)
+static_assert(offsetof(CarPart, PartID) == 4, "CarPart::PartID");
+static_assert(offsetof(CarPart, GroupNumber_UpgradeLevel) == 5, "CarPart::GroupNumber_UpgradeLevel");
+static_assert(offsetof(CarPart, AttributeTableOffset) == 0xA, "CarPart::AttributeTableOffset");
+
+float __fastcall CarPart_GetAppliedAttributeFParam(CarPart* car_part, void* EDX_Unused, DWORD namehash, float default_value)
 {
-    if (_CarPart)
+    if (car_part)
     {
-        float* Attribute = (float*)CarPart_GetNextAppliedAttribute(_CarPart, namehash, 0);
+        float* Attribute = (float*)CarPart_GetNextAppliedAttribute((DWORD*)car_part, namehash, 0);
         if (Attribute) return Attribute[1];
     }
     return default_value;
 }
 
-int __fastcall CarPart_TrunkAudioSlotAvailable(DWORD* _CarPart, void* EDX_Unused, int CarSlotID)
+int __fastcall CarPart_TrunkAudioSlotAvailable(CarPart* car_part, void* EDX_Unused, int CarSlotID)
 {
     int result = 0;
     
-    if (!_CarPart) return result;
+    if (!car_part) return result;
 
     // Unlimiter NUMSLOTS attribute
-	result = CarPart_GetAppliedAttributeUParam(_CarPart, CT_bStringHash("NUMSLOTS"), -1);
+	result = CarPart_GetAppliedAttributeUParam((DWORD*)car_part, CT_bStringHash("NUMSLOTS"), -1);
     if (result != -1) return CarSlotID <= CARSLOTID_TRUNK_AUDIO + result;
 
     // Vanilla implementation
-    BYTE UpgradeLevel = *((BYTE*)_CarPart + 5) >> 5;
+    BYTE UpgradeLevel = car_part->GroupNumber_UpgradeLevel >> 5;
     if (!UpgradeLevel) return 0;
 
-	DWORD CarTypeNameHash = CarPart_GetCarTypeNameHash(_CarPart);
+	DWORD CarTypeNameHash = CarPart_GetCarTypeNameHash((DWORD*)car_part);
 
     switch (UpgradeLevel)
     {
@@ -105,18 +109,18 @@ int __fastcall CarPart_TrunkAudioSlotAvailable(DWORD* _CarPart, void* EDX_Unused
     return result;
 }
 
-bool __fastcall CarPart_HasExcludeDecal(DWORD* _CarPart, void* EDX_Unused, int CarSlotID)
+bool __fastcall CarPart_HasExcludeDecal(CarPart* car_part, void* EDX_Unused, int CarSlotID)
 {
-	DWORD SlotNameHash = CarPart_GetAppliedAttributeUParam(_CarPart, CT_bStringHash("EXCLUDEDECAL"), 0);
+	DWORD SlotNameHash = CarPart_GetAppliedAttributeUParam((DWORD*)car_part, CT_bStringHash("EXCLUDEDECAL"), 0);
 	if (!SlotNameHash) return false;
 
     return SlotNameHash == bStringHash(GetCarSlotIDName(CarSlotID));
 }
 
-int __fastcall CarPart_GetExcludeDecal(DWORD* _CarPart, void* EDX_Unused)
+int __fastcall CarPart_GetExcludeDecal(CarPart* car_part, void* EDX_Unused)
 {
     int slot = -1;
-    DWORD SlotNameHash = CarPart_GetAppliedAttributeUParam(_CarPart, CT_bStringHash("EXCLUDEDECAL"), 0);
+    DWORD SlotNameHash = CarPart_GetAppliedAttributeUParam((DWORD*)car_part, CT_bStringHash("EXCLUDEDECAL"), 0);
     if (!SlotNameHash) return slot;
 
     for (int i = CARSLOTID_MODEL_FIRST; i < CARSLOTID_NUM; i++)

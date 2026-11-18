@@ -247,7 +247,7 @@ int __fastcall NetCar_Read(DWORD* Quantizers, void* EDX_Unused, DWORD* RideInfo,
 		// from whatever the bits say.
 		RideInfo_Init_Game(RideInfo, (ReplacementCar >= 0 && ReplacementCar < CarCount) ? ReplacementCar : 1, A4, 0, 0);
 		RideInfo_SetCompositeNameHash_Game(RideInfo, A4);
-		RideInfo_SetStockParts(RideInfo, nullptr, 0);
+		RideInfo_SetStockParts((struct RideInfo*)RideInfo, nullptr, 0);
 		return 0;
 	}
 
@@ -270,7 +270,7 @@ int __fastcall NetCar_Read(DWORD* Quantizers, void* EDX_Unused, DWORD* RideInfo,
 	injector::WriteMemory<int>(NETCAR_PART_BOUND, SavedBound, true);
 
 	// With no slots the game has already done this.
-	if (Layout.Slots) RideInfo_SetStockParts(RideInfo, nullptr, 0);
+	if (Layout.Slots) RideInfo_SetStockParts((struct RideInfo*)RideInfo, nullptr, 0);
 
 	return Result;
 }
@@ -333,7 +333,7 @@ int __fastcall LobbyReadCar(DWORD* This, void* EDX_Unused, DWORD* RideInfo, DWOR
 
 	RideInfo_Init_Game(RideInfo, (ReplacementCar >= 0 && ReplacementCar < CarCount) ? ReplacementCar : 1, LobbyCarRenderUsage, 0, 0);
 	RideInfo_SetCompositeNameHash_Game(RideInfo, LobbyCarRenderUsage);
-	RideInfo_SetStockParts(RideInfo, nullptr, 0);
+	RideInfo_SetStockParts((struct RideInfo*)RideInfo, nullptr, 0);
 
 	return Result;
 }

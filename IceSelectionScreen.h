@@ -570,7 +570,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 
 		for (int i = CARSLOTID_TRUNK_AUDIO_COMP_0; i <= CARSLOTID_TRUNK_AUDIO_COMP_11; ++i)
 		{
-			if (RideInfo_TrunkAudioSlotAvailable((DWORD*)gTheRideInfo, 0, i))
+			if (RideInfo_TrunkAudioSlotAvailable((RideInfo*)gTheRideInfo, 0, i))
 			{
 				AMenuOption = (DWORD*)j__malloc(0x5C);
 				if (AMenuOption)

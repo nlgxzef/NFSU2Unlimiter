@@ -18,7 +18,7 @@ DWORD* eSolid_ReplaceTextureByMaterial(eSolid* solid, eStripEntry* entry, DWORD*
 	DWORD* result = orig;
 
 	if (!CurrCarRenderInfo) return result;
-	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra(CurrCarRenderInfo);
+	CarRenderInfoExtra* extra = CarRenderInfo_GetExtra((CarRenderInfo*)CurrCarRenderInfo);
 	if (!extra) return result;
 
 	BYTE Index = eStripEntry_LightMaterialIndex(entry);

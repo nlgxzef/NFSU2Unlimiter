@@ -212,6 +212,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="PartNode.h" />
     <ClInclude Include="PartSelectionScreen.h" />
     <ClInclude Include="PerfPart.h" />
+    <ClInclude Include="PhysicsUpgradeSpecification.h" />
     <ClInclude Include="PlayerCareerState.h" />
     <ClInclude Include="PresetCars.h" />
     <ClInclude Include="RandomCharacterNames.h" />
@@ -219,6 +220,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="resource.h" />
     <ClInclude Include="RideInfo.h" />
     <ClInclude Include="RidePhysicsInfo.h" />
+    <ClInclude Include="RidePhysicsInfoStruct.h" />
     <ClInclude Include="RimsBrowser.h" />
     <ClInclude Include="SelectablePart.h" />
     <ClInclude Include="SelectCarCameraMover.h" />
@@ -226,6 +228,7 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="StarGazerGuide.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StreamingTrafficCarManager.h" />
+    <ClInclude Include="Table.h" />
     <ClInclude Include="Tachometer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TerrainTypeInfo.h" />

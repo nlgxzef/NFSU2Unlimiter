@@ -203,11 +203,13 @@ void MapPartSlots()
 	MapPartToSlot(CARPARTID_VINYL_PAINT, CARSLOTID_UL_EXHAUST_FLAME); // Exhaust Flame
 }
 
-int(*LoaderCarInfo_Game)(bChunk*) = (int(*)(bChunk*))0x636BE0;
+typedef int (*LoaderCarInfo_t)(bChunk*);
+LoaderCarInfo_t LoaderCarInfo_Game = (LoaderCarInfo_t)0x636BE0;
+static injector::hook_back<LoaderCarInfo_t> hb_LoaderCarInfo;
 
 int LoaderCarInfo_Hook(bChunk* chunk)
 {
-	int result = LoaderCarInfo_Game(chunk);
+	int result = hb_LoaderCarInfo.fun(chunk);
 
 	int TypeBits = 1;
 	int PartBits = 1;
@@ -218,7 +220,7 @@ int LoaderCarInfo_Hook(bChunk* chunk)
 		switch (chunk->ID)
 		{
 		case BCHUNK_SPEED_CARTYPEINFO_TABLE: // Unlimiter stuff Part 1
-			CarArraySize = chunk->Size - 8;
+			CarArraySize = chunk->GetAlignedSize(0x10);
 			CarCount = CarArraySize / SingleCarTypeInfoBlockSize;
 			CarTypeInfoArray = *(CarTypeInfo**)_CarTypeInfoArray;
 

@@ -9,10 +9,11 @@ using namespace std;
 
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
 BYTE CarCountByte; // CarCount clamped to a byte
-bool PresetCarsInCustomize, PresetCarsInQuickRace, PresetCarsInOnline, ShowPresetNames, UnlockSponsorCarsWithoutCheats, SeparateRims;
+bool PresetCarsInCustomize, PresetCarsInQuickRace, PresetCarsInOnline, ShowPresetNames, UnlockSponsorCarsWithoutCheats, SeparateRims, AnySizeWheelComposite;
 bool CopCarsCategory, TrafficCarsCategory, ShowCarNamesEverywhere, ShowDebugCarCustomize;
+bool CarRenderInfoRenderRewrite, RenderRewriteFullWheelCamber, RenderRewriteCamberPushDownFromCamber, RenderRewriteBrakeCamberOnCopy, RenderRewriteWheelPivotUsesFallbackWidth, RenderRewriteStockMirrorsPerDoor, RenderRewriteNoDamagedPartAlloc, RenderRewriteFastAllPieces, RenderRewriteNoEdgeOnTireLOD;
 
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableMaterialBasedReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix, NOSGaugeColorFromExhaustFlame;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, CFDoorsFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableMaterialBasedReplacement, DisableLightFlareColors, DisableExhaustFlameAndTireSmoke, ExportCameraInfoIni, StreamingTrafficCarManagerFix, NOSGaugeColorFromExhaustFlame, PlayerTrafficCarFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -100,11 +101,13 @@ int Init()
 	RandomNameHook = mINI_ReadInteger(Settings, "Main", "RandomNameHook",
 		mINI_ReadInteger(Settings, "Main", "EnableRandomNameHook", 1)) != 0;
 	SeparateRims = mINI_ReadInteger(Settings, "Main", "SeparateRims", 1) != 0;
+	AnySizeWheelComposite = mINI_ReadInteger(Settings, "Main", "AnySizeWheelComposite", 1) != 0;
 
 	// Fixes
 	DisappearingWheelsFix = mINI_ReadInteger(Settings, "Fixes", "DisappearingWheelsFix", 1) != 0;
 	WorldCrashFixes = mINI_ReadInteger(Settings, "Fixes", "WorldCrashFixes", 1) != 0;
 	CabinNeonFix = mINI_ReadInteger(Settings, "Fixes", "CabinNeonFix", 1) != 0;
+	CFDoorsFix = mINI_ReadInteger(Settings, "Fixes", "CarbonFiberDoorsFix", 1) != 0;
 	RaceEngageDialogFix = mINI_ReadInteger(Settings, "Fixes", "RaceEngageDialogFix", 1) != 0;
 	EnableFNGFixes = mINI_ReadInteger(Settings, "Fixes", "FNGFix", 0) != 0;
 	StreamingTrafficCarManagerFix = mINI_ReadInteger(Settings, "Fixes", "StreamingTrafficCarManagerFix", 0) != 0;
@@ -112,6 +115,7 @@ int Init()
 	HiddenSpecialtiesInGarage = ParseHiddenSpecialties(mINI_ReadString(Settings, "Fixes", "HideSpecialtiesInGarage", "0"));
 	EngineSFXGuard = mINI_ReadInteger(Settings, "Fixes", "EngineSFXGuard", 1) != 0;
 	AIEngineBankFix = mINI_ReadInteger(Settings, "Fixes", "AIEngineBankFix", 1) != 0;
+	PlayerTrafficCarFix = mINI_ReadInteger(Settings, "Fixes", "PlayerTrafficCarFix", 1) != 0;
 
 	// Sound
 	CarSoundTunerEnabled = mINI_ReadInteger(Settings, "Sound", "CarSoundTuner", 1) != 0;
@@ -144,17 +148,27 @@ int Init()
 		ShowDebugCarCustomize = mINI_ReadInteger(ExtraOptions, "Menu", "ShowDebugCarCustomize", 0) != 0;
 	}
 
-	// Sponsor Cars
-	PresetCarsInCustomize = mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0) != 0;
-	PresetCarsInQuickRace = mINI_ReadInteger(Settings, "SponsorCars", "EnableInQuickRace", 0) != 0;
-	PresetCarsInOnline = mINI_ReadInteger(Settings, "SponsorCars", "EnableInOnline", 0) != 0;
-	ShowPresetNames = mINI_ReadInteger(Settings, "SponsorCars", "ShowPresetNames", 0) != 0;
-	UnlockSponsorCarsWithoutCheats = mINI_ReadInteger(Settings, "SponsorCars", "UnlockWithoutCheats", 0) != 0;
+	CarRenderInfoRenderRewrite = mINI_ReadInteger(Settings, "Misc", "CarRenderInfoRenderRewrite", 0) != 0;
 
-	// Car Categories
-	CopCarsCategory = mINI_ReadInteger(Settings, "CarCategories", "CopCars", 0) != 0;
-	TrafficCarsCategory = mINI_ReadInteger(Settings, "CarCategories", "TrafficCars", 0) != 0;
-	ShowCarNamesEverywhere = mINI_ReadInteger(Settings, "CarCategories", "ShowCarNames", 0) != 0;
+	// CarRenderInfo::Render Rewrite
+	RenderRewriteFullWheelCamber = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "FullWheelCamber", 1) != 0;
+	RenderRewriteCamberPushDownFromCamber = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "PushDownFromCamber", 1) != 0;
+	RenderRewriteBrakeCamberOnCopy = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "BrakeCamberOnCopy", 1) != 0;
+	RenderRewriteWheelPivotUsesFallbackWidth = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "WheelPivotUsesFallbackWidth", 1) != 0;
+	RenderRewriteStockMirrorsPerDoor = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "StockMirrorsPerDoor", 1) != 0;
+	RenderRewriteNoDamagedPartAlloc = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "NoDamagedPartAlloc", 1) != 0;
+	RenderRewriteNoEdgeOnTireLOD = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "NoEdgeOnTireLOD", 1) != 0;
+	RenderRewriteFastAllPieces = mINI_ReadInteger(Settings, "CarRenderInfoRenderRewrite", "RenderAllModelsOnFast", 1) != 0;
+
+	// Preset Cars
+	PresetCarsInCustomize = mINI_ReadInteger(Settings, "PresetCars", "EnableInCustomize", mINI_ReadInteger(Settings, "SponsorCars", "EnableInCustomize", 0)) != 0;
+	PresetCarsInQuickRace = mINI_ReadInteger(Settings, "PresetCars", "EnableInQuickRace", mINI_ReadInteger(Settings, "SponsorCars", "EnableInQuickRace", 0)) != 0;
+	PresetCarsInOnline = mINI_ReadInteger(Settings, "PresetCars", "EnableInOnline", mINI_ReadInteger(Settings, "SponsorCars", "EnableInOnline", 0)) != 0;
+	ShowPresetNames = mINI_ReadInteger(Settings, "PresetCars", "ShowPresetNames", mINI_ReadInteger(Settings, "SponsorCars", "ShowPresetNames", 0)) != 0;
+	UnlockSponsorCarsWithoutCheats = mINI_ReadInteger(Settings, "PresetCars", "UnlockWithoutCheats", mINI_ReadInteger(Settings, "SponsorCars", "UnlockWithoutCheats", 0)) != 0;
+	CopCarsCategory = mINI_ReadInteger(Settings, "PresetCars", "CopCars", mINI_ReadInteger(Settings, "CarCategories", "CopCars", 0)) != 0;
+	TrafficCarsCategory = mINI_ReadInteger(Settings, "PresetCars", "TrafficCars", mINI_ReadInteger(Settings, "CarCategories", "TrafficCars", 0)) != 0;
+	ShowCarNamesEverywhere = mINI_ReadInteger(Settings, "PresetCars", "ShowCarNames", mINI_ReadInteger(Settings, "CarCategories", "ShowCarNames", 0)) != 0;
 
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
@@ -167,6 +181,7 @@ int Init()
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
 
 	// Count Cars Automatically
+	hb_LoaderCarInfo.fun = *(LoaderCarInfo_t*)0x7FA898;
 	injector::WriteMemory(0x7FA898, &LoaderCarInfo_Hook, true); // LoaderTable
 
 	// Fix car lot unlock crash
@@ -499,7 +514,14 @@ int Init()
 		injector::MakeJMP(0x6277FD, RearWheelLightMaterialCodeCave, true); // CarRenderInfo::Render
 
 		injector::MakeJMP(0x61C280, RideInfo_SetCompositeNameHash, true); // RideInfo::SetCompositeNameHash, 16 references
-		injector::WriteMemory(0x61C2E6, DummyWheelRear, true); // RideInfo::SetCompositeNameHash DUMMY_SPINNER%d -> DUMMY_WHEEL_REAR%d
+		injector::MakeJMP(0x6274CE, CarRenderInfo_Render_RearSpinnerCodeCave, true); // CarRenderInfo::Render, draw spinners when only the rear rims have them
+		
+		if (AnySizeWheelComposite)
+		{
+			injector::MakeCALL(0x61E0B8, CompositeWheel_AnySize, true); // CompositeSpinner, spinner without a mask
+			injector::MakeCALL(0x61E0D9, CompositeWheel_AnySize, true); // CompositeSpinner
+		}
+		
 		//injector::MakeRangedNOP(0x55C263, 0x55C272, true); // CarCustomizeManager::InstallPart (disable setting rear rims from front)
 		//injector::MakeRangedNOP(0x55C1A4, 0x55C1B6, true); // CarCustomizeManager::PreviewPart (disable previewing rear rims from front)
 		{
@@ -671,6 +693,21 @@ int Init()
 		injector::MakeJMP(0x622BD9, CabinNeonFixCodeCave2, true); // CarRenderInfo::Render
 	}
 
+	// Fix Carbon Fiber Doors
+	if (CFDoorsFix)
+	{
+		injector::MakeJMP(0x634BDB, CarRenderInfo_UpdateCarParts_CFDoorsFixCodeCave, true); // CarRenderInfo::UpdateCarParts
+		injector::WriteMemory(0x6231FD, 0x3C0, true); // CarRenderInfo::Render, read CarbonFiberDoor instead of CarbonFiberWidebody
+	}
+
+	// Player and AI racer cars of a traffic car type
+	if (PlayerTrafficCarFix)
+	{
+		injector::MakeJMP(0x57F6A2, PlayerTrafficCarFixCodeCave_TrackLoader_LoadHandler, true); // TrackLoader::LoadHandler
+		injector::MakeJMP(0x412C7C, PlayerTrafficCarFixCodeCave_StreamingTrafficCarManager_SetInitialDesiredCarTypes, true); // StreamingTrafficCarManager::SetInitialDesiredCarTypes
+		injector::MakeJMP(0x4201A2, PlayerTrafficCarFixCodeCave_StreamingTrafficCarManager_UnloadEverything, true); // StreamingTrafficCarManager::UnloadEverything
+	}
+
 	// Fix WorldChallenges Crash
 	if (WorldCrashFixes)
 	{
@@ -700,6 +737,15 @@ int Init()
 	//injector::MakeCALL(0x623155, HasSunroof, true);
 	injector::MakeJMP(0x60C854, HasSunroofCodeCave, true); // HasSunroof
 	injector::MakeJMP(0x623458, CarRenderInfo_Render_AnimLocationForExtraAttachmentCodeCave, true);
+
+	// CarRenderInfo::Render rewrite
+	if (CarRenderInfoRenderRewrite)
+	{
+		injector::MakeCALL(0x631229, CarRenderInfo_Render, true);     // RenderFrontEndCars
+		injector::MakeCALL(0x63169E, CarRenderInfo_Render, true);     // RenderCarReflections
+		injector::MakeCALL(0x631881, CarRenderInfo_Render, true);     // RenderCars
+		injector::MakeCALL(0x6318E5, CarRenderInfo_RenderFast, true); // RenderCars
+	}
 	
 	// Expand Memory Pools (ty Berkay and Aero_)
 	if (ExpandMemoryPools)

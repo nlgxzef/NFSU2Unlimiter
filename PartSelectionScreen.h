@@ -52,7 +52,7 @@ void PartSelectionScreen_AddCategoryChecked(DWORD* PSS, unsigned int CarSlotID, 
 
 void __fastcall PartSelectionScreen_SetupBodyShop(DWORD* PartSelectionScreen, void* EDX_Unused)
 {
-    RideInfo_UpdatePartsEnabled((DWORD*)gTheRideInfo, nullptr);
+    RideInfo_UpdatePartsEnabled((RideInfo*)gTheRideInfo, nullptr);
 
     // Read Part Options for the car
     DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
@@ -984,76 +984,78 @@ void __fastcall PartSelectionScreen_SetupCarbonParts(DWORD* PartSelectionScreen,
         CarConfigs[CarTypeID].Names.BodyShopCarbonFiberMirrors,
         1);// VISUAL_PART_CARBON_FIBRE_MIRRORS
 
-    /*
-    CFDoor:
-    PartUnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
-    locked = UnlockSystem_IsUnlockableUnlocked(PartUnlockFilter, 85, 3, *(DWORD*)0x8389B0) == 0;
-    if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_DOOR_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
+CFDoor:
+    if (CFDoorsFix)
     {
-        NewNode = (DWORD*)j__malloc(0x40u);
-        if (NewNode)
+        PartUnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
+        locked = UnlockSystem_IsUnlockableUnlocked(PartUnlockFilter, 85, 3, *(DWORD*)0x8389B0) == 0;
+        if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_DOOR_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
         {
-            NewNode[3] = CARSLOTID_DOOR_CARBON;
-            NewNode[4] = 0;
-            NewNode[5] = 0;
-            NewNode[6] = 0;
-            *((BYTE*)NewNode + 32) = 0;
-            *((BYTE*)NewNode + 33) = 1;
-            *NewNode = _CategoryNode_vtbl;
-            NewNode[11] = CarConfigs[CarTypeID].Names.BodyShopCarbonFiberDoors; // VISUAL_PART_CARBON_FIBRE_DOOR
-            NewNode[12] = 0;
-            *((BYTE*)NewNode + 52) = 1;
-            NewNode[14] = (DWORD)(NewNode + 14);
-            NewNode[15] = (DWORD)(NewNode + 14);
-            *((BYTE*)NewNode + 34) = locked;
-            *((BYTE*)NewNode + 35) = 1;
+            NewNode = (DWORD*)j__malloc(0x40u);
+            if (NewNode)
+            {
+                NewNode[3] = CARSLOTID_DOOR_CARBON;
+                NewNode[4] = 0;
+                NewNode[5] = 0;
+                NewNode[6] = 0;
+                *((BYTE*)NewNode + 32) = 0;
+                *((BYTE*)NewNode + 33) = 1;
+                *NewNode = _CategoryNode_vtbl;
+                NewNode[11] = CarConfigs[CarTypeID].Names.BodyShopCarbonFiberDoor; // VISUAL_PART_CARBON_FIBRE_DOOR
+                NewNode[12] = 0;
+                *((BYTE*)NewNode + 52) = 1;
+                NewNode[14] = (DWORD)(NewNode + 14);
+                NewNode[15] = (DWORD)(NewNode + 14);
+                *((BYTE*)NewNode + 34) = locked;
+                *((BYTE*)NewNode + 35) = 1;
+            }
+            else
+            {
+                NewNode = 0;
+            }
+            v12 = ThumbnailScroller_AddNode(PartSelectionScreen + 19, NewNode, 1, -1);
+            if (!v12)
+                goto CFTrunk;
+            icon = CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberDoor; // VISUAL_PART_CARBON_FIBRE_DOOR
         }
         else
         {
-            NewNode = 0;
+            NewNode = (DWORD*)j__malloc(0x40u);
+            if (NewNode)
+            {
+                NewNode[3] = CARSLOTID_DOOR_CARBON;
+                NewNode[4] = 0;
+                NewNode[5] = 0;
+                NewNode[6] = 0;
+                *((BYTE*)NewNode + 32) = 0;
+                *((BYTE*)NewNode + 33) = 1;
+                *NewNode = _CategoryNode_vtbl;
+                NewNode[11] = CarConfigs[CarTypeID].Names.BodyShopCarbonFiberRevertDoor; // VISUAL_PART_REVERT_CARBON_FIBRE_DOOR
+                NewNode[12] = 0;
+                *((BYTE*)NewNode + 52) = 1;
+                NewNode[14] = (DWORD)(NewNode + 14);
+                NewNode[15] = (DWORD)(NewNode + 14);
+                *((BYTE*)NewNode + 34) = locked;
+                *((BYTE*)NewNode + 35) = 1;
+            }
+            else
+            {
+                NewNode = 0;
+            }
+            v12 = ThumbnailScroller_AddNode(PartSelectionScreen + 19, NewNode, 1, -1);
+            if (!v12)
+                goto CFTrunk;
+            icon = CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberRevertDoor; // VISUAL_PART_DE_CARBON_FIBRE_DOOR
         }
-        v12 = ThumbnailScroller_AddNode(PartSelectionScreen + 19, NewNode, 1, -1);
-        if (!v12)
-            goto CFTrunk;
-        icon = CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberDoors; // VISUAL_PART_CARBON_FIBRE_DOOR
-    }
-    else
-    {
-        NewNode = (DWORD*)j__malloc(0x40u);
-        if (NewNode)
+        if (v12[9] != icon)
         {
-            NewNode[3] = CARSLOTID_DOOR_CARBON;
-            NewNode[4] = 0;
-            NewNode[5] = 0;
-            NewNode[6] = 0;
-            *((BYTE*)NewNode + 32) = 0;
-            *((BYTE*)NewNode + 33) = 1;
-            *NewNode = _CategoryNode_vtbl;
-            NewNode[11] = CarConfigs[CarTypeID].Names.BodyShopCarbonFiberRevertDoors; // VISUAL_PART_REVERT_CARBON_FIBRE_DOOR
-            NewNode[12] = 0;
-            *((BYTE*)NewNode + 52) = 1;
-            NewNode[14] = (DWORD)(NewNode + 14);
-            NewNode[15] = (DWORD)(NewNode + 14);
-            *((BYTE*)NewNode + 34) = locked;
-            *((BYTE*)NewNode + 35) = 1;
+            v12[9] = icon;
+            v12[7] |= 0x400000u;
         }
-        else
-        {
-            NewNode = 0;
-        }
-        v12 = ThumbnailScroller_AddNode(PartSelectionScreen + 19, NewNode, 1, -1);
-        if (!v12)
-            goto CFTrunk;
-        icon = CarConfigs[CarTypeID].Icons.BodyShopCarbonFiberRevertDoors; // VISUAL_PART_DE_CARBON_FIBRE_DOOR
     }
-    if (v12[9] != icon)
-    {
-        v12[9] = icon;
-        v12[7] |= 0x400000u;
-    }*/
     
 CFTrunk:
-    //++PartSelectionScreen[113];
+    if (CFDoorsFix) ++PartSelectionScreen[113];
     PartUnlockFilter = CarCustomizeManager_GetPartUnlockFilter();
     locked = UnlockSystem_IsUnlockableUnlocked(PartUnlockFilter, 86, 3, *(DWORD*)0x8389B0) == 0;
     if (*(DWORD*)RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_TRUNK_CARBON) == CT_bStringHash("CARBON FIBRE NONE"))
@@ -1214,26 +1216,107 @@ FinishMenu:
 #define dword_838990 *(DWORD*)0x838990
 #define dword_8389A0 *(DWORD*)0x8389A0
 
+bool __fastcall PartSelectionScreen_HandleCarbonDoors(DWORD* PartSelectionScreen, void* EDX_Unused, DWORD message)
+{
+    if (!*((BYTE*)PartSelectionScreen + 0x1D5)) return false;          // not in the carbon fibre menu
+
+    DWORD* CategoryNode = (DWORD*)PartSelectionScreen[22];             // +0x58
+    if (!CategoryNode || CategoryNode[3] != CARSLOTID_DOOR_CARBON) return false;
+
+    const char* Pkg = (const char*)PartSelectionScreen[1];
+
+    // PAD_ACCEPT / mouse accept
+    if (message == 0x406415E3 || message == 0x0C407210)
+    {
+        if ((DWORD*)PartSelectionScreen[20] == PartSelectionScreen + 20) return false;
+        if (*((BYTE*)CategoryNode + 0x22)) return false;
+
+        DWORD* DoorCarbonPart = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_DOOR_CARBON);
+        DWORD DialogText;
+        if (*DoorCarbonPart == CT_bStringHash("CARBON FIBRE NONE"))
+        {
+            bool MustBuy = *(int*)_FEDatabase == 1
+                && !CarCustomizeManager_IsPartPurchased((DWORD*)gCarCustomizeManager, CARSLOTID_DOOR_CARBON, DoorCarbonPart);
+            DialogText = MustBuy ? CT_bStringHash("CONFIRM_PURCHASE_CONVERT_DOORS_TO_CARBON")
+                : CT_bStringHash("CONFIRM_CONVERT_DOORS_TO_CARBON");
+        }
+        else DialogText = CT_bStringHash("CONFIRM_REVERT_DOORS_FROM_CARBON");
+
+        PartSelectionScreen_SetControlMask();
+        DialogInterface_ShowTwoButtons(Pkg, "",
+            0xF770,      // YES
+            0x61C,       // NO
+            0x51123592,  // YES
+            0xB4623F67,  // NO
+            0xB4623F67,  // cancel
+            1, DialogText);
+        dword_838970 = 0xB4623F67;
+        *((BYTE*)PartSelectionScreen + 123) = 0;
+        ThumbnailScroller_SetVisibility(PartSelectionScreen + 19, 0);
+        FEngSetScript_Pkg(Pkg, 0x47FF4E7C, "DIM", 1);
+        MakeFrontendSound(8, PartSelectionScreen[12]);
+        return true;
+    }
+
+    // YES
+    if (message == 0x51123592)
+    {
+        PartSelectionScreen_UnsetControlMask();
+
+        DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
+        int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
+        int PartID = GetCarPartFromSlot(CARSLOTID_DOOR_CARBON);
+
+        // The game builds a bList and takes its head/tail; first/last match is the same thing without allocating
+        DWORD* FirstPart = nullptr;
+        DWORD* LastPart = nullptr;
+        for (DWORD* p = CarPartDatabase_NewGetFirstCarPart((DWORD*)_CarPartDB, CarTypeID, CARSLOTID_DOOR_CARBON, 0, -1);
+            p; p = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, p, CarTypeID, CARSLOTID_DOOR_CARBON, 0, -1))
+        {
+            if (*((signed char*)p + 4) == PartID
+                && CarCustomizeManager_IsPartAvailable((DWORD*)gCarCustomizeManager, CARSLOTID_DOOR_CARBON, p))
+            {
+                if (!FirstPart) FirstPart = p;
+                LastPart = p;
+            }
+        }
+        if (!FirstPart) return false;  // no door carbon parts for this car: let the game handle it
+
+        bool IsNone = *RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_DOOR_CARBON) == CT_bStringHash("CARBON FIBRE NONE");
+        DWORD* NewPart = FirstPart;
+        if (IsNone ? (*NewPart == CT_bStringHash("CARBON FIBRE NONE")) : (*NewPart != CT_bStringHash("CARBON FIBRE NONE")))
+            NewPart = LastPart;
+
+        if (*(int*)_FEDatabase == 1
+            && !CarCustomizeManager_IsPartPurchased((DWORD*)gCarCustomizeManager, CARSLOTID_DOOR_CARBON, NewPart))
+            PlayerCareerState_BuyCarPart((DWORD*)ThePlayerCareer, CARSLOTID_DOOR_CARBON, NewPart);
+
+        CarCustomizeManager_InstallPart((DWORD*)gCarCustomizeManager, CARSLOTID_DOOR_CARBON, NewPart);
+        PartSelectionScreen_SetupCarbonParts(PartSelectionScreen, EDX_Unused, CARSLOTID_DOOR_CARBON);
+        CarCustomizeManager_PlaySound((DWORD*)gCarCustomizeManager, NewPart);
+        *((BYTE*)PartSelectionScreen + 123) = 1;
+        ThumbnailScroller_SetVisibility(PartSelectionScreen + 19, 1);
+        FEngSetScript_Pkg(Pkg, 0x47FF4E7C, "MENUFADE", 1);
+        return true;
+    }
+
+    return false;
+}
+
 void __fastcall PartSelectionScreen_NotificationMessage(DWORD* PartSelectionScreen, void* EDX_Unused, DWORD message, DWORD* fe_obj, DWORD param1, DWORD param2)
 {
     DWORD* v5 = nullptr;
     DWORD* CategoryNode = (DWORD*)PartSelectionScreen[22];
     int CarSlotID = CategoryNode[3];
 
+    if (PartSelectionScreen_HandleCarbonDoors(PartSelectionScreen, EDX_Unused, message))
+        return;
+
     if ((message == 0xC407210 || message == 0x406415E3) && 
         (dword_838990 == 0 && CarSlotID == CARSLOTID_FRONT_WHEEL))
     {
         if (SeparateRims)
         {
-            DWORD* FrontRim = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_FRONT_WHEEL);
-            DWORD* RearRim = RideInfo_GetPart((DWORD*)gTheRideInfo, CARSLOTID_REAR_WHEEL);
-
-            bool IsFrontSpinner = FrontRim ? CarPart_GetAppliedAttributeUParam(FrontRim, CT_bStringHash("BRAND_NAME"), 0) == CT_bStringHash("SPINNER") : 0;
-            bool IsRearSpinner = RearRim ? CarPart_GetAppliedAttributeUParam(RearRim, CT_bStringHash("BRAND_NAME"), 0) == CT_bStringHash("SPINNER") : 0;
-            
-            if (IsFrontSpinner || IsRearSpinner)
-                goto CustomizeAllWheels;
-
             DialogInterface_ShowThreeButtons((char const*)PartSelectionScreen[1], "GenericDialog_ThreeButton.fng",
                 CT_bStringHash("CUSTOMIZE_FRONT_WHEEL"),
                 CT_bStringHash("CUSTOMIZE_REAR_WHEEL"),

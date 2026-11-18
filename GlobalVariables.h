@@ -59,6 +59,87 @@
 #define __PaintMenuState 0x8389A0 // unofficial name
 #define _RenderFECarFlares 0x8A1C68
 
+#define ForceCarLOD *(int*)0x802728
+#define ForceTireLOD *(int*)0x80272C
+#define PrintQueryLightMat *(int*)0x8A1C04
+#define PrintLightQuery *(int*)0x82DAD8
+#define PartDamage_Test *(int*)0x8A1C64
+#define EnableEnvMap *(int*)0x7FEE4C
+#define DisableEnvMapSize *(float*)0x7A66FC
+#define CarTwoPlayerLODFactor *(float*)0x7A6700
+#define CarBodyLodSwapSize ((float*)0x7A66DC)     // [4]
+#define CarBodyLodSwapSizeFast ((float*)0x7A66EC) // [4]
+#define NearCameraDistance *(float*)0x7844F8
+#define fCarFudgeElevation *(float*)0x7A66C0
+#define fCarFudgeBias *(float*)0x7A66C4
+#define fCarFudgeBiasNoTarget *(float*)0x7A66C8
+#define CarPartDamageCutoff *(float*)0x803934
+#define TheCarDamageMap_LeftMirror *(int*)0x803698
+#define TheCarDamageMap_RightMirror *(int*)0x8036A8
+#define TheCarDamageMap_LeftDoor *(int*)0x8036D8
+#define TheCarDamageMap_RightDoor *(int*)0x8036E8
+#define BreakableCarDamageInfoTable ((int*)0x8036A4) // 6 entries of 16 bytes, CAR_SLOT_ID first
+#define FaceCos *(float*)0x8A1C5C
+#define WheelPivotTranslationAmount *(float*)0x8026C0
+#define TweakBrakeMarkerY ((float*)0x7A668C)
+#define CamberTweak *(float*)0x7A6750
+#define CamberToAngle *(float*)0x7A6754
+#define CamberPushDown *(float*)0x7A6758
+#define DegToAng *(float*)0x784238
+#define BrakeMirrorX *(float*)0x7A66CC
+#define BrakeMirrorY *(float*)0x7A66D0
+#define BrakeMirrorZ *(float*)0x7A66D4
+#define RealTimer *(int*)0x8651AC
+#define WorldTimer *(int*)0x86518C
+#define hack_man_matrix ((bMatrix4*)0x871B50)
+#define eMathIdentityMatrix ((bMatrix4*)0x872E90)
+#define Player_pPlayersByIndex ((DWORD**)0x8900B4)
+// car shadow
+#define g_CarShadowEnable *(int*)0x870CC0
+#define DrawFancyCarShadow *(int*)0x8026B8
+#define FancyCarShadowEdgeMult *(float*)0x8026BC
+#define DrawShadowCentre *(int*)0x802918
+#define ShadowRampU *(float*)0x7A6650
+#define ShadowProjectionScale *(float*)0x89EBBC
+#define ShadowVolumeLift *(float*)0x7A665C
+#define ShadowHullLift *(float*)0x7A66B8
+#define ShadowSkipSmoothing *(int*)0x8A1C60
+#define ShadowAlphaScale *(float*)0x7A88B8
+#define ShadowAlphaBase *(float*)0x7A65AC
+#define ShadowEdgeMultMax *(float*)0x7A6654
+#define ShadowEdgeMultMin *(float*)0x7A6658
+#define ShadowFadeStart *(float*)0x7A6660
+#define ShadowFadeEnd *(float*)0x7A6664
+#define ShadowFadeOverride *(float*)0x8A1BE8
+#define ShadowGrowWithHeight *(float*)0x7A6668
+#define ShadowWidthGame *(float*)0x7A6698
+#define ShadowLengthGame *(float*)0x7A669C
+#define ShadowWidthFE *(float*)0x7A66A0
+#define ShadowLengthFE *(float*)0x7A66A4
+#define ShadowInnerLiftGame *(float*)0x7A66AC
+#define ShadowInnerLiftFE *(float*)0x7A66B0
+#define ShadowGridLift *(float*)0x7A66B4
+#define ShadowGridHeightFE *(float*)0x7A66BC
+#define ShadowGroundPosition (*(bVector3*)0x8A1F00)
+#define ShadowGroundNormal ((bVector3*)0x8A2CD0)
+#define ShadowLightDirection ((float*)0x8A1EF0)
+#define ShadowHullPoints ((bVector3*)0x8A3B50)
+#define ShadowHullPoints2 ((bVector3*)0x8A2CF0)
+#define ShadowSmoothedPoints ((bVector3*)0x8A1F50)
+// neon, engine bay and trunk light
+#define NeonTimeScale *(float*)0x784268
+#define NeonFreqA *(float*)0x7A666C
+#define NeonFreqB *(float*)0x7A6670
+#define NeonFreqC *(float*)0x7A6674
+#define NeonPeriod *(float*)0x7A65B8
+#define NeonFlickerAlpha *(float*)0x7A6678
+#define EngineLightScale *(float*)0x7A65F0
+#define EngineNeonScale *(float*)0x7A65F4
+#define TrunkLightScale *(float*)0x7A65E0
+#define TrunkNeonScale *(float*)0x7A65E4
+#define ByteToFloat *(float*)0x7A0700
+#define NeonGreenScale *(double*)0x7A88B0
+
 char AttachmentString[64];
 char AttachmentDefaultString[64];
 char CarTypeName[15];

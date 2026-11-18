@@ -274,6 +274,7 @@ void BuildPresetCarList()
 
 	ObjectLink* Sentinel = (ObjectLink*)_PresetCars;
 	if (!Sentinel->next) return; // list not loaded yet
+	if ((CopCarsCategory || TrafficCarsCategory) && !FEPlayerCarDB_Player1->StockCars[0].vTable) return;
 
 	struct Pending { DWORD Hash; int Group;  int CarType; };
 	std::vector<Pending> Entries;
@@ -642,6 +643,9 @@ void __declspec(naked) FEPlayerCarDB_GetCarRecordByHandleCodeCave()
 {
 	_asm
 	{
+		pushad
+		call BuildPresetCarList
+		popad
 		// Slot hash 0 means "no car in this slot" and turns up constantly while the collection
 		// is walked. The old check was a bare jbe, so 0 fell into the preset path, dec'd to -1
 		// and returned PresetCarsBase - 0x1C instead of null. Needs a lower bound and a null
@@ -867,6 +871,12 @@ void __declspec(naked) FindPresetCarWhenTuningForIngameCarCodeCave()
 {
 	_asm
 	{
+		pushfd
+		pushad
+		call BuildPresetCarList
+		popad
+		popfd
+
 		// Same lower bound problem as GetCarRecordByHandle above
 		test edi, edi
 		jz NotPreset
@@ -1106,8 +1116,44 @@ int __stdcall IsPresetUnlocked_AlwaysTrue(DWORD* SponsorCarHash)
 	return 1;
 }
 
+#define SelectedCarHandle(player) *(DWORD*)(_profileData + OffsetOfPlayers + (player) * SizeOfPlayer + OffsetOfD4 + 0x04)   // 0x83AAB8
+#define SelectedCarCategory(player) *(DWORD*)(_profileData + OffsetOfPlayers + (player) * SizeOfPlayer + OffsetOfD4 + OffsetOfSelectCategory) // 0x83AAC0
+
+FEStockCar* (__thiscall* FEPlayerCarDB_GetCarRecordByHandle)(FEPlayerCarDB* PlayerCarDB, unsigned int Handle) = (FEStockCar * (__thiscall*)(FEPlayerCarDB*, unsigned int))0x503510;
+void(__thiscall* cFrontendDatabase_LoadUserProfile)(DWORD* FrontendDatabase) = (void(__thiscall*)(DWORD*))0x5347C0;
+
+// A loaded profile can name a car that doesn't exist in this session: a preset, cop or traffic entry
+// (their handles are list indexes), saved by an older build or with other options. Every screen that
+// reads the selected car expects it to exist, so point it at a real car instead.
+void PresetValidateSelectedCars()
+{
+	for (int Player = 0; Player < 2; Player++)
+	{
+		FEPlayerCarDB* PlayerCarDB = Player ? FEPlayerCarDB_Player2 : FEPlayerCarDB_Player1;
+		DWORD Handle = SelectedCarHandle(Player);
+
+		if (!Handle || FEPlayerCarDB_GetCarRecordByHandle(PlayerCarDB, Handle)) continue;
+
+		bReleasePrintf("PresetValidateSelectedCars: player %d selected car %08X not found, using the first stock car\n", Player + 1, Handle);
+
+		SelectedCarHandle(Player) = PlayerCarDB->NumStockCars > 0 ? PlayerCarDB->StockCars[0].Hash : 0;
+		if (SelectedCarCategory(Player) & PRESET_GROUP_MASK) SelectedCarCategory(Player) = 1 | 2; // stock and tuned
+	}
+}
+
+// 0x4FBA7C FEPkgMemcardScreen::NotificationMessage, 0x4FD628 MemoryCardMainMenu::NotificationMessage
+void __fastcall cFrontendDatabase_LoadUserProfile_Hook(DWORD* FrontendDatabase, void* EDX_Unused)
+{
+	cFrontendDatabase_LoadUserProfile(FrontendDatabase);
+	PresetValidateSelectedCars();
+}
+
 void InitPresetCars()
 {
+	// Profile loads: a selected car that no longer exists is reset to a real one
+	injector::MakeCALL(0x4FBA7C, cFrontendDatabase_LoadUserProfile_Hook, true); // FEPkgMemcardScreen::NotificationMessage
+	injector::MakeCALL(0x4FD628, cFrontendDatabase_LoadUserProfile_Hook, true); // MemoryCardMainMenu::NotificationMessage
+
 	if (UnlockSponsorCarsWithoutCheats)
 	{
 		injector::MakeJMP(0x579D70, IsPresetUnlocked_AlwaysTrue, true); // EasterEggs::IsPresetUnlocked
@@ -1157,7 +1203,7 @@ void __fastcall RideInfo_FillWithPreset(DWORD* RideInfo, void* EDX_Unused, DWORD
 		{
 			RideInfo_Init(RideInfo, type, 1, 0, 0);
 		}
-		RideInfo_SetStockParts(RideInfo, EDX_Unused, 0);
+		RideInfo_SetStockParts((struct RideInfo*)RideInfo, EDX_Unused, 0);
 
 		for (int i = CARSLOTID_BASE; i < CARSLOTID_NUM; ++i)
 		{
@@ -1165,14 +1211,14 @@ void __fastcall RideInfo_FillWithPreset(DWORD* RideInfo, void* EDX_Unused, DWORD
 			if (PartNameHash && PartNameHash != 1)
 			{
 				DWORD* part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, type, i, PartNameHash, 0, -1);
-				if (part) RideInfo_SetPart(RideInfo, EDX_Unused, i, part);
+				if (part) RideInfo_SetPart((struct RideInfo*)RideInfo, EDX_Unused, i, part);
 			}
 
 			/* // May be unneccessary, as we already set stock parts beforehand
 			if (i == CARSLOTID_TOP)
 			{
 				DWORD* part = CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, type, i, 0, 0, -1);
-				if (part) RideInfo_SetPart(RideInfo, EDX_Unused, i, part);
+				if (part) RideInfo_SetPart((struct RideInfo*)RideInfo, EDX_Unused, i, part);
 			}
 			*/
 		}

@@ -31,6 +31,12 @@ struct eModel : bTNode<eModel>
             }
         }
     }
+
+    void AttachReplacementTextureTable(DWORD* replacement_texture_table, int num_textures, int instance_index)
+    {
+        this->pReplacementTextureTable = replacement_texture_table;
+        this->NumReplacementTextures = num_textures;
+	}
 };
 
 void __fastcall eModel_ReplaceLightMaterial(eModel* deze, void* EDX_Unused, int NameHash, int LightMaterial)
@@ -38,5 +44,13 @@ void __fastcall eModel_ReplaceLightMaterial(eModel* deze, void* EDX_Unused, int 
     if (deze) // Check if there is actually a model to begin with (to work around crashes)
     {
         deze->ReplaceLightMaterial(NameHash, LightMaterial);
+    }
+}
+
+void __fastcall eModel_AttachReplacementTextureTable(eModel* deze, void* EDX_Unused, DWORD* replacement_texture_table, int num_textures, int instance_index)
+{
+    if (deze) // Check if there is actually a model to begin with (to work around crashes)
+    {
+        deze->AttachReplacementTextureTable(replacement_texture_table, num_textures, instance_index);
     }
 }
